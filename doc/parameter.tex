@@ -1,0 +1,125 @@
+\section{Parameters handling}
+\label{sec:parameters}
+The known problem of passing informations between unrelated classes in C++ is resolved
+in Echidna using a software bus technology which will be explained in this section.
+
+A software bus is an engine to pass informations between objects, called {\it clients}:
+in Echidna the class called {\bf bx\_named} is the interface to this bus; every class 
+inheriting from bx\_named acquires the access to the bus with the intelligence to read 
+parameters from it.
+
+Considering the bus standard topology a {\it master} needs some kind of addressing algoritm to send
+the informations only to the relevant objects: in Echidna the address of the client is 
+a string, the {\it object name} (from wich bx\_named).
+Every bus client is a bx\_named progeny identified in the program by a 
+{\bf name}; several istances or implementations with the same name are undistinguished 
+from the bus and thus all them have the same parameter set.\\
+The bus itself is implemented by the {\bf parameter\_broker} class, while the bus master
+job is done by the {\bf configuration\_manager} class; the objects traveling the bus
+are {\bf vdt} istances (see \S\ref{sec:vdt}).
+
+This technology is used in Echidna for parameters handling: a parameter is a configuration 
+data not hardcoded in the program sources. Parameters are normally initialized in the main
+configuration file {\bf echidna.cfg}, set by the current configuration, overrided by the
+user configuration file {\bf user.cfg} and by the command line arguments. Parameters differ
+from constants which can not be changed without modifying the sources. On the countrary
+parameters should not used between modules to pass calculation data (as opposed to 
+configuration data): for example the database interface is designed to pass data from 
+the precalibrations to the decoding modules.\\
+Parameters are identified by their name and organized in {\bf namespaces}: a name has
+to be unique in a namespace but a different parameter with the same name can be contained
+by a different namespace. The namespace is associated to the bx\_named objects using the
+bx\_named names.
+
+\subsection{bx\_named}
+The main property of a bx\_named istance is having a name; while a bx\_named object is
+useless, since it deal only with parameters, it is an important ancestor for many classes
+which parameters.
+
+A name is required to construct a bx\_named object and every class inheriting from bx\_named
+must satisfy this requirement in the constructor; the 
+\mbox{\code{const string\& bx\_named::get\_name () const}} method can be used
+later to retrieve the object name.
+
+The main property of a bx\_named is the access to parameters using the parameter name; 
+three methods are present:
+\begin{itemize}
+\item \mbox{\code{const vdt\& bx\_named::get\_parameter (const std::string\& name) const throw runtime\_error}}:
+get the parameter with name \code{name}; the search is limited in the namespace associated to the current
+bx\_named. If the search fails an exception (\code{runtime\_error}) is generated. The method is \code{const} and
+the return value can not be modified.
+\item \mbox{\code{bool bx\_named::check\_parameter (const std::string\& name) const}} is used to check if
+the required parameter is present allowing to avoid exception generation if the parameter is absent.
+\item \mbox{\code{void bx\_named::set\_parameter (const std::string\& name, const std::string\& value)}} and\\
+\mbox{\code{virtual void bx\_named::set\_parameter (const std::string\& name, const vdt\& value)}} are used to set a 
+parameter; if the parameter is not already present a warning is issued. The second method is virtual since the 
+childs can redefine it to have cached parameters\footnote{Since the access to the parameter requires two
+string searches in the parameter\_broker maps, parameter often accessed could be slow and may be better to cache the 
+value locally; one example is the bx\_base\_module (\S\ref{sec:modules}) which caches the \code{enable} parameter. 
+Redefining that method is not hard: it is important to call \mbox{\code{bx\_named::set\_parameter ()}} method in the 
+redefined version to allow the propagation of the parameters in the software bus. 
+
+There is one trick: problems can arise when there are several istances of the same object (with the same name); 
+this way calling \mbox{\code{obj1.set\_parameter ()}} affect the cached parameter, the parameter\_broker version, 
+but not the version of a obj2 with the same name of obj1. A solution is the use of static cached values even if it can
+not be applied always.}
+\end{itemize}
+For the access to parameters the parameter\_broker is required and thus the bx\_named constructor will generate
+an exception if when it's called the broker is not initialized (see below for details on parameter\_broker initializations).
+
+One last method is present: \mbox{\code{bx\_message\& bx\_named::get\_message (bx\_message::message\_level level)}} which
+return a bx\_message reference already initialized with the object name and the verbosity levels specified in the parameters.
+\subsection{parameter\_broker}
+When the configuration files are read no bx\_named object exists yet, so propagating the parameters to the
+peers would be impossile; for this reason a parameter broker is present in Echidna: it's role is to receive
+the parameters anytime and to distribute them upon request. The parameters are organized in namespaces and 
+the relationship between parameter namespaces and bx\_named is the name; each namespace has a name and 
+when a client want to fetch a parameter the search is done only in the namespace with same name than the bx\_named
+client. This is even the reason for which 2 clients with the same name share the same parameter set.
+
+The parameter namespaces are implemented using a \code{typedef map<string, vdt> parameter\_namespace} and internally
+the parameter\_broker keeps the list of namespaces using a \code{map<string, parameter\_namespace>}; no 
+access control rule is present in the broker, the setting call only require to know the address (name) of the client.
+To avoid acl but to remain in a safe condition the access to the parameter\_broker is allowed only to
+bx\_named objects which internals grant runtime access only to the parameter of the target object (the object from
+which the set method is called \code{onj.set()}).\\
+The parameter\_broker role would suggest a global object, like a singleton, but to keep it available only to bx\_named
+clients the pointer to the broker is a static private member of the bx\_named class; this way, once initialized, it will 
+be available only to the the bx\_named internals. The initialization is done, by the configuration\_manager, in the 
+\mbox{\code{bx\_options::initialize\_echidna ()}} method.
+
+\subsection{configuration\_manager}
+Up to here no code is present to read the configuration files, parse them and send the output to the parameter\_broker;
+this is the target of the configuration\_manager.
+
+The configuration source in Echidna comes from 2 files and from command line; the explanation of the meaning of these
+sources as their format is left to \S\ref{sec:conffile}, here only some important informations are reported:
+\begin{enumerate}
+\item {\bf echidna.cfg} is the main configuration file organized as a sequence of {\bf stanzas}; each stanza contains 
+only the assignement of parameters for bx\_named and can be one of the following type:
+\begin{itemize}
+\item \code{named}: initialize the contained parameters for the bx\_named with the same name as the stanza
+\item \code{module}: as before but the bx\_named is added to the module list
+\item \code{config}: a user selectable configuration, containing values to be set for the contained parameters: parameters
+are {\bf fully qualified} (their name contain the bx\_named name with the syntax \code{bx\_named\_name.parameter\_name}). 
+When a configuration is selected the setting are applied after the initialization of the named/module stanzas. 
+The configurations override the default setting for bx\_named parameters.
+\end{itemize}
+\item {\bf user.cfg} is the user configuration file; it contains only fully qualified parameter assignements.
+\item {\bf command line} generates fully qualified parameter assignements with the highest priority.
+\end{enumerate}
+
+The configuration\_manger is created in the \mbox{\code{bx\_options::initialize\_echidna ()}} method, which send to it 
+the configuration file names and the command line parameters; then the configuration\_manager is ready to upload the 
+the parameter\_broker with the parameter with the following order:
+\begin{enumerate}
+\item initialization stanzas (named and module)
+\item configuration stanza for the current configuration (specified on command line)
+\item user configuration parameters
+\item command line parameters.
+\end{enumerate}
+The list of module names is also available to be sent to the bx\_module\_factory for the creation of 
+the modules, but before this the parameter\_broker pointer has to be stored in the bx\_named static pointer else
+no bx\_named object could be created (and thus modules)\footnote{An interesting hack is that the configuration\_manager
+inherits from the parameter\_broker; this way the configuration\_manager gets persistent as well as the broker and
+even if it is not requested it helps in debugging.}.

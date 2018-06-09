@@ -1,0 +1,187 @@
+/**
+ * @file BxMath.icc
+ * @brief Definitions of templated mathematical functions.
+ */
+
+// NOTE NOTE NOTE
+// We are careful not to apply any arithmetic operators on the
+// iterators passed in except equality comparisons (==, !=)
+// and increment (++).  This is to permit use even with iterators
+// on STL containers that don't permit random access.
+
+/**
+ * @brief Return a vector of the mean and the central moments of a given
+ * @brief distribution of numbers.
+ * @param begin Beginning iterator to the container of numbers.
+ * @param end Ending iterator to the container of numbers.
+ * @param highest_moment Highest moment to calculate (default 2, i.e. the variance).
+ * @param get_value If the iterator points to a class object wrapping the desired number, this functor should return the number.
+ * @return The (user-supplied) output vector of moments.  Element 0 is currently unused; element 1 is the mean; element N (N>=2) is the Nth central moment.
+ */
+template <typename TIterator, typename GetValueFunctor>
+std::vector<double>
+BxMath::get_distribution_moments(TIterator begin, TIterator end,
+    unsigned highest_moment, const GetValueFunctor & get_value)
+{
+  std::vector<double> moments;
+  if (! highest_moment) return moments;
+  
+  highest_moment++;
+  moments.clear();
+  moments.reserve(highest_moment);
+  std::fill_n(moments.begin(), highest_moment, 0);
+  if (begin == end) return moments;
+ 
+  unsigned n = 0;
+  for (TIterator i = begin; i != end; i++, n++)
+    moments[1] += get_value(*i);
+  moments[1] /= n;
+
+  if (highest_moment == 2) return moments;
+
+  for (TIterator i = begin; i != end; i++) {
+    double dt = get_value(*i) - moments[1], mult = dt;
+    for (unsigned j = 2; j < highest_moment; j++) {
+      mult *= dt;
+      moments[j] += mult;
+    }
+  }
+
+  for (unsigned j = 2; j < highest_moment; j++)
+    moments[j] /= n;
+
+  return moments;
+}
+
+// Version with default getter [get_value(x) --> x]
+template <typename TIterator>
+inline std::vector<double>
+BxMath::get_distribution_moments(TIterator begin, TIterator end,
+					     unsigned highest_moment)
+{
+  typedef typename std::iterator_traits<TIterator>::value_type value_type;
+  no_op<value_type> pass_thru;
+  return get_distribution_moments(begin, end, highest_moment, pass_thru);
+}
+
+/**
+ * @brief Return the value of the peak of a series of numbers.
+ * @brief We take the peak to be the time of the middle hit in the set of
+ * @brief 2 * (int)sqrt(n) + 1 consecutive hits that has the smallest time
+ * @brief difference between the first and last in the set.
+ * @brief WARNING Assumes the hits are already sorted by ascending time!
+ * @param begin Beginning iterator to the container of numbers.
+ * @param end Ending iterator to the container of numbers.
+ * @param get_value If the iterator points to a class object wrapping the desired number, this functor should return the number.
+ * @return Value of the peak (approximate mode) of the distribution.
+ */
+template <typename TIterator, typename GetValueFunctor>
+typename GetValueFunctor::value_type
+BxMath::get_peak(TIterator begin, TIterator end,
+		 const GetValueFunctor & get_value)
+{
+  typedef typename GetValueFunctor::value_type return_type;
+  if (begin == end) return (return_type)0;
+  unsigned n = 0;
+  for (TIterator i = begin; i != end; i++) n++;
+
+  unsigned peak_sample = 2 * (int)std::sqrt(1.0 * n) + 1;
+  return_type window[peak_sample];
+
+  unsigned j = 0;
+  TIterator i = begin;
+  for (; j < peak_sample && j < n; i++, j++)
+    window[j] = get_value(*i);
+
+  // If 5 or fewer hits, just return the median
+  if (n <= 5) switch (n) {
+    case 1: case 3: case 5: return window[n/2]; break;
+    case 2: return (window[0] + window[1]) / 2; break;
+    case 4: return (window[1] + window[2]) / 2; break;
+  }
+
+  return_type t_peak = window[(peak_sample - 1)/2], t_diff = window[peak_sample - 1] - window[0];
+  
+  for (; i != end; i++, j++) {
+    return_type current = get_value(*i);
+    window[j % peak_sample] = current;
+    return_type t_diff_test = current - window[(j + 1) % peak_sample];
+    if (t_diff_test < t_diff) {
+      t_peak = window[(j + 1 + peak_sample/2) % peak_sample];
+      t_diff = t_diff_test;
+    }
+  }
+  return t_peak;
+}
+
+
+//Second peak finding algorithm. Only change from above is that instead of returning the time of the middle hit it returns the mean time of all hits in the window. In this way, there need not necessarily be a hit at exactly the peak time. This is needed for the PositionCalibration module to make sure there is not an excess in the PDF histogram at t = 0.
+
+template <typename TIterator, typename GetValueFunctor>
+typename GetValueFunctor::value_type
+BxMath::get_peak2(TIterator begin, TIterator end,
+		 const GetValueFunctor & get_value)
+{
+  typedef typename GetValueFunctor::value_type return_type;
+  if (begin == end) return (return_type)0;
+  unsigned n = 0;
+  for (TIterator i = begin; i != end; i++) n++;
+
+  unsigned peak_sample = 2 * (int)std::sqrt(1.0 * n) + 1;
+  return_type window[peak_sample];
+
+  unsigned j = 0;
+  TIterator i = begin;
+  for (; j < peak_sample && j < n; i++, j++)
+    window[j] = get_value(*i);
+
+  // If 5 or fewer hits, n <= peak_sample, so just return the average
+  if (n <= 5) 	
+  {
+     return_type mean = 0;
+     for (unsigned i = 0; i < n; i++)	
+        mean = mean + window[i];
+     return mean/(return_type)n; 
+  }
+
+  return_type mean = 0;
+  for (unsigned i = 0; i < peak_sample; i++)
+      mean = mean + window[i];	
+  mean = mean/(return_type)peak_sample;
+	
+  return_type t_peak = mean, t_diff = window[peak_sample - 1] - window[0];
+  
+  for (; i != end; i++, j++) 
+  {
+    return_type current = get_value(*i);
+    mean = mean + (-window[j % peak_sample] + current)/(return_type)peak_sample;
+    window[j % peak_sample] = current;
+    return_type t_diff_test = current - window[(j + 1) % peak_sample];
+    if (t_diff_test < t_diff) 
+    {
+      t_peak = mean;
+      t_diff = t_diff_test;
+    }
+  }
+  return t_peak;
+}
+
+// Version with default getter [get_value(x) --> x]
+template <typename TIterator>
+inline typename std::iterator_traits<TIterator>::value_type
+BxMath::get_peak(TIterator begin, TIterator end)
+{
+  typedef typename std::iterator_traits<TIterator>::value_type value_type;
+  no_op<value_type> pass_thru;
+  return get_peak(begin, end, pass_thru);
+}
+
+// Version with default getter [get_value(x) --> x]
+template <typename TIterator>
+inline typename std::iterator_traits<TIterator>::value_type
+BxMath::get_peak2(TIterator begin, TIterator end)
+{
+  typedef typename std::iterator_traits<TIterator>::value_type value_type;
+  no_op<value_type> pass_thru;
+  return get_peak(begin, end, pass_thru);
+}

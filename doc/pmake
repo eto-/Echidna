@@ -1,0 +1,103 @@
+#! /usr/bin/perl -w
+# script to compile
+# use as a makefile
+
+use Env qw(TEXINPUTS XDVIINPUTS);
+
+$TEXINPUTS.="./pictures//:";
+$XDVIINPUTS.="./pictures//:";
+
+$target = (shift @ARGV || "dvi");
+
+# Clean
+if($target eq "clean") { clean(); exit(0); }
+
+$force = 0;
+if($target eq "f") { $force = 1; }
+
+# Main routine: compiles
+dvi($force);
+
+# XDVI
+if($target eq "x") { system("xdvi echidna_doc.dvi &"); }
+
+# PS
+if($target eq "ps") { 
+    if (!(-e "echidna_doc.ps") || -M "echidna_doc.ps" > -M "echidna_doc.dvi") { 
+	system("dvips -o echidna_doc.ps echidna_doc.dvi"); 
+    } else {
+	print "pmake: PS file is up to date.\n";
+    }
+}
+
+# PDF
+if($target eq "pdf") { 
+    if (!(-e "echidna_doc.pdf") || -M "echidna_doc.pdf" > -M "echidna_doc.dvi") { 
+	system("dvipdf echidna_doc.dvi echidna_doc.pdf"); 
+    } else {
+	print "pmake: PDF file is up to date.\n";
+    }
+}
+
+# HTML
+if($target eq "html") { 
+    if (!(-e "html")) { 
+	system("mkdir html"); 
+    }
+    system("latex2html -dir ./html echidna_doc.tex");
+}
+
+
+
+
+#dvi
+sub dvi {
+    $run = shift;
+    # check if xfig files require convertion
+    while (defined($full_name = glob("pictures/xfig/*.fig"))) {
+	($name, $ext) = split(/\./, substr($full_name, 14));
+	$eps_name = "pictures/".$name.".eps";
+	if (!(-e $eps_name) || -M $eps_name > -M $full_name) { convert($name); $run = 1;}
+    }
+    # check if tex files changed
+    while (defined($name = glob("*.tex"))) {
+	if (!(-e "echidna_doc.dvi") || -M $name < -M "echidna_doc.dvi") { $run = 1; }
+    }
+    # check if running after a clean: flag double running for cross references
+    if (!(-e "echidna_doc.toc"))  { $run = 2; }
+ 
+    # First run
+    if ($run) { $ret = system("latex echidna_doc.tex"); }
+    else { print "pmake: No Latex compilation required.\n"; }
+
+    # Compilation failed. Prepare next run
+    if ($ret) { 
+	print "\npmake: Abnormal Latex termination ($ret). Removing dvi and exiting...\n";
+	unlink ("echidna_doc.dvi"); # otherwise next run (after fix)
+	exit(1);
+    }
+
+    # Second run
+    if ($run == 2) { system("latex echidna_doc.tex"); }
+}
+
+#convert a fig file
+sub convert {
+    $name = shift;
+    $eps_name = "pictures/".$name.".eps";
+    $fig_name = "pictures/xfig/".$name.".fig";
+    system("fig2dev -L eps ".$fig_name." ".$eps_name); 
+}
+
+#clean
+sub clean {
+    unlink(<*.aux>, "echidna_doc.log", "echidna_doc.toc", "echidna_doc.dvi", "echidna_doc.ps", "echidna_doc.pdf", <*.*~>, "pmake~", <pictures/xfig/*.fig.bak>);
+    while (defined($name = glob("pictures/xfig/*.fig"))) {
+	($name, $ext) = split(/\./, substr($name, 14));
+	unlink("pictures/".$name.".eps");
+    }
+    if (-e("html")) {
+	system("rm -rf html");
+    }
+}
+

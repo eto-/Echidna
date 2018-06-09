@@ -1,0 +1,8 @@
+#!/bin/sh
+EXEFILE=./dbMon
+make distclean 1>/dev/null 2>&1
+qmake-qt4 dbMon.pro
+make
+echo "Project built, type ./dbMon to launch."
+#$EXEFILE 1>./output/out.log 2>./output/err.log
+#$EXEFILE $1 $2 $3 $4 $5 

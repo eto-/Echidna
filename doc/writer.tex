@@ -1,0 +1,43 @@
+\section{bx\_writer}
+\label{sec:writer}
+
+This is a special module regarded as part of the infrastructure of Echidna.
+
+This module handles the ROOT file, the ROOT tree and the ROOT event.
+
+It has the special \code{role=writer}.
+It is executed in the main loop after all other modules, i.e. it has the highest priority number.
+
+\subsection{ROOT file} 
+
+A \code{TFile} object is opened in the \code{begin()} method and closed in the \code{end()} method.
+The file name is tunable through a user parameter.
+The default is "auto", which means that file name will be composed with the std syntax featuring the run number.
+If a file with the name requested already exists, by default the program exits with a critic level message, 
+unless the proper user parameter to overwrite files is set to true.
+
+Outside the tree, the ROOT file holds also ROOT objects handled by the \code{bx\_root\_barn} (see \ref{sec:barn}).
+These are written in the \code{end()} method via \code{bx\_root\_barn::write()} method.
+
+
+\subsection{ROOT tree}
+
+A \code{TTree} object is created in the \code{begin()} method and written to file in the \code{end()} method.
+The ROOT \code{TTree} class is used, since there is no need to develop a dedicated class so far.
+
+A Single \code{TBranch} is created with the \code{BxEvent} class.
+Its splitting level\footnote{set to maximum by default.} and buffer size are tunable through user parameters.
+
+The \code{TTree} object is named ``bxtree'', while the \code{TBranch} object is named ``events''.
+
+
+\subsection{ROOT event}
+
+A single \code{BxEvent} is created in Echidna execution and echidna internal events (\code{bx\_reco\_event}) are copied onto this event before tree is filled.
+A technical explanation of this design can be found in \ref{sec:root_event}.
+
+The copy is performed in the \code{doit()} method just before \code{TTree::Fill()} is called. 
+It is achieved through the assigment operators defined for \code{BxEvent} class and all its subclasses. 
+
+A helper method \code{m\_parse\_options()} is in charge of reading all user parameters related to which data containers should enabled. 
+A struct is filled with these flags and passed to the event constructor.

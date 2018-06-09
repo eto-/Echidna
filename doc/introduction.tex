@@ -1,0 +1,113 @@
+\chapter{Introduction}
+\label{ch:intro}
+
+This is the full documentation of the Echidna project, the offline data processing software of the Borexino experiment.
+It is meant to be exaustive.
+Testers and plain users of the program may bettere jump to \sec{run}.
+Module developers may better read \sec{modules}.
+
+The Echidna is a small ant-eater that lives in Australia but Echidna is also the name of a mythological figure of ancient Greece, half woman and half snake she was the daugther of \ldots
+
+The project started in March 2004 and in about six months a working infrastructure was built.
+At the moment of writing, about 30 mdoules are operative covering most of the tasks listed above, many of which are currently being tested.
+
+\section{Physics tasks}
+\label{sec:intro_tasks}
+
+The main physics goals of the offline code are:
+\ben
+\item Predecoding (a.k.a. precalibration). Electronics speficic parameters computed for a given run or profile.
+\item Decodification of the raw information.
+  \ben
+  \item Decode GPS time for absolute time reference.
+  \item Laben hit time and charge must be inferred from ADC bins using precalibration and calibration data.
+  \item The same is true for outer muon hits from TDC bins.
+  \item For FADC the parallel operations are pedestal subtraction and the bulding of a digital sum of channels.
+    \een
+\item Clustering of hits into physical events and precise evealution of event start time. FADC must select the proper windows and provide redundant information.
+\item Vertex position reconstruction of the event.
+\item Splitting of overlapped events within a cluster.
+\item Reconstruction of the event energy.
+\item Computation of PID tags:
+  \ben
+  \item \albe discrimination.
+  \item Muon tagging.
+  \item Sphericity of the event and other geometrical parameters.
+  \een
+\item Muon track reconstructions.
+\item Calibration tasks:
+  \ben 
+  \item Single channel calibration: timing and charge for ID and OD.
+  \item Dark rate of PMTs.
+  \item Scintillator and water quality evaluation.
+  \item Electronics status evaluation.
+  \item Calibration system auto-monitor.
+    \een
+\een
+and the list is of course not exaustive, nor it can accounts for new ideas being delivered every month as the work proceed.
+
+
+\section{Design principles}
+\label{sec:intro_design}
+
+The guiding principles of the design are:
+\bde
+\item[Modulary]. 
+  The physics algorythms are organized into indipendent modules with a fixed intarface and run by a general engine. 
+  The main engine and large set of ancillary routines constitute the \emph{infrastructure} of the program.
+
+\item[Data protection]. 
+  Every module is assigned an area with an event class of which it is responsible and it is not allowed (i.e. compilation fails) to write elsewhere. 
+  In this way it is immediately possible to track a bug or a mis-computed parameter to its very source.
+
+\item[Use of ROOT]. 
+  The collaboration agreed that the official analysis platform in use in Borexino is ROOT\cite{???} . Echidna therefore produces its output as a standard ROOT file. 
+
+\item[Use of Database.] 
+  The program is able to access all sort of required information (mapping, geometry, calibration, fluid handling) from the Borexino database.
+  A few tables (e.g. precalibration) are also written by echidna.
+
+\item[Single language: C++]. 
+  A robust offline program had to be coded using one programming language only and the most natural choice was C++ as it is the language used by ROOT and by its interpreter.
+  Moreover the Postgres database to which the program interfaces provides API for C++ and not for Fortran.
+
+\item[\emph{Object-Oriented} (OO) programming]. 
+  This design phylosphy comes pretty natural in C++ and constitutes an advantage in enforcing modularity and data protection. 
+  However there are different degrees to which it can be pushed and it was decided that the accessibility of the code to a large group of developers was a higher requirement then a truly orthodox OO programming style. 
+
+\item[Network oriented.] 
+  Database and rawdata files are accessed over TCP/IP at run time from the DB sever and the disk storage in Gran Sasso\footnote{
+    In the future it is foreseen building a mirror in the Lion (France) in2p3 computing facility.} respectively.
+  Local copies are needed only if running of an isolated machine.
+\ede
+
+
+\section{Organization}
+\label{sec:intro_cycles}
+
+\simfig{cvs_branches}{0.9}{The time evolution of Echidna working cycles.}
+
+The working group is composed of about twenty collaborators, equally distributed among \emph{developers} and \emph{testers}.
+
+Testers have a fundamental role: they have to understanding the module algorythm (from documentaion, without readinbg the code), 
+produce a set of relevant simulated and/or real data and perform a list of tests on the module behaviour, finally filling a written report to be archived. 
+
+Every module is assigned a maintaner (usually the author) and a tester.
+
+The interaction among developers working parallely is handled with CVS\footnote{\emph{Concurrent Version System}, a standard tool for this goal\cite{???}.} 
+and the code is stored in the official Borexino CVS repository in Gran Sasso.
+
+Under the guide of a project manager, the work is organized in production cycles lasting about 2 months.
+Each cycle includes:
+\bde
+\item[Meeting]. Every cycle starts with a meeting where the \emph{Request-For-Changes} (RFCs) proposed by any co-worker are discussed, approved and scheduled.
+\item[Development]. Then a development period of about 6 weeks follows, during which documentation of the code produced must be also supplied and/or updated.
+\item[Branch spawning]. When all scheduled tasks have been accomplished the project manager decides to ``freeze'' the code in a parallel CVS branch.
+\item[Tests]. A this point testing and debugging occurs on the parallel branch (about 2 weeks), while the main branch remains avalable for further development.
+\item[Merging]. At the following cycle meeting testers report on the past branch and if everything is in order the two branches are merged back into one before the next development period starts. 
+\ede
+
+\bfig
+\includegraphics[angle=90, width=\textwidth]{ech_scheme.eps}
+\capfig{scheme}{Echinda general scheme.}
+\efig

@@ -1,0 +1,65 @@
+ECHIDNA CYCLE_XX REPROCESSING: 
+	First run:  5007
+
+1) 	DOWNLOAD AND BUILD ECHIDNA as your_user in cnaf
+	mkdir install_cXX (XX is the cycle number of Echidna you want)
+	cd install_cXX
+	cvs co -r cycle_XX offline
+	cd offline/Echidna
+	cd setup/cnaf
+	./setup.sh
+	. /opt/exp_software/borexino/root32/v5-34-24/bin/thisroot.sh (it's now .bashrc default)
+	make -j5
+	cd tools
+	make fix_db (usually: "`fix_db' is up to date.")
+
+2) 	INSTALL ECHIDNA
+	In directory /storage/gpfs_data/borexino/users/borexinoprd
+	sudoprod
+	mkdir Echidna_reprocessing_cXX
+	cd Echidna_reprocessing_cXX
+	/storage/gpfs_data/borexino/users/your_user/install_cXX/offline/Echidna/tools/install.sh $PWD
+	
+4)	MODIFY echidna.cfg
+	vim echidna.cfg
+	force_write 1			# force db write
+   
+3) 	SCHEDULING THE REPROCESS
+	In directory Echidna_reprocessing_cXX/Reprocessing_tools
+	A - obtain the list of actual valid runs:
+	    ./get_ValidRunsEvents.pl <daq_year> (daq_year:2007,.....,2015)
+
+	B - prepare the reprocessing command list:
+	    ./prepare_reprocessing.pl <Input_list>
+	    the input list comes from point A. Type ./prepare_reprocessing.pl for options.
+
+	    A shell script will be created (default: process_normal_runs.sh). 
+	    It is a list of bx_process commands: by using the =valid option, only the validated runs 
+	    with the correct number of validated events will be selected.
+	    This information is directly read from the bx_runvalidation data base.
+	    Type ./bx_process.pl for the complete list of available options
+
+	    N.B. If you are using the =valid option as above you CAN'T specify the event number by the 
+	         -e Echidna option. You need to use =max_events option instead.
+
+4)	SUBMITTING THE REPROCESS
+	In directory Echidna_reprocessing_cXX/
+	nohup ./massive_submitter_CNAF.pl process_normal_runs.sh &
+
+	this script reads the command in process_normal_runs.sh and submit them if the batch queues are
+	free enough; the output is written in nohup.out; take a look at this file sometimes to see whether 
+	the reprocessing is going on.
+
+	The list of bx_process command for calibration source runs (2008, 2009 runs) is in
+	Echidna_reprocessing_cXX/Reprocessing_tools/Source_Reprocessing/process_source_runs.sh
+
+5) 	CHECK THE RESULTS OF THE REPROCESSING and UPLOAD INTO THE STORAGE
+	In directory Echidna_reprocessing_cXX/
+	./check_upload_normal_cnaf.pl
+
+6)	RE-REPROCESS FAILED RUNS
+	In directory Echidna_reprocessing_cXX/Reprocessing_tools
+	mv ../failed_runs_cXX.txt .
+	
+	Follow the procedure from point 3B:
+	./prepare_reprocessing.pl failed_runs_cXX.txt 

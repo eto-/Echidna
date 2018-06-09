@@ -1,0 +1,37 @@
+Borexino experiment.
+Echidna project.
+Official documentation.
+
+This directory can be compiled with the perl script "pmake".
+Its use is very similar to standard make.
+
+1) To produce dvi file:
+ $ pmake (dvi)
+
+2) To produce dvi file and view it with xdvi:
+ $ pmake x
+
+3) To produce ps/pdf file
+ $ pmake ps
+ $ pmake pdf
+
+4) To produce html directory
+ $ pmake html
+
+5) To clean up
+ $ pmake clean
+
+pmake handles automatically the eventuality to run latex twice 
+to get cross-references right. 
+If, however, further compilation is required it can be forced with:
+
+ $ pmake f
+
+
+
+FIGURES:
+Directory "pictures" should contain directly only "eps" files.
+If you add a figure with xfig, please put ONLY the ".fig" file in 
+"pictures/xfig". 
+The relative eps file will generated automatically by pmake upon compilation. 
+

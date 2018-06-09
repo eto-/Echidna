@@ -1,0 +1,42 @@
+\section{Precalibration: Muon}
+\label{sec:precalib_muon}
+
+The outer detector requires two precalibration modules.
+They must run in order, in two successive precalibration cycles.
+
+\subsection{bx\_precalib\_muon\_findpulse}
+
+This module simply finds the time\footnote{All times used in precalibration are raw times, i.e. they are unsigned long values expressed in TDC ticks (1.0416ns).} 
+of the precalibration pulse in the TDC time window. 
+The information in used by the \code{bx\_precalib\_muon\_pedestals} module.
+
+It uses a single private \code{std::vector<unsigned long>} as a time histogram for all channels together.
+In the \code{doit()} method the vector is filled with lead times of ordinary channels.
+In the \code{end()} method custom algorythms from algorythms.hh are used to make compuations.
+Mean value is written to appropriate \code{db\_run} variable.
+
+\code{b\_has\_data} is used to prevent unnecessary computation.
+
+\subsection{bx\_precalib\_muon\_pedestals}
+
+This module computes QTC pedestals for every outer muon channel.
+The information is used for charge computation by \code{bx\_muon\_decoder}
+
+It uses a private \code{std::vector<unsigned long>} as a histogram for each channel.
+In the \code{doit()} method the vectors are filled with relative times differenses (lead-trail).
+
+3 filters are applied in the following order:
+\begin{enumerate}
+\item Channel type. Only ordinary channels are processed.
+\item Pulse time. Only pulses falling within a tolerance from the preclibration time are accepted.
+Precalib pulse time comes from previous precalibration and is retrieved through \code{db\_run} object.
+Tolerance is set through user parameter \code{precalib\_pulse\_tolerance}.
+\item Pulse width. Only pulse falling between min and max values are accepted. 
+A Warning is generated for pulses falling outside.
+Min and max values are set through user parameters (\code{min\_pedestal\_width} and \code{max\_pedestal\_width} respectively).
+\end{enumerate}
+
+In the \code{end()} method custom algorythms from algorythms.hh are used to make computations.
+Mean value is written to appropriate \code{db\_run} variable for every ordinary channel.
+
+\code{b\_has\_data} is used to prevent unnecessary computation.

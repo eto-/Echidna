@@ -1,0 +1,25 @@
+$Id: README,v 1.1 2005/01/28 13:17:02 pallas Exp $
+M. Pallavicini - created 27-01-05
+===================================================================
+This directory contains some examples of root macros that performs 
+simple and usual operations on the Borexino Echidna root file.
+
+Each macro is reasonably commented, therefore this document gives
+just a very brief description of each one
+
+To run a macro, you have to perform the following operations:
+
+root
+.L libechidna.so
+.L macroname.C
+macroname(optional parameters depending on macro)
+
+1. PlotExample1.C
+	Simple plot of the trigger type
+
+2. PlotExample2.C
+   	Simple plot of the difference between geneb energy and reconstructed 
+	nominal energy defined as number of pmts / 300.
+	To be used with Geneb montecarlo data only!
+
+

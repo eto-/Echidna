@@ -1,0 +1,82 @@
+\section{Event Structure}
+\label{sec:event_structure}
+
+This section describes only the event structure used internally by echidna.
+For the root event structure see \sec{root_event} and \sec{root_event_for_users}.
+
+In this section two concepts are introduced:
+\begin{description}
+\item{\emph{detector segment}.}
+This refers to different components that reflect the Borexino detector structure: ``trigger'', ``laben'', ``muon'', ``fadc'' (flash adc).
+Two more segments, ``mctruth'' (Monte Carlo truth) and ``pid'' (particle ID) are also present that do not correspond to a physical DAQ sub-system.  
+\item{\emph{reconstruction stage} and \emph{reconstruction step}.}
+These refer to the iter the event is undergoing in the program. 
+A step brings the event into its next stage.
+Reconstruction steps can be: deocoding, clustering, splitting, reconstruction, pulse shape discrimination, ...
+Reconstruction steps can be: raw, decoded, clustered, split, reconstructed, discriminated, ...
+A module is normally in charge of performing a reconstruction stage.
+Different detector segmentss may have different reconstruction steps/stages.
+\end{description}
+
+At the moment of writing the structure is not yet frozen; 
+particularly it is under discussion the possibility of adding a pseudo-segment called ``global\_event'' 
+to collect high level information not related to a particular detector segment.
+
+\bfig
+\includegraphics[angle=270, width=\textwidth]{event_structure.eps}
+\capfig{event_structure}{Echidna internal event structure.}
+\efig
+
+\subsection{Event Classes}
+
+The event structure is depicted in figure \ref{fig:event_structure}.
+The most general class in this context is the \code{bx\_echidna\_event}.
+This class hosts the event header information and provides relative getters.
+Examples of these are the event number, the run number, the crates enabled at run time, ...
+
+Then this class holds 6 objects, one for each detector segment:
+\ben
+\item \code{bx\_trigger\_event}
+\item \code{bx\_laben\_event}
+\item \code{bx\_muon\_event}
+\item \code{bx\_fadc\_event}
+\item \code{bx\_pid\_event}
+\item \code{bx\_mctruth\_event}
+\een
+
+Every one of the above class inherits from different classes, each one containing information relative to a different reconstruction stage appropriate to that detector segment.
+For example the bx\_laben\_event inherits from:
+\begin{itemize}
+\item \code{bx\_laben\_raw\_event}
+\item \code{bx\_laben\_decoded\_event}
+\item \code{bx\_laben\_clustered\_event}
+\item \code{bx\_laben\_rec\_event}
+\end{itemize}
+
+\subsection{Hit Classes}
+ 
+If appropriate a hit class is defined for each reconstruction stage.
+In this case the event class holds a vector of these hits.
+For example class \code{bx\_laben\_decoded\_event} holds a \code{std::vector<bx\_laben\_decoded\_hits>}, while the getter:
+
+'\code{const bx\_laben\_decoded\_hit\& bx\_laben\_decoded\_event::get\_hit(int i);}' 
+
+returns the hit \#i.
+
+Since the module performing a given reconstruction step may decide to discard hits according to its own criterion, vector of hits in successive reconstruction stages may be disaligned.
+For this reason the index is not a good key to retrieve correlated information. 
+Instead every hit class has a pointer to its correlated hit in the previous stage.
+
+In addition decoded hit classes have pointers to a \code{db\_channel} object containing database information on the relative channel.
+These pointers are assigned by the decoder module the first one in the main loop, therefore they are not available during precalibration.
+
+\subsection{Clusters, Fragments, Windows}
+
+Starting with clustered stage, laben hits are organized in clusters (up to 3 per event) according to the result of clustering modules.
+Hits not belonging to any cluster are discarded in this step. 
+Clusters refer to physical events within the Borexino trigger gate that are not piled up, i.e. whose time separation is not below 150ns.
+Depending on the performance of the splitting module (in development at the time of writing) clusters may be traduced in fragments at a later stage, where also piled up physical events are separeted.
+
+Fadc data are ``naturally'' (i.e. by the daq) organized in windows. 
+Windows contain channel objects in early reconstruction stages. 
+Clustering for this detector segment limits windows to the 3 most significant ones, hopefully aligned with laben clusters. 

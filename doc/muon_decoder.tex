@@ -1,0 +1,34 @@
+\section{bx\_muon\_decoder}
+
+This module performs the decoding of muon data. It requires the muon part of the event to be in the raw stage.
+It is friend of the \code{bx\_muon\_decoded\_event} and \code{bx\_muon\_decoded\_hit} class.
+At the end of the work the muon event is marked into \code{decoded} stage.
+
+Currently neutrino trgtypes and laser394 trgtypes are handled by two indipendent helper methods:
+\begin{enumerate}
+\item \code{m\_process\_physics\_event()}
+\item \code{m\_process\_laser\_event()}
+\end{enumerate}
+All other trigger types are discarded with a warning level message.
+
+Possibly the laser event processing will be moved to a dedicated calibration module.
+
+\subsection{physics}
+
+Time is evaluated to TDC gate opening (1 << 13 ticks before trigger), in nanoseconds\footnote{through constant \code{constants::muon::tdc::ns\_per\_clock}}.
+Correction for PMT time offset is not yet applied since calibration are not yet completed.
+Hits outside the gate (improbable) are discarded.
+
+Charge is evaluated as the TDC time difference (lead-trail), pedestal subtracted, and currently converted in pe with constants measured for 1 QTC channel.
+As soon as calibrations will be completed, this will be changed accordingly.
+
+\subsection{laser}
+
+A first quick loop on hits finds the reference channel.
+If this is not found the method return with an error level message. 
+
+Time is evaluated as time from LED reference pulse, in nanoseconds\footnote{through constant \code{constants::muon::tdc::ns\_per\_clock}}.
+Hits coming before reference pulse are discarded (as well as improbable out of gate hits).
+
+Charge is evaluated as the TDC time difference (lead-trail), pedestal subtracted, and currently converted in pe with constants measured for 1 QTC channel.
+The charge calibration strategy is still to be defined

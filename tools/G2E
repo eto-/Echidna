@@ -1,0 +1,114 @@
+#!/usr/bin/perl 
+
+#################################################################################
+#
+# 			G2E:  Geant4 to Echidna Script
+#
+#################################################################################
+# Author: Davide Franco <Davide.Franco@mi.infn.it>
+# Maintainer: Davide Franco <Davide.Franco@mi.infn.it>
+#################################################################################
+#
+# 			          HOWTO
+#
+# Script to run in sequence (and in batch) geant4, bx_elec and echidna.  
+# The input and output files required by geant4, bx_elec and echidna will be 
+# automatically created by G2E based on the configuration filename defined by  
+# the user.
+#
+# To run only one process:  
+# - copy the example configuration file "example.dat.ori" to a filename.dat
+# - modify the options in filename.dat
+# - run  "./G2E filename.dat"
+#
+# To run multiple processes:
+# - create several filename.dat (a1.dat ... aN.dat)
+# - run "./G2E a1.dat aN.dat" or "./G2E *.dat"
+#
+#################################################################################
+
+
+$home          = "$ENV{HOME}";
+
+# Uncomment the next line to set the output path
+#$out_path      =  '/tracking/laser';
+
+foreach $filename (@ARGV) {
+  $inputfile	 = $filename;
+  $filename      =~ s/.dat$//;
+  $filename      =~ s/^.*\///;
+  print "Running $filename\n";
+  
+
+  $offline_pwd   = "$home/offline";
+  $echidna_pwd   = "$home/Echidna";
+  $geant4_pwd    = "${offline_pwd}/geant4/Linux-g++";
+
+  $offline_cmd   = "./go_bx_elec.sh";
+  $echidna_cmd   = "./echidna";
+  $geant4_cmd    = "./borlight";
+
+  $Geant4Mac     = "${filename}.mac";
+  $InputFileList = "${offline_pwd}/input/${filename}_input.txt";
+  $UserBxElec    = "${filename}_user_bx_elec.dat";
+ if(!$out_path) {
+  $Geant4Out     = "${geant4_pwd}/${filename}_g4.fil";
+  $BxElecOut     = "${offline_pwd}/${filename}_out.gz";
+  $EchidnaOut    = "${filename}.root";
+ } else {
+  $Geant4Out     = "${out_path}/${filename}_g4.fil";
+  $BxElecOut     = "${out_path}/${filename}_out.gz";
+  $EchidnaOut    = "${out_path}/${filename}.root";  
+ }
+ 
+  print "$Geant4Out\n$BxElecOut\n$EchidnaOut\n";
+  unlink("$Geant4Out");
+  unlink("$BxElecOut");
+  unlink("$EchidnaOut");
+   
+  @mac = (); @elec_input = (); @elec_user = ();
+  open(IN,"$inputfile ");
+   while(<IN>) {
+     if(/StartGeant4/     ..  /StopGeant4/   )  {push(@mac,$_);        }
+     if(/StartElecInput/  ..  /StopElecInput/)  {push(@elec_input,$_); }
+     if(/StartElecUser/   ..  /StopElecUser/ )  {push(@elec_user,$_);  }
+   }
+  close(IN);
+
+  open(MAC,">${geant4_pwd}/${Geant4Mac}");
+  open(INP,">${InputFileList}");
+  open(USE,">${offline_pwd}/${UserBxElec}");
+    foreach $mac  (@mac)  {   
+       if($mac =~ /StartGeant4/)       {print MAC "\/Borex\/output $Geant4Out\n";}
+       print MAC "$mac";
+    }
+
+    foreach $elec_input  (@elec_input)  {   
+       if($elec_input =~ /MaxEvents/) {print INP "BinaryFile: $Geant4Out\n";}
+       print INP "$elec_input";
+    }
+
+    foreach $elec_user  (@elec_user)  {   
+       if($elec_user =~ /Run/) {print USE "InputFileList: ${InputFileList}\n";
+   				print USE "OutputFile:    $BxElecOut\n";}
+       print USE "$elec_user";
+    }
+  close(MAC);
+  close(INP);
+  close(USE);
+
+  open(RUN,">runner_${filename}.sh");
+  print RUN<<EOF ;
+#!/bin/bash
+cd $geant4_pwd
+$geant4_cmd $Geant4Mac
+cd $offline_pwd 
+$offline_cmd $UserBxElec
+cd $echidna_pwd
+$echidna_cmd -f $BxElecOut -o $EchidnaOut
+EOF
+
+  close(RUN);
+system("chmod a+x runner_${filename}.sh");
+system("qsub -k oe -q geant ./runner_${filename}.sh") 
+}

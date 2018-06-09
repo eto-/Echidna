@@ -1,0 +1,265 @@
+\section{Modules Programmer's Guide}
+\label{sec:modules}
+
+From the point of view of event processing, echidna's execution is organized as a sequence of modules.
+The events are going from input file to output file through this sequence of modules and they become richer of information at every step.
+So a module is a ``routine'' that performs a specific task on the event and adds the results of its work to the event itself.
+
+The \code{bx\_test\_module} is present in \code{Echidna/modules} as a simple example. Check it out while reading this section.
+
+The infrastructure takes care of everything that is not related to event processing
+so that a module has easy access to any piece of information it may need.
+
+
+\subsection{Technically speaking...}
+
+A module is a persistent object of a specific class.
+It is initialized and handled by the framework (see \ref{sec:framework}).
+Only one istance of any module class can exist in the running program.
+
+A module must inherit from a pure virtual base class named \code{bx\_base\_module} which defines the interface and provides a few useful features.
+The interface of a module is fixed.
+
+
+\subsection{Co/de-structors}
+
+A module must declare a constructor and a descructor, public and explicit:
+\begin{itemize}
+\item \code{bx\_my\_module();}
+
+no argumets taken.
+
+\item \code{virtual \~\ bx\_my\_module () \{\}}
+
+no argumets taken. It is virtual for technical reasons. Usually Empty.
+
+\end{itemize}
+Constructor's implementation must look like:
+
+\small{\code{bx\_my\_module::bx\_my\_module\(\) : bx\_base\_module("bx\_my\_module", bx\_base\_module::main\_loop)~\{...\}}}
+
+where:
+\begin{itemize}
+\item \code{"bx\_my\_module"} is the name of the module in a C-like string. 
+This is chosen by the programmer according to echidna name conventions (\ref{sec:names}) and should be identical to the class name.
+\item \code{main\_loop} is instead the role as explained in \ref{sec:framework}.
+\code{main\_loop} identifies most of the modules. The only other role a physics module can be registered with is \code{precalib\_cycle\#}
+(with \code{\# = 1,2,3} or \code{4}). In this case it will be executed during one of the four precalibration cycles, rather then in the main loop. 
+Calibration modules have role \code{main\_loop}. A module cannot have more then one role. Other roles exist but are reserved for special modules.
+\end{itemize}
+The constructor body should remain empty\footnote{Apart from requirement secifications described in \ref{sec:requirements}.} 
+and allocation/initialization of eventual internal resources should take place in the begin method described below.
+If it is believed a module needs to allocate/initialize something in constructor, the framework coordinator should be informed before the module is committed to cvs.
+
+
+\subsection{Interface}
+
+In addition a module must implement 3 public methods:
+\begin{enumerate}
+\item \code{virtual void begin ();}
+
+executed before the loop on events starts. Iniatialization of resources should take place here.
+\item \code{virtual bx\_echidna\_event* doit (bx\_echidna\_event *ev);}
+
+executed for every event in the loop. It is the place where the real work must go.
+
+\item \code{virtual void end ();}
+
+executed after the loop on events has terminated. Resources allocated in the \code{begin()} method must be released here.
+Precalibration and calibration modules will most likely have also a consintent amount of computing here, while other modules generally not.
+\end{enumerate}
+
+The names \code{begin()} and \code{end()} are the ones found in most C++ STL conteiners for methods returning iterators to the first and last element. 
+This is incidental and shoud not confuse the reader.
+
+They are defined as virtual because they are inherited from \code{bx\_base\_module}, but the developer doesn't need to care about this. 
+The work of the module developer is mainly to implement these 3 methods.
+
+The interface of the module described so far cannot be broken for any reason, i.e. the ``public:'' section of the header file cannot be modified, not event to add a method.
+
+
+\subsection{Implementation}
+
+The private part of the module class is left completely to the developer. Resources that are needed among different methods calls can be placed here. 
+They must be allocated and initialized in the \code{begin()} method and released in the \code{end()} method.
+Helper methods can also be placed here. 
+
+Modules registered with \code{role==main\_loop} usually will have most of the work done in the \code{doit()} method
+without any need to store information or allocate resources in itself.
+the \code{doit()} method receives as argument a \code{bx\_echidna\_event* e}.
+From this pointer the user should obtain:
+\begin{enumerate}
+\item  a const reference to read from, e.g.:
+
+  \code{const bx\_laben\_event\& er = ev->get\_laben();}
+
+  this is a reference to the detector segment the module is related to. 
+  Of course, if interested, a module can similarly obtain references also to other event segments and read any piece of information it likes
+  \footnote{This will be the behaviour of modules that perform high level analysis and that will need to combine information coming from different detector segments.}.
+  There is no need to refer to a specific reconstruction stage for reading, 
+  since overloading of getter names is not allowed in the event classes and all getters are available from the derived class.
+\item a non-const reference to write to, e.g.:
+
+  \code{bx\_laben\_decoded\_event \&ew = dynamic\_cast<bx\_laben\_decoded\_event\&>(ev->get\_laben\_const());}
+
+  this is a reference to the only class where the module is allowed to write to (through a \code{friend} declaration in it); 
+  it refers to the reconstruction stage to which the module has to bring the event. 
+  It is, of course, specific to the detector segment of interest.
+\end{enumerate}
+  It is mandatory to contact the event mantainer BEFORE starting to develop the module in order to have him parallelly develop the area where to write.
+
+\subsection{Reading from database}
+
+A module will almost certainly need information coming from the database, but in fact it doesn't need to care about the database itself.
+The bx\_dbi class performs any db related operation and provides informations to modules through:
+\begin{itemize}
+\item \code{const db\_run\& run\_info = bx\_dbi::get ()->get\_run ();}
+\item \code{const db\_profile\& profile\_info = bx\_dbi::get ()->get\_profile ();}
+\item \code{const db\_calib\& calib\_info = bx\_dbi::get ()->get\_calib ();}
+\end{itemize}
+where db\_run, db\_profile and db\_calib are classes containing respectively run, profile and calib\_profile related information
+\footnote{Check Echidna/interface/db\_run.hh, Echidna/interface/db\_profile.hh and Echidna/interface/db\_calib.hh to see which getters are available.}.
+If a module requires a piece of information that is not yet part of these two classes, the developer should ask the interface coordinator to implement its readout.
+
+\emph{For no reason whatsoever a module is allowed to connect to database by itself.}
+
+If needed, a run/profile/calib\_profile number can be specified as argument to \code{get\_run()}, \code{get\_profile()} and \code{get\_calib()}; if not (like above), current run, profile and calib\_profile are used.
+
+
+\subsection{Precalibration and calibration modules}
+
+Modules performing precalibration and calibration tasks generally do not need to write to any event portion since the information they compute is global (i.e. it is not event related).
+Therefore they do not need the \code{ew\&} to write to.
+
+Instead they need to write to the database. For this operation (usually performed in the \code{end() method}), they need to retrieve the above reference(s) as non-const:
+
+\begin{itemize}
+\item \code{db\_run\& run\_info = bx\_dbi::get ()->get\_run ();}
+\item \code{db\_profile\& profile\_info = bx\_dbi::get ()->get\_profile ();}
+\item \code{db\_calib\& profile\_info = bx\_dbi::get ()->get\_calib ();}
+\end{itemize}
+
+and call relative setters\footnote{Check Echidna/interface/db\_run.hh, Echidna/interface/db\_profile.hh and Echidna/interface/db\_calib.hh to see which setters are available.}.
+Access is restricted trough the \code{db\_acl} classes, so the intention to write a given variable should be agreed with the interface coordinator in order to have the module allowed to call the setter.
+The ptr \code{this} is passed as last argument of the setter as a sort of ID card:
+
+\code{run\_info.set\_my\_variable(channel, value, this);}
+
+Since these modules do intense computing in the \code{end()} method they need to check there if any relative data is present, otherwise they can waste CPU time.
+This check is achieved through the variable 
+
+\code{bool b\_has\_data;} 
+
+inherited (and initilized to \code{false}) from \code{bx\_base\_module}.
+The \code{doit()} method should set it to \code{true} is any data is found and the \code{end()} method should check it before performing any operation.
+
+
+\subsection{Using parameters}
+
+You may want to allow the user to influence the behaviour of your module with one or more parameters (see \ref{sec:parameters}). 
+For doing this, you may use two methods inherited from \code{bx\_base\_module}\footnote{To be precise \code{bx\_base\_module} inherits them from \code{bx\_named}}:
+\begin{enumerate}
+\item
+  \code{const vdt\& get\_parameter (const std::string\& par\_name) const;}
+
+  This allows you to retrieve the parameter value as a vdt\footnote{\emph{variable-data-type.} A smart union-like object that can hold different basic types. Check \ref{sec:vdt} for its usage.} object. 
+  It throws an exception if parameter has never been set, so be sure you add also a default value for any new parameter (see below).
+
+\item
+  \code{bool check\_parameter (const std::string\& par\_name) const;}
+
+  This checks if parameter has ever been set and should be used before the previous one if the possibility of having thrown the exception is not wanted
+
+\end{enumerate}
+
+Parameters can be set in three ways of incresing priority.
+\begin{enumerate}
+\item
+  via the echidna.cfg file. This should be always done, a warning is generated otherwise.
+  This is a complex file that involves configurations. Check \ref{sec:parameters} for details.
+
+\item
+  via the user.cfg file adding a line with the syntax: 
+
+  \code{module\_name.parameter\_name value}
+
+\item
+  via command line with option \code{-p module\_name.parameter\_name value}
+
+\end{enumerate}
+
+Parameter values can be any basic C++ type.
+
+\subsection{Specifying requirements (and marking stages)}
+\label{sec:requirements}
+
+A module has the possibility to specify a requirement in its constructor. 
+If the requirement is not met the \code{doit()} method will not be called in the event loop\footnote{For technical reasons, the \code{begin()} and \code{end()} methods will be executed anyway.}.
+Two kind of requirement are possible
+\begin{enumerate}
+\item event stage.
+  You may require that a given event segment is in the correct event stage or, in other words, that logically preceeding modules have been run on the event segment of interest.
+  The syntax is the following:
+
+  \code{require\_event\_stage (bx\_base\_module::laben, bx\_base\_event::raw);}
+
+  check \code{bx\_base\_module.hh} and \code{bx\_base\_event.hh} for possible enum values.
+
+  Please note that if a detector segment was not enabled at daq time, its relative event segment will not even enter \code{raw} stage, 
+  so using a requirement like the one above ensures that the module is not using resources when the rawdata file holds no data relative to it. 
+  This is therefore strongly encouraged. 
+
+\item trigger type.
+  You may also require that your module is executed only on events with a specific trigger type.
+  The syntax is the following:  
+
+  \code{require\_trigger\_type (bx\_trigger\_event::neutrino);}
+
+  check \code{bx\_trigger\_event.hh} for possibile enum values.
+
+\item marking stages.
+  A module will usually enrich the event with information that can be used by other modules.
+  In this case at the end of the \code{doit()} method, just before returning (with success), the achieved event stage should be marked:
+
+  \code{ev->get\_laben ().mark\_stage (bx\_base\_event::baricentered);}
+
+  Developers should contact event mantainer in order to include an appropriate enum value in \code{bx\_base\_event.hh} file.
+
+\end{enumerate}
+
+\subsection{Using messages}
+
+Among the rich inheritance a module recieves from \code{bx\_base\_module} there is also the message interface.
+To print a message from within a module it is enough to call:
+     
+\code{get\_message(bx\_message::warn) << "I love you so much" << dispatch;}
+
+where \code{bx\_message::warn} is the msg level\footnote{Msg levels are the std ones: debug, info, warn, error, fatal.} and \code{dispatch} is a function object\footnote{if you don't understand this word, don't worry just use it like in the example.} that determins the dispatching of the msg to the messenger.
+
+The \code{get\_message()} method returns a reference to an initialized \code{bx\_message}, so a multiline message must be produced like this:
+
+\noindent\code{
+  bx\_message \&msg = get\_message (bx\_message::warn);\\
+  msg << "I love you so much ...";\\
+  msg << "expecially when I'm drunk" << dispatch;\\ 
+}
+
+The messages are printed to std and/or to log file according to the verbosity of the program (see \ref{sec:custom_options}).
+Alternativelly the user can determine the printouts of a specific module, setting the \code{print\_level} and the \code{log\_level} parameters.
+
+For more details upon messages in echidna, see \ref{sec:messages}.
+
+\subsection{Saving histograms}
+
+A module should always register any ROOT object it uses by the root barn (see \ref{sec:root_barn}) with the following syntax:
+
+\code{bx\_root\_barn::get ()->store (bx\_root\_barn::test, my\_histo, this);}
+
+where \code{my\_histo} is pointer to a valid object inheriting from TObject ROOT class (e.g. TH1F, TH2F, ...).
+
+Objects registered in this way will be present in ROOT file in the ``Test results'' folder within a subfolder named like the module.
+If a developers want to use ROOT objects without dumping them to file, the enum value \code{bx\_root\_barn::junk} should be used insetad of the above.
+Using ROOT objects without registering them to the root barn can lead to name space pollution and is therefore forbidden.
+Deleting these objects is done by the root barn, the user must not do it himself.
+
+\emph{Important:} Histograms use resources (CPU time, disk space and expecially RAM at run time), no matter whether they are written to file or not, therefore their use should be limited to plots which could not be easily produced using tree information or to computational cases (use of TMinuit for example), a useless waste of resources occurs otherwise.

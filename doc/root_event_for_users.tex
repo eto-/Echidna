@@ -1,0 +1,1416 @@
+\section{Root Event}
+\label{sec:root_event_for_users}
+
+This section describes the structure of the ROOT event in detail and from the user point of view.
+The type, name and meaning of all variables is reported here.
+For details of the implementation and reasons for design choices see \sec{root_event}.
+
+\subsection{Getting started}
+
+After opening ROOT you need to load the echidna ROOT library, before you attempt to open the ROOT file.
+Assuming you work in the \code{Echidna} directory, there are three ways to load the library:
+\ben
+\item Manually in CINT\footnote{The ROOT interactive C++ interpreter, what you get after starting ROOT in a standard way.}:
+\qcode{root[0] .L root/rootechidna.so}
+
+\item In your Macro, adding at the beginning:
+\qcode{gROOT->LoadMacro("root/libechidna.so");}
+
+\item In your \code{rootlogon.C} file with the same syntax:
+\qcode{gROOT->LoadMacro("root/libechidna.so");}
+This file (if existing in the current directory) is processed by ROOT at startup.
+  If you create this file remember that it must begin and end with a couple of curly braces like an non-named macro.
+\een
+
+\simfig{xterm}{0.8}{Basic sequence to browse the Echidna ROOT file}
+
+\subsection{The File structure}
+
+Echidna generated ROOT files include two separate sections: a TTree object and a folder with test histograms.
+
+The latest includes a subfolder for every module that registers at list 1 histogram to the ROOT barn\footnote{
+Only if \code{bx\_root\_barn::test} is used at registration instead of \code{bx\_root\_barn::junk} (see \sec{modules})}. 
+Every subfolder simply hosts the histograms registered by the module.
+
+The rest of this section deals therefore with the tree object.
+
+This class system is depicted in \fig{root_event}. 
+
+\bfig 
+\includegraphics[angle=270, width=0.6\textwidth]{root_event.eps}
+\capfig{root_event}{Echidna ROOT event structure.}
+\efig
+  
+The structure is straightforward. The main class \code{BxEvent} holds 8 sub-object:
+\ben
+\item \code{BxTrigger} Info related to the trigger record
+\item \code{BxLaben} Info from ID electronics
+\item \code{BxMuon} Info from OD electronics
+\item \code{BxFadc} Info from FADC electronics (disabled).
+\item \code{BxNeutron} Info from Neutron detection system.
+\item \code{BxMcTruth} Info from MonteCarlo simulation chain (empty for real data).
+\item \code{BxTrackFitted} Muon tracking info fitted from both ID and OD data (empty for non-muons).
+\item a vector of \code{BxPhysTags} objects. Written in DSTs by the bxfilter package. $\#0$ for the event $\#1,2\ldots$ for individual clusters.
+\een
+
+Some sub-objects hold the lists of hits and/or clusters\footnote{or fragments or windows.} directly.
+Containers for these lists are \code{std::vector<>}.
+Nesting vectors (i.e. putting hits lists inside cluster objects) is not done (see technical section \sec{root_event}).
+For reconstruction stages where both hits and clusters are present, an index variable in the hit class allows the user to know the corresponding cluster. 
+Filling containers is fully custumizable by the user through \code{bx\_writer} module parameters (see \sec{writer}).
+
+The list of physical variables in every class will be described next.
+
+\doublefigs{browser_histo}{0.49}{browser_tree}{0.49}{browser}{The ROOT file as seen by the TBrowser GUI. The histogram (left) and the tree (right) folders are expanded in the two panels.}
+
+\subsection{BxEvent}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{8cm}}
+\code{    Int\_t        }&\code{run;}&\code{run number}\\
+\code{    Int\_t        }&\code{evnum;}&\code{event number (trigger ID)}\\
+\code{    UShort\_t     }&\code{enabled\_crates;}&\code{bitfield: 0=trigger, 1-14=laben, 14=muon, 15=fadc;}\\
+\code{    BxTrigger     }&\code{trigger;}\\
+\code{    BxLaben       }&\code{laben;}\\
+\code{    BxMuon        }&\code{muon;}\\
+\code{    BxFadc        }&\code{fadc;}\\
+\code{    BxMcTruth     }&\code{mctruth;}\\
+\code{    BxNeutron     }&\code{neutron;}\\
+\code{    BxFittedTrack }&\code{track;}\\
+\code{    std::vector<BxPhysTags> }&\code{tags;}&\code{[0] referred to event; [1]...[n] to individual clusters;}\\ 
+\end{tabular}
+
+\noindent public getters:\\ 
+\begin{tabular}{lll}
+\code{    Int\_t             }&\code{GetRun           }&\code{() const;}\\
+\code{    Int\_t             }&\code{GetEvNum         }&\code{() const;}\\
+\code{    Bool\_t            }&\code{IsCrateEnabled   }&\code{( int i ) const;}\\ 
+\code{    UShort\_t          }&\code{GetEnabledCrates }&\code{() const;}\\
+\code{    Bool\_t            }&\code{IsMuonEnabled    }&\code{() const;}\\ 
+\code{    Bool\_t            }&\code{IsMuonAligned    }&\code{() const;}\\ 
+\code{    Bool\_t            }&\code{IsFadcEnabled    }&\code{() const;}\\ 
+\code{    Bool\_t            }&\code{IsMcTruthEnabled }&\code{() const;}\\ 
+\code{    Bool\_t            }&\code{IsNeutronEnabled }&\code{() const;}\\ 
+\code{    const BxTrigger\&  }&\code{GetTrigger  }&\code{() const;}\\
+\code{    const BxLaben\&    }&\code{GetLaben    }&\code{() const;}\\
+\code{    const BxFadc\&     }&\code{GetFadc     }&\code{() const;}\\
+\code{    const BxMuon\&     }&\code{GetMuon     }&\code{() const;}\\
+\code{    const BxNeutron\&  }&\code{GetNeutron  }&\code{() const;}\\
+\code{    const BxMcTruth\&  }&\code{GetMcTruth  }&\code{() const;}\\
+\code{    const BxTrackFitted\&}&\code{GetTrack    }&\code{() const;}\\
+\code{    const BxPhysTags\& }&\code{GetPhysTags }&\code{( int i ) const;}\\
+\etr
+\\
+\btr{lll}
+\code{    Double\_t          }&\code{GetTimeDifference }&\code{(const BxEvent* prev) const;}\\ 
+\code{    Double\_t          }&\code{GetTimeDifference }&\code{(const BxEvent\& prev) const;}\\ 
+\code{    Double\_t          }&\code{GetTimeDifference }&\code{(const Ulong\_t* prev\_gps\_times,}\\
+&&\code{Double\_t prev\_laben\_trigger\_time) const;}\\ 
+\code{    Double\_t          }&\code{GetTimeDifference }&\code{(int current\_cluster,}\\
+&&\code{const BxEvent* prev, int prev\_cluster ) const;}\\ 
+\code{    Double\_t          }&\code{GetTimeDifference }&\code{(int current\_cluster,}\\
+&&\code{const BxEvent\& prev, int prev\_cluster ) const;}\\ 
+\code{    Double\_t          }&\code{GetTimeDifference }&\code{(int current\_cluster, const Ulong\_t* prev\_gps\_times,}\\
+&&\code{Double\_t prev\_laben\_cluster\_time) const;}\\ 
+\end{tabular}
+
+\noindent The first 3 \code{GetTimeDifference(\ldots)} methods work between events, the last 3 between clusters.
+
+\subsection{BxTrigger}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{11cm}}
+\code{    UChar\_t }&\code{trgtype;       }&\code{trigger type}\\
+\code{    UShort\_t}&\code{btb\_threshold;}&\code{BTB threshold, n. of channels}\\
+\code{    UChar\_t }&\code{btb\_inputs;   }&\code{BTB active inputs during event. bitfield. 0,1,7 unused; 2=mtb; 3=tct; 4=l355; 5=l266; 6=l394+calib+random;}\\
+\code{    ULong\_t }&\code{gps\_times[2]; }&\code{GPS time since 2000.01.01 0:0:0. [0]=seconds, [1]=nanoseconds}\\
+\code{    ULong\_t}&\code{trgtime;}&\code{ppc0 cpu time }\\
+\end{tabular}
+
+\noindent public getters (trg type and flag):\\
+\begin{tabular}{lll}
+\code{    UChar\_t         }&\code{ GetTrgType      }&\code{ () const              ; }\\
+\code{    Bool\_t          }&\code{ IsTrgType       }&\code{ ( TrgType t ) const   ; }\\
+\code{    UChar\_t         }&\code{ GetBtbInputs    }&\code{ () const              ; }\\
+\code{    Bool\_t          }&\code{ HasBtbFlag      }&\code{ ( BtbFlag flag ) const; }\\
+\end{tabular}
+
+\noindent
+The event is flagged with a trigger type according to the trigger generation request which has the highest priority, 
+other trigger generation requests, if any, are recorded by the Borexino Trigger Board and saved in \code{btb\_inputs}. 
+
+\noindent
+\code{enum TrgType \{}
+
+\btr{lll}
+\code{	neutrino}&\code{ = 1,}&\code{ // Std trg of the ID (comparator of the BTB)}\\
+\code{	mtb}&\code{ = 2,}&\code{ // Muon Trigger Board (digital OD trigger)}\\
+\code{	l355}&\code{ = 4,}&\code{  // Laser 355nm, radial or oblique}\\
+\code{	l394}&\code{ = 8}&\code{  // Laser 394nm, timing, radial or oblique}\\
+\code{	l266}&\code{ = 16}&\code{  // Laser 266nm, radial or oblique}\\
+\code{	calib}&\code{ = 32}&\code{  // Calibration, pulse to Front-End}\\
+\code{	random}&\code{ = 64}&\code{  // "Empty" triggers}\\
+\code{	neutron}&\code{ = 128}&\code{  //  neutron}\\
+\etr
+
+\code{\};}
+
+\noindent
+\code{enum BtbFlag \{}
+
+\btr{lll}
+\code{  flag\_mtb}&\code{ = 4}&\code{ // Muon Trigger Board (digital OD trigger)}\\
+\code{	flag\_neutron}&\code{ = 8}&\code{ // neutron}\\ 
+\code{	flag\_l355}&\code{ = 16}&\code{ // Laser 355nm, radial or oblique}\\
+\code{	flag\_l266}&\code{ = 32}&\code{ // Laser 266nm, radial or oblique}\\
+\code{	flag\_lcr}&\code{ = 64}&\code{ // Laser for timing OR Calibration OR Random}\\
+\etr
+
+\code{\};}
+
+\pagebreak[4]
+
+\noindent other public getters:\\*
+\btr{lll@{\hspace{2ex}\code{//} }p{7cm}}
+\code{  UShort\_t      }&\code{GetBtbThreshold}&\code{() const;}&\code{BTB threshold, n. of channels}\\
+\code{  const ULong\_t*}&\code{GetGpsTimes    }&\code{() const;}&\code{Borexino GPS time (UTC) since 2000.01.01}\\
+\code{  ULong\_t       }&\code{GetGpsTimeSec  }&\code{() const;}&\code{seconds}\\
+\code{  ULong\_t       }&\code{GetGpsTimeNs   }&\code{() const;}&\code{nanoseconds}\\
+\code{  time\_t        }&\code{GetTimeT       }&\code{() const;}&\code{seconds since 1970.01.01 according to the time\_t convention,}\\
+\code{  Double\_t      }&\code{GetMjd         }&\code{() const;}&\code{Modified Julian Date fractional days since 1858.11.17}\\
+\code{  Long\_t        }&\code{GetRunDay      }&\code{() const;}&\code{integer days since the beginning of daq (2007.05.16).}\\
+\code{  Float\_t       }&\code{GetSunAltitude }&\multicolumn{2}{l}{\code{(Float\_t\& azimuth) const;}}\\   
+&&&\code{returns the sun's zenith angle. the azimuth is written in the argument.}\\
+\code{  time\_t        }&\code{GetSunRise     }&\code{() const;}&\code{sunrise of day of the event in time\_t.}\\
+\code{  time\_t        }&\code{GetSunSet      }&\code{() const;}&\code{sunset of day of the event in time\_t. }\\
+\code{  time\_t        }&\code{GetMidday      }&\code{() const;}&\code{midday of day of the event in time\_t.}\\
+\code{  Bool\_t        }&\code{IsDay          }&\code{() const;}&\code{obvious}\\
+\code{  Bool\_t        }&\code{IsNight        }&\code{() const;}&\code{obvious}\\
+\code{  ULong\_t       }&\code{GetTrgTime     }&\code{() const;}&\code{return ppc0 cpu time }\\
+\code{  Bool\_t        }&\code{IsNight        }&\code{() const;}&\code{obvious}\\
+\etr
+
+
+\subsection{BxLaben}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{9cm}}
+\code{    Int\_t }&\code{empty\_boards;  }&\code{number of empty laben boards, relevant for muons and neutrons; range 0->280;}\\
+\code{    Double\_t }&\code{trigger\_time;  }&\code{trigger time from (averaged) reference laben channels;
+    Units: ns; range: 0->6.4ms; 0=last gray crossing if < 3.2ms, 0=forelast gray crossing if > 3.2ms}\\
+\code{    Double\_t }&\code{laser\_time;    }&\code{laser time from (averaged) reference laben channels;
+    Units: ns; range: 0->6.4ms; 0=last gray crossing if < 3.2ms, 0=forelast gray crossing if > 3.2ms}\\
+%\code{    Float\_t  }&\code{npe;            }&\code{Sum of all decoded hits charge. 1pe/hit minimum charge assigned.}\\
+\code{    Float\_t  }&\code{charge;         }&\code{Sum of all decoded hits charge in photoelectrons}\\
+\code{    Int\_t    }&\code{n\_live\_pmts;  }&\code{Number of ordinary channels alive, computed run time;}\\
+\code{    Int\_t    }&\code{n\_live\_charge;}&\code{Number of ordinary with good charge signal, computed run time;}\\
+\code{    Int\_t    }&\code{n\_hits\_on\_empty;}&\code{Number of hits on empty/dead channels;}\\
+\code{    Int\_t    }&\code{n\_raw\_hits;   }&\code{Number of raw hits;(even if vector is not written)}\\
+\code{    Int\_t    }&\code{n\_raw\_hits\_flags[7];   }&\code{n\_good, n\_fifo\_full, n\_fifo\_empty, n\_trg\_jump, n\_trg\_jump\_large, n\_trg\_in\_busy, n\_invalid (as from bx\_laben\_raw\_hit::flags)
+}\\
+\code{    Int\_t    }&\code{n\_invalid\_pmts;  }&\code{number of ordinary channels (and not disabled timing) for which FE or FF is set}\\
+\code{    Int\_t    }&\code{n\_invalid\_charge;  }&\code{number of ordinary channels (and not disabled charge) for which FE or FF is set}\\
+\code{    Int\_t    }&\code{n\_decoded\_hits;   }&\code{Number of decoded hits;(even if vector is not written)}\\
+\code{    Int\_t    }&\code{n\_clusters;   }&\code{Number of clusters, valid for rec clusters as well;(even if vector is not written)}\\
+\code{    Int\_t    }&\code{n\_clusters\_muons;   }&\code{number of clusters for neutron algorythm in muon gate (even if vector is not written)}\\
+\code{    Int\_t    }&\code{n\_clusters\_found;}&\code{Number of clusters found by algorythm (may differ from previous for high multiplicity events)}\\
+\code{    Int\_t    }&\code{n\_clustered\_hits;   }&\code{Number of clustered hits, valid for rec hits as well (even if vector is not written)}\\
+%\code{    Float\_t  }&\code{cluster\_window\_limit;}&\code{the maximum window for clustering
+%}\\
+\code{    Bool\_t   }&\code{has\_raw;       }&\code{= true if raw hits are written in file}\\
+\code{    Bool\_t   }&\code{has\_decoded;   }&\code{= true if decoded hits are written in file}\\
+\code{    Int\_t    }&\code{has\_clustered; }&\code{= 1 if clusters are written in file; = 2 if also clustered hits are written}\\
+\code{    Int\_t    }&\code{has\_rec; }&\code{= 1 if clusters are written in file; = 2 if also clustered hits are written}\\
+\code{    Bool\_t   }&\code{is\_tracked;       }&\code{Is the track valid}\\
+\end{tabular}
+\\
+\begin{tabular}{lll}
+\code{    std::vector<BxLabenRawHit>          }&\code{raw\_hits;}\\
+\code{    std::vector<BxLabenDecodedHit>      }&\code{decoded\_hits;}\\
+\code{    std::vector<BxLabenCluster>         }&\code{clusters;}\\
+\code{    std::vector<BxLabenCluster>         }&\code{clusters\_muons;}\\
+\code{    std::vector<BxLabenClusteredHit>    }&\code{clustered\_hits;}\\
+\code{    std::vector<BxLabenRecCluster>      }&\code{rec\_clusters;}\\
+\code{    std::vector<BxLabenRecClusteredHit> }&\code{rec\_hits;}\\
+\code{	  BxTrackByPoints                     }&\code{track;}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Int\_t    }&\code{GetEmptyBoards }&\code{() const; }\\
+\code{    Double\_t }&\code{GetTriggerTime }&\code{() const; }\\
+\code{    Double\_t }&\code{GetLaserTime   }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNLivePmts   }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNLiveCharge }&\code{() const; }\\
+\code{    Int\_t    }&\code{NormalizePmts  }&\code{(Int\_t arg) const; }\\
+\code{    Float\_t  }&\code{NormalizePmts  }&\code{(Float\_t arg) const; }\\
+\code{    Float\_t  }&\code{NormalizeCharge}&\code{(Float\_t arg) const; }\\
+%\code{    Float\_t  }&\code{GetNpe         }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetCharge      }&\code{() const; }\\
+%\code{    Float\_t  }&\code{GetClusterWindowLimit}&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNHitsOnEmpty}&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNRawHits    }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNGood       }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNFifoFull   }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNFifoEmpty  }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNTrgJump    }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNTrgJumpLarge }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNTrgInBusy  }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNInvalid    }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNInvalidPmts}&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNInvalidCharge }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNDecodedHits}&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNClusters   }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNClustersMuons}&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNClustersFound}&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNClusteredHits}&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsTracked        }&\code{() const; }\\
+\code{    Bool\_t   }&\code{HasRawHits       }&\code{() const; }\\
+\code{    Bool\_t   }&\code{HasDecodedHits   }&\code{() const; }\\
+\code{    Bool\_t   }&\code{HasClusters      }&\code{() const; }\\
+\code{    Bool\_t   }&\code{HasClusteredHits }&\code{() const; }\\
+\code{    Bool\_t   }&\code{HasRecClusters   }&\code{() const; }\\
+\code{    Bool\_t   }&\code{HasRecHits       }&\code{() const; }\\
+\end{tabular}\\
+\begin{tabular}{lll}
+\code{    const std::vector<BxLabenRawHit>\&       }&\code{GetRawHits   }&\code{() const; }\\
+\code{    const std::vector<BxLabenDecodedHit>\&   }&\code{GetDecodedHits}&\code{() const; }\\
+\code{    const std::vector<BxLabenCluster>\&      }&\code{GetClusters   }&\code{() const; }\\
+\code{    const std::vector<BxLabenCluster>\&      }&\code{GetClustersMuons }&\code{() const; }\\
+\code{    const std::vector<BxLabenClusteredHit>\& }&\code{GetClusteredHits}&\code{() const; }\\
+\code{    const std::vector<BxLabenRecCluster>\&   }&\code{GetRecClusters }&\code{() const; }\\
+\code{    const std::vector<BxLabenRecHit>\&       }&\code{GetRecHits }&\code{() const; }\\
+
+\code{    BxLabenRawHit\&       }&\code{GetRawHit       }&\code{(Int\_t i) const; }\\
+\code{    BxLabenDecodedHit\&   }&\code{GetDecodedHit   }&\code{(Int\_t i) const; }\\
+\code{    BxLabenCluster\&      }&\code{GetCluster      }&\code{(Int\_t i) const; }\\
+\code{    BxLabenCluster\&      }&\code{GetClusterMuon         }&\code{(Int\_t i) const; }\\
+\code{    BxLabenClusteredHit\& }&\code{GetClusteredHit }&\code{(Int\_t i) const; }\\
+\code{    BxLabenRecCluster\&   }&\code{GetRecCluster   }&\code{(Int\_t i) const; }\\
+\code{    BxLabenRecHit\&       }&\code{GetRecHit       }&\code{(Int\_t i) const; }\\
+\code{    BxTrackByPoints\&     }&\code{GetTrack        }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxLabenRawHit}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{11cm}}
+\code{    UShort\_t }&\code{lg;    }&\code{logical channel (1 based)}\\
+\code{    UChar\_t  }&\code{time1; }&\code{First triangular waveform sampling (ADC bins, 0-255)}\\
+\code{    UChar\_t  }&\code{time2; }&\code{Second (~80ns later) triangular waveform sampling (ADC bins, 0-255)}\\
+\code{    UShort\_t }&\code{gray;  }&\code{Gray counter read out in bins 0->(1<<16-1)}\\
+\code{    UChar\_t  }&\code{base;  }&\code{Baseline charge sampling (ADC bins 0-255)}\\
+\code{    UChar\_t  }&\code{peak;  }&\code{Peak (~80ns later) charge sampling (ADC bins 0-255)}\\
+\code{    UChar\_t  }&\code{order; }&\code{Order in channel as in daq fifo; 1-based}\\
+\code{    UChar\_t  }&\code{flags\_board; }&\code{Flags of board header: 1 = N.TRG not consecutive, 2 = N.TRG > DELTA, 3 = TRG in BUSY, 4 = DPR FULL, 5 = FIFO EMPTY, 6 = FIFO FULL}\\
+\code{    UChar\_t  }&\code{flags\_ch; }&\code{5 = FIFO EMPTY, 6 = FIFO FULL, 7 = INVALID }\\
+\code{    UShort\_t }&\code{errors;    }&\code{Bitfield. Laben error codes}\\
+\end{tabular}
+
+\newpage
+\noindent public getters:\\
+\begin{tabular}{lll@{\hspace{2ex}\code{//} }l}
+\code{    UShort\_t }&\code{GetLg    }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetTime1 }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetTime2 }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetGray  }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetBase  }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetPeak  }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetOrder }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetErrors}&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetFlagsBoard  }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetFlagsChannel}&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsGood         }&\code{() const; }&\code{flags\_board and flags\_ch with no bits set}\\
+\code{    Bool\_t   }&\code{HasFifoFull    }&\code{() const; }&\code{flags\_ch bit 6}\\
+\code{    Bool\_t   }&\code{HasFifoEmpty   }&\code{() const; }&\code{flags\_ch bit 5}\\
+\code{    Bool\_t   }&\code{HasTrgJump     }&\code{() const; }&\code{flags\_board bit 1}\\
+\code{    Bool\_t   }&\code{HasTrgJumpLarge}&\code{() const; }&\code{flags\_board bit 2}\\
+\code{    Bool\_t   }&\code{HasTrgInBusy   }&\code{() const; }&\code{flags\_board bit 3}\\
+\code{    Bool\_t   }&\code{IsInvalid      }&\code{() const; }&\code{flags\_board bit 7}\\
+\end{tabular}
+
+\subsubsection{BxLabenDecodedHit}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{11cm}}
+\code{    UShort\_t }&\code{lg;          }&\code{logical channel (1 based) }\\
+\code{    UShort\_t }&\code{run;         }&\code{run number }\\
+\code{    Double\_t }&\code{raw\_time;   }&\code{hit time; Units: ns; range: 0->6.4ms; 0=last gray crossing if < 3.2ms, 0=forelast gray crossing if > 3.2ms}\\
+%\code{    Float\_t  }&\code{time\_error; }&\code{0-0.5 hit time validity (good if <0.4)}\\
+\code{    UChar\_t  }&\code{flag;        }&\code{Flag for out\_of\_gate=1, reflection=2, reference=4, retrigger=8, disabled=16;}\\
+%\code{    Float\_t  }&\code{d80;         }&\code{Real 80ns gap in ns (from time2-time1)}\\
+\code{    Float\_t  }&\code{raw\_charge; }&\code{peak-base in bins (without pileup corr.)}\\
+\code{    Float\_t  }&\code{charge;      }&\code{photoelectrons (with pileup corr.)}\\
+\code{    Float\_t  }&\code{charge\_mean;}&\code{photoelectrons normalized with mean (with pileup corr.)}\\
+\code{    Int\_t    }&\code{npe;         }&\code{number of photoelectrons (with a threshold)}\\
+\code{    UChar\_t  }&\code{order;       }&\code{Order in channel counting decoded hits only; 1-based}\\
+\code{    UShort\_t }&\code{raw\_index;  }&\code{Index in vector of corresponding raw hit}\\
+\code{    UShort\_t }&\code{num\_cluster;}&\code{Number of cluster the hit belongs to}\\
+\code{    Float\_t  }&\code{rec\_time;   }&\code{Time after TOF subtraction}\\
+\code{    Float\_t   }&\code{short\_cluster;}&\code{Flag to say if the hit belonged to the old (c11) clustering}\\
+\end{tabular}
+
+\newpage
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    UShort\_t }&\code{GetLg        }&\code{() const; }\\
+\code{    Double\_t }&\code{GetRawTime   }&\code{() const; }\\
+%\code{    Float\_t  }&\code{GetTimeError }&\code{() const; }\\
+%\code{    Float\_t  }&\code{GetD80       }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetFlag      }&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsGood       }&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsOutOfGate  }&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsReflection }&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsReference  }&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsRetrigger  }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetRawCharge }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetCharge    }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetChargeMean}&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNpe       }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetOrder     }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetRawIndex  }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetNumCluster}&\code{() const; }\\
+\code{    Float\_t  }&\code{GetRecTime   }&\code{() const; }\\
+\code{    Float\_t  }&\code{IsShortCluster}&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxLabenCluster}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{8cm}}
+\code{    Int\_t   }&\code{npmts;       }&\code{number of hit pmts}\\
+\code{    Int\_t   }&\code{npmts\_conc; }&\code{number of hit pmts with light concentrator }\\
+\code{    Int\_t   }&\code{npmts\_thresh;}&\code{number of hit pmts above threshold}\\
+\code{    Int\_t   }&\code{npmts\_short;}&\code{number of hit pmts (old c11 clustering)}\\
+\code{    Int\_t   }&\code{nhits;       }&\code{number of hits}\\
+\code{    Int\_t   }&\code{nhits\_conc; }&\code{number of hits with light concentrators}\\
+\code{    Int\_t   }&\code{nhits\_thresh;}&\code{number of hits above threshold}\\
+\code{    Int\_t   }&\code{nhits\_short;}&\code{number of hits in old (c11) clustering style}\\
+\code{    Int\_t   }&\code{nhits\_bkg;  }&\code{number of dark noise hits estimated to contribute to cluster (mostly relevant for neutrons)}\\
+%\code{    Int\_t   }&\code{npe;         }&\code{number of photoelectrons}\\
+%\code{    Int\_t   }&\code{npe\_conc;   }&\code{number of photoelectrons with light concentrators}\\
+\code{    Float\_t }&\code{charge;      }&\code{photoelectron charge}\\
+\code{    Float\_t }&\code{charge\_conc;}&\code{photoelectron charge with light concentrator}\\
+\code{    Float\_t }&\code{charge\_mean;}&\code{photoelectron charge normalized to mean}\\
+\code{    Float\_t }&\code{charge\_thresh;}&\code{photoelectron charge using only hits above threshold}\\
+\code{    Float\_t }&\code{charge\_short;}&\code{photoelectron charge in old (c11) clustering style}\\
+\code{    Double\_t }&\code{start\_time; }&\code{cluster start time;
+ns; range: $0\rightarrow6.4ms$; 0=last gray crossing if $< 3.2ms$, 0=forelast gray crossing if $> 3.2ms$}\\
+%\code{    Double\_t }&\code{rough\_time; }&\code{cluster rough start time ($16ns$ bins); same units as above}\\
+\code{    Float\_t }&\code{mean\_time;  }&\code{cluster mean time in ns relative to start\_time}\\
+\code{    Float\_t }&\code{mean\_time\_short;}&\code{cluster mean time in ns relative to old (c11) clustering style}\\
+\code{    Float\_t }&\code{rms\_time;   }&\code{cluster rms time in ns relative to mean\_time}\\
+\code{    Float\_t }&\code{rms\_time\_short;}&\code{cluster rms time in ns relative to mean\_time (old c11 clustering)}\\
+\code{    Float\_t }&\code{duration;}&\code{time of the last hit in ns relative to start time}\\
+\code{    Float\_t }&\code{duration\_short;}&\code{time of the last hit in ns relative to start time (old c11 clutering)}\\
+\code{    UChar\_t   }&\code{flag;      }&\code{Flag for out\_of\_gate=1, broad=2, trigger=4}\\
+\code{    UShort\_t  }&\code{decoded\_index; }&\code{Index in vector of decoded hit corresponding to first hit}\\
+\end{tabular}
+
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{6cm}}
+
+\code{    Int\_t   }&\code{npeaks;       }&\code{number of peaks identified by the splitting algorythm}\\
+\code{    Float\_t   }&\code{msk\_nphotons; }&\code{Out-of-fit photons from the msk energy reco (in 4pi)}\\
+\code{    BxPosition }&\code{baricenter;    }&\code{reconstructed position from baricentrator}\\
+\code{    BxPosition }&\code{position\_mi;  }&\code{reconstructed position from Milano reco}\\
+\code{    BxPosition }&\code{position\_lngs;}&\code{reconstructed position from LNGS reco}\\
+\code{    BxPosition }&\code{position\_dbn; }&\code{reconstructed position from Dubna reco}\\
+\code{    BxPosition }&\code{position\_msk; }&\code{reconstructed position from Moscow reco}\\
+\code{    BxPosition }&\code{position\_mach4; }&\code{reconstructed position from Mach4 reco, variable index}\\
+\code{    BxPosition }&\code{position\_mach4\_fixed; }&\code{reconstructed position from Mach4 reco, fixed index}\\
+\code{    BxEnergy   }&\code{energy\_mc;    }&\code{reconstructed energy from MC reco}\\
+\code{    BxEnergy   }&\code{energy\_lik;   }&\code{reconstructed energy from Likelihood reco}\\
+\code{    BxEnergy   }&\code{energy\_msk;   }&\code{reconstructed energy from Moscow reco}\\
+\code{    BxEnergy   }&\code{energy\_dbn;   }&\code{reconstructed energy from Dubna reco}\\
+\code{    std::vector<Float\_t>}&\code{peak\_times;}&\code{times of the peaks found by splitting algorithm in ns form cluster start time.}\\
+\code{    std::vector<Float\_t>}&\code{peak\_charges;}&\code{charge of the peaks found by the splitting algorythm in pe.}\\
+\end{tabular}
+
+\newpage
+\noindent public getters:\\*
+\begin{tabular}{lll}
+\code{    Int\_t   }&\code{GetNpmts     }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNpmtsConc }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNpmtsThresh }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNpmtsShort }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNHits     }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNHitsConc }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNHitsThresh }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNHitsShort }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNHitsBkg }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNHitsCorr }&\code{() const;    nhits-nhits\_bkg}\\
+%\code{    Int\_t   }&\code{GetNpe       }&\code{() const; }\\
+%\code{    Int\_t   }&\code{GetNpeConc   }&\code{() const; }\\
+\code{    Float\_t }&\code{GetCharge    }&\code{() const; }\\
+\code{    Float\_t }&\code{GetChargeConc}&\code{() const; }\\
+\code{    Float\_t }&\code{GetChargeThresh}&\code{() const; }\\
+\code{    Float\_t }&\code{GetChargeMean}&\code{() const; }\\
+\code{    Float\_t }&\code{GetChargeShort}&\code{() const; }\\
+\code{    Double\_t}&\code{GetStartTime }&\code{() const; }\\
+%\code{    Double\_t}&\code{GetRoughTime }&\code{() const; }\\
+\code{    Float\_t }&\code{GetMeanTime  }&\code{() const; }\\
+\code{    Float\_t }&\code{GetMeanTimeShort}&\code{() const; }\\
+\code{    Float\_t }&\code{GetRMSTime   }&\code{() const; }\\
+\code{    Float\_t }&\code{GetRMSTimeShort}&\code{() const; }\\
+\code{    Float\_t }&\code{Duration   }&\code{() const; }\\
+\code{    Float\_t }&\code{DurationShort}&\code{() const; }\\
+\code{    UChar\_t }&\code{GetFlag      }&\code{() const; }\\
+\code{    Bool\_t  }&\code{IsGood       }&\code{() const; }\\
+\code{    Bool\_t  }&\code{IsOutOfGate  }&\code{() const; }\\
+\code{    Bool\_t  }&\code{IsBroad      }&\code{() const; }\\
+\code{    Bool\_t  }&\code{IsTrigger    }&\code{() const; }\\
+\code{    UShort\_t}&\code{GetDecodedIndex}&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNPeaks      }&\code{() const; }\\
+\code{    Float\_t }&\code{GetMskNPhotons }&\code{() const; }\\
+\code{    const BxPosition\& }&\code{GetBaricenter  }&\code{() const; }\\
+\code{    const BxPosition\& }&\code{GetPositionMi  }&\code{() const; }\\
+\code{    const BxPosition\& }&\code{GetPositionLNGS}&\code{() const; }\\
+\code{    const BxPosition\& }&\code{GetPositionDbn }&\code{() const; }\\
+\code{    const BxPosition\& }&\code{GetPositionMsk }&\code{() const; }\\
+\code{    const BxPosition\& }&\code{GetPositionMach4 }&\code{() const; }\\
+\code{    const BxPosition\& }&\code{GetPositionMach4Fixed }&\code{() const; }\\
+\code{    const BxEnergy  \& }&\code{GetEnergyMc    }&\code{() const; }\\
+\code{    const BxEnergy  \& }&\code{GetEnergyLik   }&\code{() const; }\\
+\code{    const BxEnergy  \& }&\code{GetEnergyMsk   }&\code{() const; }\\
+\code{    const BxEnergy  \& }&\code{GetEnergyDbn   }&\code{() const; }\\
+\code{    Float\_t }&\code{GetPeakTime   }&\code{( Int\_t i ) const; }\\
+\code{    Float\_t }&\code{GetPeakCharge }&\code{( Int\_t i ) const; }\\
+\code{    const std::vector<Float\_t>\&  }&\code{GetPeakTimes   }&\code{() const; }\\
+\code{    const std::vector<Float\_t>\&  }&\code{GetPeakCharges }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxLabenClusteredHit}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{10cm}}
+\code{    UShort\_t }&\code{lg;          }&\code{logical channel (1 based) }\\
+\code{    UShort\_t }&\code{run;         }&\code{run number }\\
+\code{    Int\_t }&\code{num\_cluster; }&\code{Cluster (1,2,3) the hit belongs to}\\
+\code{    Float\_t }&\code{time;     }&\code{Time relative to cluster start time in ns}\\
+\code{    Float\_t }&\code{charge;     }&\code{photoelectrons (with pileup corr.)}\\
+\code{    Float\_t }&\code{charge\_mean;     }&\code{photoelectrons normalized with mean (with pileup corr.)}\\
+\code{    UChar\_t }&\code{order;          }&\code{Order in channel; Only hits in cluster counted; 1-based}\\
+\code{    UShort\_t }&\code{decoded\_index;}&\code{Index in vector of corresponding decoded hit}\\
+\end{tabular}
+
+\noindent public getters:\\*
+\begin{tabular}{lll}
+\code{    UShort\_t }&\code{GetLg          }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNumCluster  }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetTime        }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetCharge      }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetChargeMean  }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetOrder       }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetDecodedIndex}&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxPosition}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{10cm}}
+\code{    Float\_t }&\code{time;   }&\code{time of event start from fit, no standard zero available yet\footnote{One will be specified soon, meanwhile see specific module documentation.}}\\
+\code{    Float\_t }&\code{x;      }&\code{x from fit (m)}\\
+\code{    Float\_t }&\code{y;      }&\code{y from fit (m)}\\
+\code{    Float\_t }&\code{z;      }&\code{z from fit (m)}\\
+\code{    Float\_t }&\code{dt;     }&\code{dt from fit (m)}\\
+\code{    Float\_t }&\code{dx;     }&\code{dx from fit (m)}\\
+\code{    Float\_t }&\code{dy;     }&\code{dy from fit (m)}\\
+\code{    Float\_t }&\code{dz;     }&\code{dz from fit (m)}\\
+\code{    Float\_t }&\code{user;   }&\code{mi: likelihood, value of the fcn at the minimum (normalized); mach4: index of refraction}\\
+\code{    Bool\_t  }&\code{converged;}&\code{Fit converged}\\
+\code{    Int\_t   }&\code{matrix; }&\code{ Matrix def pos (+1), approximate (0) or not def pos (-1)}\\
+\end{tabular}
+
+\newpage
+\noindent public getters:\\
+\begin{tabular}{llll}
+    \code{    Float\_t }&\code{GetTime}  & \code{() const; } \\
+    \code{    Float\_t }&\code{GetX   }  & \code{() const; } \\
+    \code{    Float\_t }&\code{GetY   }  & \code{() const; } \\
+    \code{    Float\_t }&\code{GetZ   }  & \code{() const; } \\
+    \code{    Float\_t }&\code{GetDT  }  & \code{() const; } \\
+    \code{    Float\_t }&\code{GetDX  }  & \code{() const; } \\
+    \code{    Float\_t }&\code{GetDY  }  & \code{() const; } \\
+    \code{    Float\_t }&\code{GetDZ  }  & \code{() const; } \\
+    \code{    Float\_t }&\code{GetDR  }  & \code{() const; }&\code{in-getter conversion} \\ 
+    \code{    Float\_t }&\code{GetTheta} & \code{() const; }&\code{in-getter conversion} \\
+    \code{    Float\_t }&\code{GetPhi  } & \code{() const; }&\code{in-getter conversion} \\
+    \code{    Float\_t }&\code{GetLikelihood } & \code{() const; } \\
+    \code{    Float\_t }&\code{GetRefIndex   } & \code{() const; } \\
+    \code{    Float\_t }&\code{GetUser       } & \code{() const; } \\
+    \code{    Int\_t   }&\code{GetMatrix     } & \code{() const; } \\
+    \code{    Bool\_t  }&\code{IsDefPos      } & \code{() const; } \\
+    \code{    Bool\_t  }&\code{IsNotDefPos   } & \code{() const; } \\
+    \code{    Bool\_t  }&\code{IsApproximate } & \code{() const; } \\
+    \code{    Bool\_t  }&\code{IsConverged   } & \code{() const; } \\
+    \code{    Float\_t }&\code{GetDistance} & \code{(const BxPosition\& p) const; } \\
+    \code{    Float\_t }&\code{GetDistance} & \code{(const BxTrackByPoints\& t) const; } \\
+\end{tabular}
+
+\subsubsection{BxEnergy}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Int\_t   }&\code{nhits;       }&\code{nhits corrected for position }\\
+\code{    Int\_t   }&\code{npe;         }&\code{npe corrected for position }\\
+\code{    Float\_t }&\code{charge;      }&\code{charge corrected for position }\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{llll}
+    \code{    Int\_t   }&\code{GetNHits  }& \code{() const; } \\
+    \code{    Int\_t   }&\code{GetNpe    }& \code{() const; } \\
+    \code{    Float\_t }&\code{GetCharge }& \code{() const; } \\
+\end{tabular}
+
+\subsubsection{BxLabenRecCluster}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{9cm}}
+\code{    Float\_t }&\code{ns\_asymmetry;}&\code{north-south charge asymmetry}\\
+\code{    Float\_t }&\code{sphere\_chi2; }&\code{chi2 to sphericity}\\
+\code{    Float\_t }&\code{sphere\_lkl;  }&\code{likelihood to sphericity}\\
+\code{    Float\_t }&\code{sphere\_rel\_var;}&\code{relative variance = sigma/mean of the hits in the cos(theta) - phi plane centered in the event position and normalized per hit charge. 0 to 2 approx}\\
+\code{    Float\_t }&\code{plane\_cos;}&\code{cos of the angle made by the plane fitting the theta-phi parameters space}\\
+\code{    Float\_t }&\code{plane\_chi2;}&\code{chi2/NDF of the fit of a plane in a cos(theta)-phi distribution}\\
+\code{    Float\_t }&\code{h\_plane\_chi2; }&\code{chi2/NDF of the fit of a horizontal plane in a cos(theta)-phi distribution}\\
+\code{    Float\_t }&\code{sh\_power[4];  }&\code{power of spherical armonics}\\
+\code{    Char\_t  }&\code{quality\_flags;}&\code{bitfield, meaning to be assigned}\\
+\code{    Float\_t }&\code{tailtot[10];  }&\code{tailtot for tail value 40-130ns step 10ns}\\
+\code{    Float\_t }&\code{gatti;        }&\code{gatti optimal filter variable}\\
+\code{    Float\_t }&\code{gattic;       }&\code{gatti optimal filter variable (cumulative)}\\
+\code{    Float\_t }&\code{lkl;          }&\code{likelihood ratio}\\
+\code{    Float\_t }&\code{lklc;         }&\code{likelihood ratio (cumulative)}\\
+\code{    Float\_t }&\code{rise\_time;   }&\code{rise time}\\
+\code{    Float\_t }&\code{tailtot\_mach4[10];}&\code{tailtot for tail value 30-110ns step 5ns}\\
+\code{    Float\_t }&\code{gatti\_mach4[4];   }&\code{gatti optimal filter variable from 4 reference shapes}.\\
+\code{    Float\_t }&\code{peak\_mach4;       }&\code{peak of tof-recorrected hit time distribution}\\
+\code{    Float\_t }&\code{mean\_mach4;       }&\code{mean of tof-recorrected hit time distribution}\\
+\code{    Float\_t }&\code{rms\_mach4;        }&\code{rms of tof-recorrected hit time distribution}\\
+\code{    Float\_t }&\code{skew\_mach4;       }&\code{skewness of tof-recorrected hit time distribution}\\
+\code{    Float\_t }&\code{kurt\_mach4;       }&\code{kurtosis of tof-recorrected hit time distribution}\\
+\end{tabular}
+
+\newpage
+\noindent public getters:\\
+
+\begin{tabular}{lll}
+\code{    Float\_t }&\code{GetNsAsymmetry }&\code{() const; }\\
+\code{    Float\_t }&\code{GetSphereChi2  }&\code{() const; }\\
+\code{    Float\_t }&\code{GetSphereLkl   }&\code{() const; }\\
+\code{    Float\_t }&\code{GetSphereRelVal}&\code{() const; }\\
+\code{    Float\_t }&\code{GetPlaneCos    }&\code{() const; }\\
+\code{    Float\_t }&\code{GetPlaneChi2   }&\code{() const; }\\
+\code{    Float\_t }&\code{GetHPlaneChi2  }&\code{() const; }\\
+\code{    Float\_t }&\code{GetSHPower     }&\code{(int order) const; }\\
+\code{    Char\_t }&\code{GetQualityFlags }&\code{() const; }\\
+\code{    const Float\_t* }&\code{GetTailTot}&\code{() const; }\\
+\code{    Float\_t }&\code{GetTailTot     }&\code{(Int\_t tail) const; }\\
+\code{    Float\_t }&\code{GetGatti       }&\code{() const; }\\
+\code{    Float\_t }&\code{GetGattiC      }&\code{() const; }\\
+\code{    Float\_t }&\code{GetLkl         }&\code{() const; }\\
+\code{    Float\_t }&\code{GetLklC        }&\code{() const; }\\
+\code{    Float\_t }&\code{GetRiseTime       }&\code{() const; }\\
+\code{    const Float\_t* }&\code{GetTailTotMach4}&\code{() const; }\\
+\code{    Float\_t }&\code{GetTailTotMach4}&\code{(Int\_t tail) const; }\\
+\code{    Float\_t }&\code{GetGattiMach4  }&\code{() const; }\\
+\code{    Float\_t }&\code{GetMeanMach4   }&\code{() const; }\\
+\code{    Float\_t }&\code{GetPeakMach4   }&\code{() const; }\\
+\code{    Float\_t }&\code{GetRMSMach4    }&\code{() const; }\\
+\code{    Float\_t }&\code{GetSkewMach4   }&\code{() const; }\\
+\code{    Float\_t }&\code{GetKurtMach4   }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxLabenRecHit}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{10cm}}
+\code{    UShort\_t }&\code{lg;          }&\code{logical channel (1 based) }\\
+\code{    UShort\_t }&\code{run;         }&\code{run number }\\
+\code{    Int\_t }&\code{num\_cluster; }&\code{Cluster (1,2,3) the hit belongs to}\\
+\code{    Float\_t }&\code{time;     }&\code{Time relative to cluster start time in ns}\\
+\code{    UChar\_t }&\code{order;          }&\code{Order in channel; Only hits in cluster counted; 1-based}\\
+\code{    UShort\_t }&\code{decoded\_index;}&\code{Index in vector of corresponding decoded hit}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    UShort\_t }&\code{GetLg          }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNumCluster  }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetTime        }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetOrder       }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetDecodedIndex}&\code{() const; }\\
+\end{tabular}
+
+
+\subsection{BxMuon}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{9cm}}
+\code{    Bool\_t  }&\code{is\_aligned;               }&\code{did not loose sycronicyty}\\
+\code{    Int\_t   }&\code{n\_raw\_hits;              }&\code{number of raw hits (even if vector is not written)}\\
+\code{    Int\_t   }&\code{n\_decoded\_hits;          }&\code{number of decoded hits (even if vector is not written)}\\
+\code{    Int\_t   }&\code{n\_clusters;               }&\code{number of clusters (even if vector is not written)}\\
+\code{    Int\_t   }&\code{n\_clustered\_hits\_sss;   }&\code{number of clustered hits on sss (even if vector is not written)}\\
+\code{    Int\_t   }&\code{n\_clustered\_hits\_floor; }&\code{number of clustered hits on floor (even if vector is not written)}\\
+\code{    Int\_t   }&\code{decoded npmts;   }&\code{number of fired pmts after decoding}\\
+\code{    Float\_t }&\code{decoded charge;  }&\code{photoelectron charge after decoding}\\
+\code{    Bool\_t  }&\code{has\_cluster\_sss;  }&\code{data present}\\
+\code{    Bool\_t  }&\code{has\_cluster\_floor;}&\code{data present}\\
+\code{    Int\_t   }&\code{npmts;          }&\code{number of fired pmts}\\
+\code{    Float\_t }&\code{start\_time\_sss;    }&\code{cluster start time from clustering module; Units: ns; 0=trigger\_time+8500;}\\
+\code{    Float\_t }&\code{start\_time\_floor;  }&\code{cluster start time from clustering module; Units: ns; 0=trigger\_time+8500;}\\
+\code{    Float\_t }&\code{charge\_sss;    }&\code{photoelectron charge on sss}\\
+\code{    Float\_t }&\code{charge\_floor;  }&\code{photoelectron charge on floor}\\
+\code{    Bool\_t  }&\code{is\_tracked;    }&\code{track present}\\
+\code{    Bool\_t  }&\code{has\_raw;       }&\code{= true if raw hits are written in file}\\
+\code{    Bool\_t  }&\code{has\_decoded;   }&\code{= true if decoded hits are written in file}\\
+\code{    Bool\_t  }&\code{has\_clustered; }&\code{= 1 if clusters are written; = 2 if clustered hits are written in file}\\
+\end{tabular}
+\\
+\begin{tabular}{lll}
+\code{    std::vector<BxMuonRawHit>       }&\code{raw\_hits;}\\
+\code{    std::vector<BxMuonDecodedHit>   }&\code{decoded\_hits;}\\
+\code{    std::vector<BxMuonCluster>      }&\code{clusters;}\\
+\code{    std::vector<BxMuonClusteredHit> }&\code{clustered\_hits;}\\
+\code{    BxTrackByPoints                 }&\code{track;}\\
+\end{tabular}
+
+\newpage
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Bool\_t }&\code{IsAligned             }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNRawHits           }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNDecodedHits       }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNClusters          }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNClusteredHitsSSS  }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNClusteredHitsFloor}&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNClusteredHits     }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetDecodedNPmts       }&\code{() const; }\\
+\code{    Float\_t}&\code{GetDecodedCharge      }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasClusterSSS         }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasClusterFloor       }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasCluster            }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNPmts              }&\code{() const; }\\
+\code{    Float\_t}&\code{GetStartTimeSSS       }&\code{() const; }\\
+\code{    Float\_t}&\code{GetStartTimeFloor     }&\code{() const; }\\
+\code{    Float\_t}&\code{GetStartTime          }&\code{() const; }\\
+\code{    Float\_t}&\code{GetChargeSSS          }&\code{() const; }\\
+\code{    Float\_t}&\code{GetChargeFloor        }&\code{() const; }\\
+\code{    Float\_t}&\code{GetCharge             }&\code{() const; }\\
+\code{    Bool\_t }&\code{IsTracked             }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasRaw                }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasDecoded            }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasClustered          }&\code{() const; }\\
+\code{    const std::vector<BxMuonRawHit>\&     }&\code{GetRawHits     }&\code{() const; }\\
+\code{    const std::vector<BxMuonDecodedHit>\& }&\code{GetDecodedHits }&\code{() const; }\\
+\code{    const std::vector<BxMuonClusteredHit>\&}&\code{GetClusteredHits }&\code{() const; }\\
+\code{    const std::vector<BxMuonCluster>\&    }&\code{GetClusters }&\code{() const; }\\
+\code{    BxTrackByPoints\&                     }&\code{GetTrack }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxMuonRawHit}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{11cm}}
+\code{    UShort\_t }&\code{mch;        }&\code{muon channel (0-255)}\\
+\code{    ULong\_t  }&\code{lead\_time;  }&\code{leading edge time in TDC ticks (1.0416ns); range: 0->8192}\\
+\code{    ULong\_t  }&\code{trail\_time; }&\code{trailing edge time in TDC ticks (1.0416ns); range: 0->8192}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    UShort\_t }&\code{GetMch       }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetLeadTime  }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetTrailTime }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxMuonDecodedHit}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{13cm}}
+\code{    UShort\_t }&\code{run;    }&\code{run number}\\
+\code{    UShort\_t }&\code{mch;    }&\code{muon channel (0-255)}\\
+\code{    Float\_t  }&\code{time;   }&\code{time after gate start (neutrino) or led ref (laser); ns; $0\rightarrow8.5\mu s$}\\
+\code{    Float\_t  }&\code{charge; }&\code{Charge (pe)}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    UShort\_t }&\code{GetMch    }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetTime   }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetCharge }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxMuonClusteredHit}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{12cm}}
+\code{    UShort\_t }&\code{run;    }&\code{run number}\\
+\code{    UShort\_t }&\code{mch;    }&\code{muon channel (0-255)}\\
+\code{    Float\_t  }&\code{time;   }&\code{time after gate start (neutrino) or after led ref (laser); ns; 0->8.5$\mu s$}\\
+\code{    Float\_t  }&\code{charge; }&\code{charge (pe)}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    UShort\_t }&\code{GetMch    }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetTime   }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetCharge }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxMuonCluster}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Int\_t   }&\code{id;          }&\code{internal cluster id}\\
+\code{    Float\_t }&\code{x;           }&\code{x of charge baricenter, exp time weighted}\\
+\code{    Float\_t }&\code{y;           }&\code{y of charge baricenter, exp time weighted}\\
+\code{    Float\_t }&\code{z;           }&\code{z of charge baricenter, exp time weighted}\\
+\code{    Float\_t }&\code{start\_time; }&\code{time of first hit, ns after gate start}\\
+\code{    Float\_t }&\code{charge;      }&\code{sum of hits charge, pe}\\
+\end{tabular}
+
+\pagebreak[4]
+
+\noindent public getters:\\*
+\begin{tabular}{lll@{\hspace{2ex}\code{//} }p{10cm}}
+\code{    Int\_t   }&\code{GetId        }&\code{() const; }\\
+\code{    Float\_t }&\code{GetX         }&\code{() const; }\\
+\code{    Float\_t }&\code{GetY         }&\code{() const; }\\
+\code{    Float\_t }&\code{GetZ         }&\code{() const; }\\
+\code{    Float\_t }&\code{GetRadius    }&\code{() const; }&\code{Baricenter distance from origin}\\
+\code{    Float\_t }&\code{GetRc        }&\code{() const; }&\code{Baricenter distance from origin on x-y plane}\\
+\code{    Float\_t }&\code{GetPhi       }&\code{() const; }&\code{Baricenter Phi, in-getter computation}\\
+\code{    Float\_t }&\code{GetTheta     }&\code{() const; }&\code{Baricenter Theta, in-getter computation}\\
+\code{    Float\_t }&\code{GetStartTime }&\code{() const; }\\
+\code{    Float\_t }&\code{GetCharge    }&\code{() const; }\\
+\code{    Bool\_t  }&\code{IsUp         }&\code{() const; }&\code{Baricenter on upper SSS}\\
+\code{    Bool\_t  }&\code{IsDown       }&\code{() const; }&\code{Baricenter on lower SSS}\\
+\code{    Bool\_t  }&\code{IsSSS        }&\code{() const; }&\code{Baricenter on SSS}\\
+\code{    Bool\_t  }&\code{IsFloor      }&\code{() const; }&\code{Baricenter on Floor}\\
+\end{tabular}
+
+
+\subsection{BxFadc}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{10cm}}
+\code{    UChar\_t }&\code{event\_flag;        }&\code{DAQ event flag; see table \ref{tab:fadc_flag}  for possible values; }  \\
+\code{    Float\_t }&\code{time\_to\_previous; }&\code{time to the previous event in 20 ns units}  \\
+\code{    Float\_t }&\code{trigger\_time;      }&\code{fited time from the trigger ramp channel; units fdac ticks (2.5ns); 0 is trigger; }  \\
+\code{    Int\_t }&\code{has\_raw;       }&\code{=1 if windows are written in file; =2 if also channels are written }  \\
+\code{    Int\_t }&\code{has\_decoded;   }&\code{=1 if windows are written in file; =2 if also channels are written }  \\
+\code{    Int\_t }&\code{has\_clustered; }&\code{=1 if windows are written in file; =2 if also channels are written }  \\
+\end{tabular}
+\\
+\begin{tabular}{lll}
+\code{    std::vector<BxFadcRawWindow>      }&\code{raw\_windows; }  \\
+\code{    std::vector<BxFadcRawChannel>     }&\code{raw\_channels; } \\
+\code{    std::vector<BxFadcDecodedWindow>  }&\code{decoded\_windows; }\\
+\code{    std::vector<BxFadcDecodedChannel> }&\code{decoded\_channels; }\\
+\code{    std::vector<BxFadcDecodedWindow>  }&\code{clustered\_windows; }\\
+\code{    std::vector<BxFadcDecodedChannel> }&\code{clustered\_channels; }\\
+\end{tabular}
+
+\btab
+\begin{tabular}{c|l}
+\hline
+  value       &      DAQ condition\\
+\hline 
+ 0 & event rejected without even reading total sum;\\
+ 1 & event rejected because it contains no significant data;\\
+ 2 & event contained window(s) above noise level;\\
+ 4 & event is in a coincidence;\\
+ 6 & event above WIN\_THRESHOLD and in a coincidence with a later one;\\
+ 7 & event above WIN\_THRESHOLD and in a coincidence with a previous one;\\
+ 8 & event above EVENT threshold;\\
+16 & at least 1 board has erroneous trigger count;\\
+32 & at least 1 board has erroneous pattern value;\\
+64 & V896 times are inconsistent.\\
+\hline 
+\end{tabular}
+\captab{fadc_flag}{Possible fadc event\_flag values (from DAQ). 6 is the minimum to keep an event;}
+\etab
+
+\pagebreak[4]
+
+\noindent public getters:\\*
+\begin{tabular}{lll}
+\code{    UChar\_t }&\code{GetEventFlag      }&\code{() const; }\\
+\code{    Float\_t }&\code{GetTimeToPrevious }&\code{() const; }\\
+\code{    Float\_t }&\code{GetTriggerTime    }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasRawWindows        }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasRawChannels       }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasDecodedWindows    }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasDecodedChannels   }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasClusteredWindows  }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasClusteredChannels }&\code{() const; }\\
+\code{    const std::vector<BxFadcRawWindow>\&      }&\code{GetRawWindows        }&\code{() const; }\\
+\code{    const std::vector<BxFadcRawChannel>\&     }&\code{GetRawChannels       }&\code{() const; }\\
+\code{    const std::vector<BxFadcDecodedWindow>\&  }&\code{GetDecodedWindows    }&\code{() const; }\\
+\code{    const std::vector<BxFadcDecodedChannel>\& }&\code{GetDecodedChannels   }&\code{() const; }\\
+\code{    const std::vector<BxFadcDecodedWindow>\&  }&\code{GetClusteredWindows  }&\code{() const; }\\
+\code{    const std::vector<BxFadcDecodedChannel>\& }&\code{GetClusteredChannels }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxFadcRawChannel}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{11cm}}
+\code{   Int\_t }&\code{num\_window;     }&\code{number of window the channel belongs to}\\
+\code{   UChar\_t }&\code{samples[4096]; }&\code{raw samples, height of signal every 2.5ns in bins (range 0-255)}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Int\_t   }&\code{GetNumWindow     }&\code{() const; }\\
+\code{    UChar\_t }&\code{GetSample (Int\_t i) const; }\\
+\end{tabular}
+
+\subsubsection{BxFadcRawWindow}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{12cm}}
+\code{    ULong\_t  }&\code{length; }&\code{data size in bytes}\\
+\code{    UChar\_t  }&\code{flag; }&\code{flag for window position in memory page; 0=in page; 1=starting with page; 2=ending with page; 3=1\&\&2;}\\
+\code{    Short\_t  }&\code{begin; }&\code{window start time with respect to trigger; negative; in 2.5ns units}\\
+\code{    UShort\_t }&\code{size; }&\code{window size; in 2.5ns units}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    ULong\_t  }&\code{GetLength }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetFlag   }&\code{() const; }\\
+\code{    Short\_t  }&\code{GetBegin  }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetSize   }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxFadcDecodedChannel}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{11cm}}
+\code{    Int\_t   }&\code{num\_window; }&\code{number of window the channel belongs to}\\
+\code{    Float\_t }&\code{amplitude;   }&\code{height at maximum signal amplitude}\\
+\code{    Float\_t }&\code{charge;      }&\code{integral of signal; arbitrary units}\\
+\code{    Float\_t }&\code{peak;        }&\code{time of peak; 0 is window start; units: fadc ticks (2.5ns).}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Int\_t   }&\code{GetNumWindow }&\code{() const; }\\
+\code{    Float\_t }&\code{GetAmplitude }&\code{() const; }\\
+\code{    Float\_t }&\code{GetPeak      }&\code{() const; }\\
+\code{    Float\_t }&\code{GetCharge    }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxFadcDecodedWindow}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{7cm}}
+\code{    UChar\_t  }&\code{flag;   }&\code{flag for window position in memory page; 0=in page; 1=starting with page; 2=ending with page; 3=1\&\&2;}\\
+\code{    UChar\_t  }&\code{status; }&\code{result of the second peak search: 1=no other pulse; 2=1 more pulse before main one; 3=1 more pulse after main one; 4=2\&\&3;}\\
+\code{    Short\_t  }&\code{begin;  }&\code{start time with respect to trigger; negative; in 2.5ns units}\\
+\code{    UShort\_t }&\code{size;   }&\code{window time span; units: fadc ticks (2.5 ns);}\\
+\code{    BxFadcDecodedChannel }&\code{sum; }&\code{digital sum virtual channel}\\
+\code{    Float\_t }&\code{sum\_samples[4096]; }&\code{digital sum samples, height of signal every 2.5ns in bins (range 0-255)}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    UChar\_t  }&\code{GetFlag   }&\code{() const; }\\
+\code{    UChar\_t  }&\code{GetStatus }&\code{() const; }\\
+\code{    Short\_t  }&\code{GetBegin  }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetSize   }&\code{() const; }\\
+\code{    const }&\code{BxFadcDecodedChannel\& GetSum }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetSumSample  }&\code{(Int\_t i); } \\
+\end{tabular}
+
+\subsection{BxMcTruth}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{12cm}}
+\code{    Int\_t }&\code{n\_hits\_id;  }&\code{ number hits in ID (even if vector is not written)}\\
+\code{    Int\_t }&\code{n\_hits\_od;  }&\code{ number hits in OD (even if vector is not written)}\\
+\code{    Int\_t }&\code{n\_daughters; }&\code{ number daughters (even if vector is not written)}\\
+\code{    Int\_t }&\code{n\_deposits;  }&\code{ number deposits (even if vector is not written)}\\
+\code{    Int\_t }&\code{n\_users;     }&\code{ number users (even if vector is not written)}\\
+\code{    Int\_t }&\code{n\_frames;    }&\code{ number frames (even if vector is not written)}\\
+\code{    Int\_t }&\code{write\_flag;  }&\code{=1 if frames are written in file; =2 if also hits, daughters, deposits and users are written}\\
+\end{tabular}
+\\
+\begin{tabular}{lll}
+\code{    std::vector<BxMcTruthFrame>   }&\code{frames;   }\\
+\code{    std::vector<BxMcTruthDaughter>}&\code{daughters;}\\
+\code{    std::vector<BxMcTruthDeposit> }&\code{deposits; }\\
+\code{    std::vector<BxMcTruthUser>    }&\code{users;    }\\
+\code{    std::vector<BxMcTruthHit>     }&\code{hits\_id; }\\
+\code{    std::vector<BxMcTruthHit>     }&\code{hits\_od; }\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Int\_t  }&\code{GetNHitsId    }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNHitsOd    }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNFrames    }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNDaughters }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNDeposits  }&\code{() const; }\\
+\code{    Int\_t  }&\code{GetNUsers     }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasFrames     }&\code{() const; }\\
+\code{    Bool\_t }&\code{HasHits       }&\code{() const; }\\
+\code{    BxMcTruthFrame\& }&\code{GetFrame      }&\code{(Int\_t i) const; }\\
+\code{    const std::vector<BxMcTruthFrame>\&    }&\code{GetFrames    }&\code{() const; }\\
+\code{    const std::vector<BxMcTruthDaughter>\& }&\code{GetDaughters }&\code{() const; }\\
+\code{    const std::vector<BxMcTruthDeposit>\&  }&\code{GetDeposits  }&\code{() const; }\\
+\code{    const std::vector<BxMcTruthUser>\&     }&\code{GetUsers     }&\code{() const; }\\
+\code{    const std::vector<BxMcTruthHit>\&      }&\code{GetHitsId    }&\code{() const; }\\
+\code{    const std::vector<BxMcTruthHit>\&      }&\code{GetHitsOd    }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxMcTruthFrame}
+
+Each (eventually piled up) physical particle is associated to a frame
+\noindent private members:\\ 
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{10cm}}
+\code{    UShort\_t }&\code{file\_id;         }&\code{progressive number for bx\_elec input files. o-based.}\\
+\code{    Double\_t }&\code{elec\_event\_time;}&\code{relative to trg time, ns}\\
+\code{    Int\_t    }&\code{event\_id;        }&\code{event number in bx\_elec input file.}\\
+\code{    Int\_t    }&\code{n\_sequence;      }&\code{Sequence number of isotope in the chain, 1 based}\\
+\code{    Int\_t    }&\code{isotope\_coinc;   }&\code{1 if it's part of a chain, related to his father by dt<??h ($\rightarrow$same position), 0 otherwise.}\\
+\code{    Int\_t    }&\code{pdg;              }&\code{Particle Data Group Code of the Particle}\\
+\code{    Double\_t }&\code{time;             }&\code{Absolute time after run start, ns}\\
+\code{    Float\_t  }&\code{energy;           }&\code{Kinetic energy, MeV}\\
+\code{    Float\_t  }&\code{visible\_energy;  }&\code{Quenched energy, MeV}\\
+\code{    Float\_t  }&\code{position  [3]     }&\code{3D vector of the particle generation point, m}\\
+\code{    Float\_t  }&\code{baricenter[3]     }&\code{Baricenter of the emitted light, m}\\
+\code{    Float\_t  }&\code{direction [3]     }&\code{Direction of the particle, cos dir.}\\
+\code{    Int\_t    }&\code{id\_npe           }&\code{Number of photoelectrons in the ID (size of the vector hit\_id\_v)}\\
+\code{    Int\_t    }&\code{od\_npe           }&\code{Number of photoelectrons in the OD (size of the vector hit\_od\_v)}\\
+\code{    Int\_t    }&\code{n\_daughters;     }&\code{Number of daughters}\\
+\code{    Int\_t    }&\code{n\_deposits;      }&\code{Number of deposits}\\
+\code{    Int\_t    }&\code{n\_users;         }&\code{Number of deposits}\\
+\code{    Int\_t    }&\code{n\_id\_photons;   }&\code{Number of generated photons in the ID}\\
+\code{    Int\_t    }&\code{n\_od\_photons;   }&\code{Number of generated photons in the OD}\\
+\end{tabular}
+%\pagebreak
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    UShort\_t }&\code{GetFileId        }&\code{() const; }\\
+\code{    Double\_t }&\code{GetElecEventTime }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetEventId       }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNSequence     }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetIsotopeCoinc  }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetPdg           }&\code{() const; }\\
+\code{    Double\_t }&\code{GetTime          }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetEnergy        }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetVisibleEnergy }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPosition      }&\code{(Int\_t) const; }\\
+\code{    Float\_t  }&\code{GetBaricenter    }&\code{(Int\_t) const; }\\
+\code{    Float\_t  }&\code{GetDirection     }&\code{(Int\_t) const; }\\
+\code{    Int\_t    }&\code{GetIdNpe         }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetOdNpe         }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNDaughters    }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNUsers        }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNIdPhotons    }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNOdPhotons    }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetNDeposits     }&\code{() const; }\\
+\end{tabular}
+
+
+\subsubsection{BxMcTruthDaughter}
+
+Each Daughter refers to an interaction product.
+\noindent private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Int\_t    }&\code{num\_frame;   }&\code{frame the daughter belongs to in frames array }\\
+\code{    Int\_t    }&\code{id;           }&\code{Progressive order, 1-based}\\
+\code{    Int\_t    }&\code{pdg;          }&\code{Particle Data Group code.}\\
+\code{    Double\_t }&\code{time;         }&\code{Absolute time from run start, ns.}\\
+\code{    Float\_t  }&\code{energy;       }&\code{Physical particle energy, KeV. }\\
+\code{    Float\_t  }&\code{position[3];  }&\code{3D vector of the interaction point, m}\\
+\code{    Float\_t  }&\code{direction[3]; }&\code{3D vector of the particle direction, cos dir}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Int\_t    }&\code{GetNumFrame  }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetId        }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetPdg       }&\code{() const; }\\
+\code{    Double\_t }&\code{GetTime      }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetEnergy    }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPosition  }&\code{(Int\_t i) const; }\\
+\code{    Float\_t  }&\code{GetDirection }&\code{(Int\_t i) const; }\\
+\end{tabular}
+
+\subsubsection{BxMcTruthDeposit}
+
+Individual energy losses within a daughter's decay path
+\noindent private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Int\_t    }&\code{num\_frame;   }&\code{frame the deposit belongs to in frames array }\\
+\code{    Int\_t    }&\code{pdg\_parent;  }&\code{Particle Data Group code of the daughter}\\
+\code{    Float\_t  }&\code{energy;       }&\code{Energy loss, MeV}\\
+\code{    Float\_t  }&\code{position[3];  }&\code{3D vector of deposit's position, m}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Int\_t    }&\code{GetNumFrame  }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetPdgParent }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetEnergy    }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPosition  }&\code{(Int\_t i) const; }\\
+\end{tabular}
+
+\subsubsection{BxMcTruthUser}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Int\_t    }&\code{num\_frame; }&\code{frame it refers to in frames array}\\
+\code{    Int\_t    }&\code{int1;       }&\code{free for users' usage}\\
+\code{    Int\_t    }&\code{int2;       }&\code{free for users' usage}\\
+\code{    Float\_t  }&\code{float1;     }&\code{free for users' usage}\\
+\code{    Float\_t  }&\code{float2;     }&\code{free for users' usage}\\
+\code{    Double\_t }&\code{double1;    }&\code{free for users' usage}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Int\_t    }&\code{GetNumFrame }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetInt1   }&\code{() const; }\\
+\code{    Int\_t    }&\code{GetInt2   }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetFloat1 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetFloat2 }&\code{() const; }\\
+\code{    Double\_t }&\code{GetDouble }&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxMcTruthHit}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Int\_t    }&\code{num\_frame; }&\code{frame the hit belongs to in frames array }\\
+\code{    UShort\_t }&\code{lg;         }&\code{logical channel (1 based) }\\
+\code{    Float\_t  }&\code{time;       }&\code{tracking time (ns), referred to frame's time}\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Int\_t    }&\code{GetNumFrame }&\code{() const; }\\
+\code{    UShort\_t }&\code{GetLg       }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetTime     }&\code{() const; }\\
+\end{tabular}
+
+
+%\btab
+%\begin{tabular}{c|l}
+%\hline
+%  value       &      background source\\
+%\hline 
+% (1000+xxx)   &      $^{238}U$ chain, $\alpha$ or $\beta$ with $\gamma$'s.\\ 
+%-(1000+xxx)   &      $^{238}U$ chain, $\alpha$ or $\beta$ with no $\gamma$'s.\\ 
+% (2000+xxx)   &      $^{232}Th$ chain, $\alpha$ or $\beta$ with $\gamma$'s.\\
+%-(2000+xxx)   &      $^{232}Th$ chain, $\alpha$ or $\beta$ with no $\gamma$'s.\\ 
+%  3001        &      $^{40}K$ pure $\gamma$.\\                         
+% -3000        &      $^{40}K$ pure $\beta$.\\
+% -5000        &      $^{14}C$ pure $\beta$.\\
+% -7000        &      $^{85}Kr$ pure $\beta$.\\
+% -7001        &      $^{85}Kr$ $\beta$ to $^{85m}Rb$\\
+%  7001        &      $^{85m}Rb$ $\gamma$.\\
+%   777        &      Event of arbitrary energy ( for tests\footnote{Same as itipo=6, see \ref{tab:itipo}} )\\
+%\hline
+% value        &      neutrino emission\\
+%\hline
+%1 & $P-P$\\
+%2 & $He-P$\\ 
+%3 & $^8B$\\   
+%4 & $^{13}N$\\  
+%5 & $^{15}O$\\  
+%6 & $^{17}F$\\  
+%7 & $^{7}Be$ ($384KeV$)\\
+%8 & $^{7}Be$ ($861KeV$)\\ 
+%9 & $pep$\\  
+%\end{tabular}
+%\captab{jdecad}{Possible geneb\_jdecad values for background and neutrino events. See geneb documentation for more details and for xxx values.}
+%\etab
+
+%\btab
+%\begin{tabular}{c|l}
+%\hline
+%  value       &      isotope in $^{238}U$ chain\\
+%\hline 
+%        1 &     $^{238}U$\\
+%        2 &     $^{234}Th$\\
+%        3 &     $^{234}Pa$\\
+%        4 &     $^{234}U$\\
+%        5 &     $^{230}Th$\\
+%        6 &     $^{226}Ra$\\
+%        7 &     $^{226}Rn$\\
+%        8 &     $^{218}Po$\\
+%        9 &     $^{214}Pb$\\
+%       10 &     $^{214}Bi$\\
+%       11 &     $^{214}Po$\\
+%       12 &     $^{210}Pb$\\
+%       13 &     $^{210}Bi$\\
+%       14 &     $^{210}Po$\\ 
+% \hline 
+%  value       &      isotope in $^{232}Th$ chain\\
+%\hline 
+%        1 &     $^{232}Th$\\
+%        2 &     $^{228}Ra$\\
+%        3 &     $^{228}Ac$\\
+%        4 &     $^{228}Th$\\
+%        5 &     $^{224}Ra$\\
+%        6 &     $^{220}Rn$\\
+%        7 &     $^{216}Po$\\
+%        8 &     $^{212}Pb$\\
+%        9 &     $^{212}Bi$\\
+%       10 &     $^{212}Po$\\
+%       11 &     $^{208}Tl$\\
+%  \hline 
+% \end{tabular}
+%\captab{isotopo}{Possible geneb\_isotopo values for background events. Meaningful only for jdecad=$\pm$1xxx or =$\pm$2xxx.}
+%\etab
+    
+%\btab
+%\begin{tabular}{c|l}
+%\hline
+%  value       &      interaction type\\
+%\hline 
+%          1 &     pure $\alpha$\\
+%          2 &     pure $\beta$\\
+%          3 &     $\alpha + \gamma's$\\
+%          4 &     $\beta +  \gamma's$\\
+%          5 &     $e^-$-capture + $\gamma$'s\\
+%          6 &     Event of arbitrary energy ( for tests\footnote{Same as jdecad = 777, see \ref{tab:jedecad}} )\\
+%\hline 
+%\end{tabular}
+%\captab{itipo}{Possible geneb\_itipo values for background events.}
+%\etab
+
+\subsection{BxNeutron}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Bool\_t }&\code{is\_enabled;    }&\code{ file found }\\
+\code{    Bool\_t }&\code{is\_associated; }&\code{ trgid/time associated }\\
+\code{    Int\_t }&\code{n\_neutrons; }&\code{ number of neutron candidates }\\
+\end{tabular}
+\\
+\begin{tabular}{lll}
+\code{    std::vector<BxNeutronPulse>   }&\code{pulses;   }\\
+\end{tabular}
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Bool\_t  }&\code{IsEnabled     }&\code{() const; }\\
+\code{    Bool\_t  }&\code{IsAssociated  }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNPulses    }&\code{() const; }\\
+\code{    Int\_t   }&\code{GetNNeutrons  }&\code{() const; }\\
+\code{    const BxNeutronPulse\& }&\code{GetNeutronPulse}&\code{(Int\_t i) const; }\\
+\code{    const std::vector<BxNeutronPulse>\&    }&\code{GetNeutronPulses}&\code{() const; }\\
+\end{tabular}
+
+\subsubsection{BxNeutronPulse}
+
+private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Float\_t }&\code{charge;    }&\code{charge as pulse area; ADC bins $\cdot$ ns; }\\
+\code{    Float\_t }&\code{amplitude; }&\code{charge as peak amplitude; ADC bins 0-255; }\\
+\code{    Float\_t }&\code{peak\_time;}&\code{peak time position in ns after muon time }\\
+\code{    Float\_t }&\code{rise\_time;}&\code{peak standard deviation; ns }\\
+\code{    Float\_t }&\code{fall\_time;}&\code{1/tau from the exponential fit; ns}\\
+\code{    Float\_t }&\code{x;         }&\code{position of pulse, x}\\
+\code{    Float\_t }&\code{y;         }&\code{position of pulse, y}\\
+\code{    Float\_t }&\code{z;         }&\code{position of pulse, z}\\
+\code{    Float\_t }&\code{dx;        }&\code{position of pulse, error on x}\\
+\code{    Float\_t }&\code{dy;        }&\code{position of pulse, error on y}\\
+\code{    Float\_t }&\code{dz;        }&\code{position of pulse, error on z}\\
+\end{tabular}
+\newpage
+\noindent public getters:\\*
+\begin{tabular}{lll}
+\code{    Float\_t  }&\code{GetCharge    }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetAmplitude }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPeakTime  }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetRiseTime  }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetFallTime  }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetX         }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetY         }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetZ         }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDX        }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDY        }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDZ        }&\code{() const; }\\
+\end{tabular}
+
+
+\subsection{BxTrack}
+
+Pure virtual class, base for \code{BxTrackByPoints} and \code{BxTrackFitted} 
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{    Float\_t  }&\code{GetTheta         }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPhi           }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetImpact        }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDistance      }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDistanceError }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDistanceSigma }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPathSSS       }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPathIV        }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPathBuffer    }&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsUpward         }&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsDownward       }&\code{() const; }\\
+\code{    Bool\_t   }&\code{IsTracked        }&\code{() const; }\\
+\end{tabular}
+
+\newpage
+\subsubsection{BxTrackByPoints}
+
+This class inherits from \code{BxTrack}, all his public getters are available
+
+\noindent private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }l}
+\code{    Float\_t }&\code{t1;}&\code{'entry' point: time of crossing; 0-8500ns}\\
+\code{    Float\_t }&\code{x1;}&\code{'entry' point: x (m);}\\
+\code{    Float\_t }&\code{y1;}&\code{'entry' point: y (m);}\\
+\code{    Float\_t }&\code{z1;}&\code{'entry' point: z (m);}\\
+\code{    Float\_t }&\code{t2;}&\code{'exit' point: time of crossing; 0-8500ns}\\
+\code{    Float\_t }&\code{x2;}&\code{'exit' point: x (m);}\\
+\code{    Float\_t }&\code{y2;}&\code{'exit' point: y (m);}\\
+\code{    Float\_t }&\code{z2;}&\code{'exit' point: z (m);}\\
+\code{    Float\_t }&\code{dx1;}&\code{'entry' point: error on x (m); }\\
+\code{    Float\_t }&\code{dy1;}&\code{'entry' point: error on y (m);}\\
+\code{    Float\_t }&\code{dz1;}&\code{'entry' point: error on z (m);}\\
+\code{    Float\_t }&\code{dx2;}&\code{'exit' point: error on x (m);}\\
+\code{    Float\_t }&\code{dy2;}&\code{'exit' point: error on y (m);}\\
+\code{    Float\_t }&\code{dz2;}&\code{'exit' point: error on z (m);}\\
+\code{    Bool\_t }&\code{downward;}&\code{true for downward going muons }\\
+\end{tabular}
+
+\noindent additional specific public getters:\\
+\begin{tabular}{lll}
+\code{    Float\_t  }&\code{GetT1 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetX1 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetY1 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetZ1 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetT2 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetX2 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetY2 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetZ2 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDX1 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDY1 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDZ1 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDX2 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDY2 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDZ2 }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPedalT }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPedalX }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPedalY }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetPedalZ }&\code{() const; }\\
+\end{tabular}
+
+\pagebreak
+
+\subsubsection{BxTrackFitted}
+
+This class inherits from \code{BxTrack}, all his public getters are available.
+
+\noindent private members:\\*
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{10cm}}
+\code{    Double\_t }&\code{alpha;       }&\code{3-D fit parameter }\\
+\code{    Double\_t }&\code{beta;        }&\code{3-D fit parameter }\\
+\code{    Double\_t }&\code{gamma;       }&\code{3-D fit parameter }\\
+\code{    Double\_t }&\code{delta;       }&\code{3-D fit parameter }\\
+\code{    Double\_t }&\code{alpha\_error;}&\code{3-D fit parameter error}\\
+\code{    Double\_t }&\code{beta\_error; }&\code{3-D fit parameter error}\\
+\code{    Double\_t }&\code{gamma\_error;}&\code{3-D fit parameter error}\\
+\code{    Double\_t }&\code{delta\_error;}&\code{3-D fit parameter error}\\
+\code{    Float\_t  }&\code{chi2;        }&\code{3-D fit chi2}\\
+\code{    Int\_t    }&\code{points;   }&\code{points used in fit; bitfield 0=entry OD; 1=exit OD; 2=entry ID; 3=exit ID; 4-7=unused
+ }\\
+\code{    Bool\_t   }&\code{downward;    }&\code{true for downward going muons }\\
+\end{tabular}
+
+\noindent additional specific public getters:\\
+\begin{tabular}{lll}
+\code{    Float\_t  }&\code{GetAlpha      }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetBeta       }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetGamma      }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDelta      }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetAlphaError }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetBetaError  }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetGammaError }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetDeltaError }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetChi2       }&\code{() const; }\\
+\code{    Float\_t  }&\code{GetNPoints    }&\code{() const; }\\
+\code{    Bool\_t   }&\code{HasPoint      }&\code{(Int\_t i) const; }\\
+\end{tabular}
+
+\pagebreak
+
+\subsection{BxPhysTags}
+
+This class is written by the \code{bxfilter} package durinmg DST creation, and is empty in plain Echidna rootfiles. Included for completion. The vector cointained in class \code{BxEvent} includes \code{tags[1]...[n]} each referring to individual laben clusters if available. If no clusters are found \code{tags[0]} refers to the event.
+
+\noindent private members:\\
+\begin{tabular}{ll@{\hspace{2ex}\code{//} }p{7cm}}
+\code{  float}&\code{var\_user\_0;}&\code{user variable}\\
+\code{  float}&\code{var\_user\_1;}&\code{user variable}\\
+\code{  float}&\code{var\_user\_2;}&\code{user variable}\\
+\code{  float}&\code{var\_user\_3;}&\code{user variable}\\
+\code{  float}&\code{var\_user\_4;}&\code{user variable}\\
+\code{  float}&\code{var\_user\_5;}&\code{user variable}\\
+\code{  unsigned long long}&\code{tags;}&\code{official tags}\\
+\code{  unsigned long}&\code{tags\_user;}&\code{user tags}\\
+\code{  short int}&\code{coincidence\_id;}&\code{in coincidences: evnum of father.}\\
+\code{  short int}&\code{coincidence\_index;}&\code{in coincidences: progressive particle idl, 0-based}\\
+\code{  short int}&\code{nsiblings;}&\code{in coincidences: total number of events}\\
+\code{  float}&\code{coincidence\_dt;}&\code{in coincidence daughter: delay from father, us}\\
+\code{  float}&\code{coincidence\_distance;}&\code{in coincidence daughter: distance from father, m}\\
+\code{  float}&\code{coincidence\_duration;}&\code{in coincidences: delay of last daughter, us}\\
+\end{tabular}
+
+Note on coincidences, if event x and x+1 are in coincidence and so are x+1 and x+2, the three or more events are treated as a sequence with a single father (x) to which all daughters are related. Coincidence varaibles above are filled accordingly and let to 0 for non coincident events. 
+
+\noindent public getters:\\
+\begin{tabular}{lll}
+\code{  bool   }&\code{get\_tag      }&\code{(tag\_id) const; }\\
+\code{  bool   }&\code{get\_tag\_user}&\code{(user\_tag\_id) const; }\\
+\code{  float  }&\code{get\_var\_user}&\code{(int i) const; }\\
+\code{  int    }&\code{get\_coincidence\_id   }&\code{() const; }\\
+\code{  int    }&\code{get\_coincidence\_index}&\code{() const; }\\
+\code{  int    }&\code{get\_nsiblings         }&\code{() const; }\\
+\code{  float  }&\code{get\_coincidence\_dt   }&\code{() const; }\\
+\code{  float  }&\code{get\_coincidence\_duration}&\code{() const; }\\
+\code{  float  }&\code{get\_coincidence\_distance}&\code{() const; }\\
+\end{tabular}
+
+\begin{sidewaystable}
+\begin{tabular}{llp{16cm}}
+name&number&explanation\\
+\hline
+anytag               & 1  &OR of all other tags\\
+fast                 & 5  &within 2ms from following or preceeding candidate\\
+muon		     & 10 &muon\_1 OR muon\_2\\
+muon\_daughter	     & 11 &within 2ms after muon\\
+muon\_1		     & 12 &muon\_1\_strict OR muon\_1\_special OR ((tt=1 OR tt=2) AND (meantime$>$100ns OR peaktime$>$30ns))\\
+muon\_daughter\_1    & 13 &within 2ms after a muon\_1\\
+muon\_2		     & 14 &(tt=1 OR tt=2) AND nclusters=0 AND (MTB OR MCR OR muon.ndecoded\_hits$>$25 OR muon.nclusters$>$1 OR (muon.nclusters=1 AND muon.cluster\_time in time with trigger).\\
+muon\_daughter\_2    & 15 &within 2ms after a muon\_2 \\
+muon\_cngs	     & 16 &time coinc with beam spill. no other cut.\\
+muon\_daughter\_cngs & 17 &within 2ms after a muon\_cngs\\
+muon\_1\_strict	     & 18 &tt=1 AND nclusters$>$0 AND (MTB OR MCR OR IDF).\\
+muon\_1\_special     & 19 &(nraw\_hits$>$200 AND ndecoded\_hits$<$0.05$\cdot$nraw\_hits) OR ((tt=1 OR tt=2) AND nclusters$>$0 AND (MTB+service trigger OR out of gate))\\
+neutron		     & 20 &currently unused\\
+C10		     & 25 &currently unused\\
+C11  		     & 26 &currently unused\\	 
+Bi212		     & 31 &as in official Th analysis\\
+Po212		     & 32 &as in official Th analysis\\
+Bi214		     & 33 &as in official U analysis\\
+Po214		     & 34 &as in official U analysis\\
+Kr85 		     & 35 &as in official Kr analysis\\
+Rb85		     & 36 &as in official Kr analysis\\
+nubar		     & 45 &currently unused\\
+\hline
+\end{tabular}
+\captab{tags}{official physics tags values set by bxfilter package.}
+\end{sidewaystable}

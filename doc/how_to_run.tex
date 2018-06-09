@@ -1,0 +1,76 @@
+\section{HOWTO run Echidna}
+\label{sec:run}
+
+System requirements: Operating System, CPU, memory, compilers, libraries and packets installed, etc. are defined in Release Notes for every cycle. 
+
+If you are running on the Borexino cluster in Gran Sasso (e.g. on \code{bxmaster}) these requirements are automatically met as the system administrator takes care of it.
+However, as mentioned in the cluster tutorial (http://bxweb.lngs.infn.it/echidna/cluster\_tutorial.html), 
+this requires that the \code{.bash\_rc} and \code{.bash\_profile} configuration files in your home area are including (sourcing) the file \code{/home/environmental\_setup}.
+
+
+\subsection{Getting the code}
+\label{sec:run_get}
+
+The Echidna code is stored in Borexino official cvs repository in Gran Sasso.
+
+In the Borexino cluster cvs is already set up for you.
+Otherwise you simply need to set the following environmental variable:
+\qcode{CVSROOT = bxmaster.lngs.infn.it:/home/cvs/}
+
+Then you download the code with the following standard cvs command:
+\qcode{cvs co -r cycle\_2 Echidna}
+where ``\code{cycle\_2}'' is the name of the branch you want to get.
+If you don't specify it (i.e. you omit the \code{-r} option), you get the latest branch.
+This may eventually be an unstable developing version, not the right one for testing.
+
+
+\subsection{Compilation}
+\label{sec:run_make}
+
+A Makefile is provided, simply do:
+\qcode{make}
+
+This generates three files:
+\bde
+\item[\code{echidna}]. The executable you will run.
+\item[\code{libechinda.so}]. Echidna internal library. 
+  Nothing special about it, just leave it in peace.
+\item[\code{root/rootechidna.so}]. Echidna ROOT library. 
+  You will need to load this into ROOT (after echidna exedcution) when you want to look at the ROOT file echidna has produced for you (\sec{root_event_for_users}). 
+\ede
+
+
+\subsection{Setting up the Database connection}
+\label{sec:run_db}
+
+If you are working on Borexino Cluster there is nothing you have to do, skip to next section.
+
+If not, you will need to setup the IP address of the DB server, before you can run.
+
+This can be done adding the following line to the file \code{user.cfg} (\sec{custom_user_cfg}) in the main Echidna directory:
+\qcode{bx\_dbi.SERVER1 bxdb.lngs.infn.it}
+
+In addition, the IP address \emph{from}  which you connect to DB must be in the list of authorized addresses of the Postrgres server in Gran Sasso.
+If you are working on a machine of an institute of the Borexino collaboration this may be already the case.
+If not or if you are running at home, you need to send an email to the cluster administrator with the IP address you want to be authorized.
+
+If you want to use a different DB server (mirrors in other institutions) use that address and contact its system administrator for authorization.
+
+If finally you want to install a local copy of the database, you find instructions in\cite{???}.
+Then you will need:
+\qcode{bx\_dbi.SERVER1 127.0.0.1}
+in your \code{user.cfg} file
+
+
+\subsection{Running Echidna}
+\label{sec:run_run}
+
+You can run echidna calling directly the executable (no launching script is used.):
+\qcode{./echidna -f run://XXXX}
+where XXXX is the number (not the filename!) of the run you want to process .
+
+The rawdata file will be automatically retrieved through TCP/IP from the official Borexino storage in Gran Sasso.
+
+If you need instead to process a local rawdata file, you can do it with:
+\qcode{./echidna -f filename}
+

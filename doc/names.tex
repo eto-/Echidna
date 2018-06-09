@@ -1,0 +1,102 @@
+\section{Name conventions}
+\label{sec:names}
+
+Echidna enforces the use of name conventions for the sake of omogeneity of the code as a whole.
+Any Echidna developer is required to follow the guidelines expressed here.
+
+
+\subsection{Capitals and word separation}
+\begin{itemize}
+\item 
+  Capital letters are never allowed anywhere in the code. 
+\item 
+  Word separation in symbols is done through '\_' (underscore) character.
+\end{itemize}
+
+The only exception to both these rules are the ROOT classes (i.e., those derived from \code{TObject}).
+For this ROOT names convention is followed, i.e. the First letter is capitalized and no separator is used among words. 
+
+
+\subsection{Variables and methods}
+Private class members must start with:
+\begin{itemize}
+\item 
+  'i1\_', 'i2\_, 'i4\_' for char, short, int/long respectively.
+\item 
+  'u1\_', 'u2\_, 'u4\_' for unsigned char, unsigned short, unsigned int/long respectively.
+\item 
+  'f4\_', 'f8\_' for float and double respctively.
+\item 
+  's\_' for a string or a C-like char*. 
+\item 
+  'b\_' for a bool.
+\item
+  'm\_' for helper method.
+\end{itemize}
+
+the above conventions do not apply to ROOT classes.
+
+[SG]etters must match the variable name they want to [sg]et, preceeded by a '[sg]et\_'.
+
+
+\subsection{Modules}
+
+Most classes and surely all modules must have a name starting with 'bx\_'.
+A module is a \emph{device} performing an operation, it is not the operation itself. So, for example, a module performing the splitting will be called \code{bx\_splitter} rather then \code{bx\_splitting}.
+The module name must not include the word module.
+
+
+\subsection{Event references}
+
+The \code{doit()} method of every module recieves a pointer to a \code{bx\_reco\_event}. This should be named simply 'e'.
+References to subevents from/to which the module reads/writes should be named 'er'/'ew'.
+
+
+\subsection{Header comment}
+Both '.cc' and '.hh' files should start with a large comment like the following:
+
+\noindent\code{/\** BOREXINO Reconstruction program\\
+ \**\\
+ \** Author    : Name Surname < email address >\\
+ \** Maintainer: Name Surname < email address >\\
+ \**\\
+ \** \$Id\$\\
+ \**\\
+ \** This class is ...\\
+ \** ...\\
+ \** blah blah blah\\
+ \** ...\\
+ \**\\
+\**/\\}
+
+The compuond \code{'\$Id\$'} is expanded by cvs after the first commit and will hold useful informations.
+
+The descriptive comment on the class idea should go into the '.hh' file, the '.cc' should hold a comment like:
+
+\code{* Implementation for bx\_thisandthat.hh}
+
+plus any technical comment upon implementation issue.
+In other words, the class user should not need to look at the '.cc' file.
+
+Optionally the file can be ended by a comment like the following:
+
+\noindent\code{/\**\\
+ \** \$Log\$
+\**/\\}
+
+
+which cvs will expand with the list of all commit logs.
+This can be useful or cumbersome, so its use is left to the file author.
+
+
+\subsection{Files}
+
+File names must match the name of the class they define/implement.
+If more then one class is defined/implemented in a file, the most used one should be used for the file name.
+
+
+\subsection{Indentation}
+
+Indentation should be done with 2 spaces. 
+A number of other suggestions could be specified upon where to put spaces and newlines, 
+but the easiest thing, for the developer that wants to stick to general conventions, is to look at existing code.

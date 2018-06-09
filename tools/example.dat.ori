@@ -1,0 +1,94 @@
+#####StartGeant4
+
+#
+# Macro file for the initialization phase of "borlight.cc"
+#
+# Sets some default verbose
+# and run parameters
+#
+#	Here you can chose the verbose levels
+/control/verbose 2
+/process/verbose 2
+/control/saveHistory
+/run/initialize
+# you have to specify
+#       the type (B)uffer or (R)adial, the 
+#       patch panel (1-19) and the number 
+#       of photons per event (pulse - default is 10)
+/Borex/laser/patch 7 
+/Borex/laser/type  B
+/Borex/laser/wavelenght 355
+/Borex/laser/pulse 20
+#/vis/camera/pan 0 -100
+#/vis/viewer/viewpointThetaPhi 0.01 90
+#/tracking/storeTrajectory 1
+#	Here you put the Energy of the Paricle
+#/gun/energy .01 MeV
+#	Here you put the particle type
+#       Alpha or Beta
+/Borex/source/type LaserRun
+# Create empty scene ("world" is default)
+#/vis/scene/create
+# Add volume to scene
+#/vis/scene/add/volume
+#
+#/vis/viewer/set/lineSegmentsPerCircle 64
+#/vis/sceneHandler/create OGLSXm
+#/vis/sceneHandler/create DAWNFILE
+#/vis/viewer/create
+#/vis/scene/add/axes      0 0 0 5000 mm
+#	Here you put the sourse position:
+#	Center - in the center of Borexino
+#/Borex/source/position Center
+#	Here you can can chose how much info you want to save:
+#	detected - to save info only about registered photons
+#	all      - to save info about all emitted photons
+#/Borex/source/position gun
+#/gun/position 5400.0 0.0 0.0 mm
+#/Borex/source/direction gun
+#/gun/direction -1.0 0.0 0.0
+/Borex/event/save all
+#/tracking/storeTrajectory 1
+/run/beamOn 2000
+#/vis/viewer/update
+
+#####StopGeant4
+
+
+#####StartElecInput
+
+MaxEvents: 1E5				# The max number of events to read from 
+EventRate: 1E1				# The rate ov events if the abstime of 
+OverrideEventTime: true			# Imprtant: has to be set true if the 
+MCTruthCopyTrakingHits: true
+EndOfBlock
+
+#####StopElecInput
+
+
+
+#####StartElecUser
+
+Run: 2066			# the run number
+GatelessHits: false		# enable gateless hits. !!!Do not enable!!!
+PmtDarkNoise: false		# add the dark noise to the pmts
+MaxEvents: 1E7	 		# max events -1 for infinite
+CalibrationEvents: 0		# calibration events 0 or 1000: 0 is fine if precalib data are present in db
+StartTime: 1/9/3/16/5		# start time as day/month/year/hour/minute/s
+MaxTime: 8.64E4			# max seconds the detector runs (default a day)
+DefLabenDarkRate: 0		# dark rate for the internal pmts
+DefLabenThresholdBin: 10	# default threshold for the laben channels
+BTBThreshold: 20		# main trigger threshold
+TriggerJitter: false		# add the trigger formation time jitter
+PmtTTS: true			# add the PMT TTS (~1.4ns)
+RandomSeed: 537912		# The random seed
+DbSettings: data/bx_rec/bx_dbconfig.inp	
+				# This files store the settings of the database
+				# (db type, db machine, db user ...)
+				# This point to the description file list 
+				# (see comment in input/InputFileList.txt).
+
+#DisableChannel: 0		# A line for each logical channel to be disabled
+#DisableCrate: 1		# A line for each crate (1-14) to be disabled
+
+#####StopElecUser

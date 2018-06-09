@@ -1,0 +1,146 @@
+\section{Configuration files and options}
+\label{sec:conffile}
+The configuration source in Echidna comes from 2 files and from command line, which are processed by the 
+configuration\_manager (see \S\ref{sec:parameters}); this section will explain the syntax and the general 
+usage of the files and options. 
+
+Parameters leave in namespaces then to identify them is required the namespace name; the choosed syntax is
+{\bf namespace\_name.parameter\_name} which is called {\bf Full Qualified Parameter Name} (FQPN).
+Since the namespace name is the same as the bx\_named name owning that namespace this syntax
+defines the \code{object\_name.parameter\_name} adressing of the parameter.\\
+Relative parameter names can be used only inside the bx\_named objects or in the relative initialization
+stanzas (see below), elsewhere a parameter is identified by its FQPN.
+
+\subsection{echidna.cfg}
+\label{sec:conf_ech_cfg}
+It's the main configuration file; it contains the initialization of the program and should never modified 
+by users. It contains a list of {\bf stanzas}; empty lines are skipped as well comments starting with the 
+character "{\bf \#}".
+A stanza is a set of {\bf assegnation lines} preceded and ended by special keywords as in the following examples:
+\vskip 2mm
+\begin{minipage}{5cm}
+\begin{verbatim}
+<module bx_laben_decoder>
+priority 20
+enable 1
+discard_out_of_gate_hits 0
+disable_lg { }
+<end>
+\end{verbatim}
+\end{minipage}
+\begin{minipage}{\textwidth}
+start stanza of type {\it module} and name {\it bx\_laben\_decoder}\\
+initialize the parameter {\it priority} to {\it 20}\\
+initialize the parameter {\it enable} to {\it 1}\\
+initialize the parameter {\it discard\_out\_of\_gate\_hits} to {\it 0}\\
+initialize the parameter {\it disable\_lg} to an empty vector\\
+end the stanza
+\end{minipage}
+\vskip 2mm
+
+\noindent The first keyword has the form \code{<{\bf stanza\_type} {\bf stanza\_name}>}; stanza\_name is the name 
+of the stanza (an arbitrary string from the point of view of the syntax), while stanza\_type is one of \code{named},
+\code{module} and \code{config}. Each stanza is ended by the special keyword \code{<end>}.\\
+The stanza body is a list of assegnation with the syntax \code{{\bf parameter\_name} {\bf parameter\_value}(s)} 
+(one for line) as shown in the previus example; these assegnations assign parameter\_value values to 
+the parameter\_name parameters.
+
+The stanza types are:
+\begin{itemize}
+\item \code{named}: this stanza initializes a parameters namespace whose name is stanza\_name; the role of 
+such stanzas is to initialize the default status (parameter values) of bx\_named objects in Echidna.
+Each assignement line initialize the specified parameter to the specified value; initializing a parameter
+differs from a setting it as explained below and in \sec{custom_param}.
+
+The meaning of the parameters and the accepted types/values fully depend on the target bx\_named objects;
+one of the role of these initialization stanzas is to collect the information on the parameters in one file
+with their default values (and maybe some comments).
+
+In these stanzas, since the name of the targets bx\_named is well known, the parameter addressing is done only
+by the relative parameter name (simply its name).
+\item \code{module}: initialize a bx\_base\_module object with name stanza\_name in the same way a named
+stanza initialize a bx\_named object. Moreover the specified module is added to the list of objects created by the
+module\_factory (\S\ref{sec:modfactory}).
+The initialization rules and the paramer addressing rules are the same than in a named stanza.
+
+Some predefined parameters are relevant:
+\begin{itemize}
+\item \code{enable}: can be 0 or 1 for disabling or enabling the module.
+\item \code{priority}: select the priority (integer values) of the module in the framework. The modules with low priority
+are executed before modules with high priority.
+\end{itemize}
+\item \code{config}: create a configuration with name stanza\_name which can be choosed at runtime by Echidna arguments.
+Configurations are collection of parameter redefinements whose role is to override the default state of bx\_named 
+(and modules) in atomic operations, instead of overriding each parameter manually\footnote{Config stanzas are usefull to
+set Echidna in some often used configurations.}
+
+A config stanza body is a list of assegnations where parameter are identified by their FQPN; once a specific configuration
+is selected those assignement will be set (not initializated); later reconfiguration can be done by user file or by 
+command line.
+
+At list one configuration has to be present, the {\bf default} one (even with empty body); when no other configurations
+are specified on command line, this configuration is used.
+\end{itemize}
+
+\subsection{user.cfg}
+\label{sec:conf_user_cfg}
+The role of this file is to specify a set of overrides local to the user. The file consists of
+a list of assegnation lines (almost with the same syntax of the config stanza body); parameters
+are addressed by their FQPN, empty lines and comments (starting with '\#' character) are skipped.
+
+A small example from my code follows; I normally run without muons, my default file is Run 1612 (with
+the specified path) and sometime I happen to disable the \code{bx\_precalib\_laben\_check\_tdc} so that line
+is commented.
+\begin{verbatim}
+bx_event_reader.file_url file:///mnt/scratch/Borex/rawdata/Run001612_01.out.gz
+bx_precalib_muon_findpulse.enable 0
+bx_precalib_muon_pedestals.enable 0
+#bx_precalib_laben_check_tdc.enable 0
+bx_muon_decoder.enable 0
+\end{verbatim}
+
+
+\subsection{Echidna inline options}
+\label{conf_options}
+
+The main work on options is still to be done, only few options are present actually:
+\begin{itemize}
+\item \code{-v} increments the Echidna verbosity of one level (\S\ref{sec:messages}); several -v can be
+present to increment further the verbosity (actually since the default verbosity value is warn, only
+3 -v are usefull).
+\item \code{-q} decrement the Echidna verbosity of one level (\S\ref{sec:messages}); several -q can be
+present to decrement further the verbosity (actually since the default verbosity value is warn, only
+2 -q are usefull). This option is antagonist to -v.
+\item \code{-l <file\_path>} specify a logfile with path {\code file\_path}; if file\_path is absent no
+logfile is generated.
+\item \code{-c file\_path} specifies the path of the user.cfg file (default ./user.cfg)
+\item \code{-C file\_path} specifies the path of the echidna.cfg file (default ./echidna.cfg)
+\item \code{-p FQPN value} set to value the specified parameter; this assignement has the highest
+priority.
+\item \code{-f file\_url} set the input file url for the reader, equivalent to "\code{-p bx\_event\_reader.file\_url file\_url}.
+\item \code{-o file\_url} set the output file path for the writer, equivalent to "\code{-p bx\_event\_writer.file\_name file\_path}
+\item \code{-e max\_number\_of\_events} set the maximum number of processed events.
+\end{itemize}
+
+After the options (specified with a '-' character) the first words is the configuration name to be used; this configuration
+is checked to be present on the echidna.cfg file and if not an error is issued. Else the specified configuration is
+applied; if no configuration is given than the default one is used.
+Other fields after the configuration name are meaningless and generate an error.
+
+\subsection{Setting parameter}
+\label{sec:conf_param}
+The order in with the assignement are applied is relevant and is:
+\begin{enumerate}
+\item initialization stanzas (named and module)
+\item configuration (only the config stanza selected by user)
+\item user.cfg
+\item command line options specified with -p (or equivalent shortcuts).
+\end{enumerate}
+
+The assegnations other than which present in named and module stanzas do not initialize
+the parameters; this is not a critical problem. By the way a warning is generated to alert
+the user who is setting a uninitializated parameter\footnote{The following warning is issued:\\
+\code{\scriptsize
+>>> warn: bx\_event\_reader: assigning value to unknown parameter "junk" will initialize it. Check for syntax error
+}\\
+Which report for an uninitializated parameter \code{junk} and module \code{bx\_event\_reader}.}.

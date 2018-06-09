@@ -1,0 +1,80 @@
+% Echidna main documentation
+%
+% Author: Alessandro Razeto <Alessandro.Razeto@ge.infn.it>
+%
+% $Id: echidna_doc.tex,v 1.5 2009/04/21 18:57:19 ddangelo Exp $
+%
+% Main file for documentation.
+% Each documentation section should be written in a devoted file
+% and included here using \input{filename} directive.
+% A section file should not have any latex heading except \section command,
+% a possible structure is:
+% \section{foo}
+% ...
+% \subsection{bar}
+% ...
+% \subsection{bar2}
+% ...
+% and so on.
+\documentclass[a4paper, 11pt]{report}
+ 
+\usepackage{graphicx}
+%\usepackage{floatflt}
+\usepackage{layout}
+\usepackage{verbatim}
+\usepackage{subfigure}
+\usepackage{caption2}
+\usepackage{vmargin}
+\usepackage[figuresright]{rotating} 
+ 
+%---------------------------- margins --------------------------------
+\setmarginsrb{32mm}%leftmargin
+	     {20mm}%topmargin
+	     {30mm}%rightmargin
+	     {20mm}%bottom margin
+	     {7mm}%headheight
+	     {14mm}%headsep 
+	     {7mm}%footheight
+	     {14mm}%footskip	
+
+\input{definitions}
+
+\begin{document}
+
+\input{cover}
+\tableofcontents
+\input{introduction}
+
+\chapter{Infrastructure}
+%  \input{framework}
+  \input{event_structure}
+  \input{raw_event}
+%  \input{dbi}
+%  \input{detector}
+% \input{messenger}
+  \input{parameter}
+  \input{conffile}
+  \input{root_event}
+%\input{base_module}
+
+\chapter{Special modules}
+  \input{reader}
+  \input{writer}
+  %\input{omon}
+
+\chapter{Modules}
+  \input{muon_precalibration}
+  \input{muon_decoder}
+  \input{baricentrator}
+
+\chapter{User's Guide}
+  \input{how_to_run}
+  \input{custom}
+  \input{root_event_for_users}
+
+\chapter{Modules Programmer's Guide}
+  \input{modules}
+  \input{names}
+  \input{cvs}
+
+\end{document}

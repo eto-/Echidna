@@ -1,0 +1,244 @@
+\documentclass[a4paper,10pt]{article}
+%
+%--------------------   start of the 'preamble'
+%
+\usepackage{graphicx,amssymb,amstext,amsmath}
+%
+%%    homebrew commands -- to save typing
+\newcommand\etc{\textsl{etc}}
+\newcommand\eg{\textsl{eg.}\ }
+\newcommand\etal{\textsl{et al.}}
+\newcommand\Quote[1]{\lq\textsl{#1}\rq}
+\newcommand\fr[2]{{\textstyle\frac{#1}{#2}}}
+\newcommand\miktex{\textsl{MikTeX}}
+\newcommand\comp{\textsl{The Companion}}
+\newcommand\nss{\textsl{Not so Short}}
+
+ \oddsidemargin=-0.cm
+ \setlength{\textwidth}{165mm}
+ \addtolength{\voffset}{-5pt}
+ \evensidemargin=-0.9cm
+ \setlength{\textwidth}{165mm}
+ \addtolength{\voffset}{-5pt}
+%
+%---------------------   end of the 'preamble'
+%
+\begin{document}
+%------
+\title{\textbf{Run Coordinator} \\
+{\large \textbf{Duties, procedure, and report template}\footnote{editing: Szymon Manecki, Pablo Mosteiro, Chiara Ghiano}}}
+%----------------------------------------------------
+
+\author{\small{\textit{motto: Procedure is- to follow the procedure}}}
+\maketitle
+\abstract{\noindent\begin{itemize}
+\item PDF version obtained from https://bxweb.lngs.infn.it/docs
+\item TEX version obtained from CVS on bxmaster: offline/Echidna/tools/Run\_Coordinator
+\item Counting room phone number: +39 0862 437 395
+\end{itemize}}
+%-----------------------------------------------------------
+
+\newpage
+
+\section{Procedure}
+\label{sec:procedure}
+
+\subsection{Management of data taking}
+
+Data taking in Borexino is performed by two persons on duty at Gran Sasso: the shifter and the Run Coordinator (RC). The shifter is on duty for one week, from Tuesday morning until Monday evening. The Run Coordinator serves for one full calendar month in Gran Sasso. The two should work in strict contact and cooperation with the aim of maximizing data-taking duty cycle and improving the quality of the data and the stability of the detector.
+
+\subsection{Task List}
+
+%\begin{enumerate} 
+\subsubsection{Before/Beginning of Shift}
+
+\begin{itemize}
+ \item Read the report from previous month (if absent, contact Yury  Suvorov)
+\item \underline{Keep in contact with the Operational Group Manager}  (Augusto Goretti) \\ and organize activities that require a coordination between data taking group and OG.
+ \item \underline{Keep the white board up to date.}\\ RC and shifter names and phone numbers (both office ext at LNGS and mobile).
+
+ \item \underline{Manage cars, and access authorization.} \\ The shifter should be authorized to use a car (own or lab's) BEFORE the shift starts. 
+ Benedetto Gallese (benedetto.gallese@lngs.infn.it) and Federico Gabriele (federico.gabriele@lngs.infn.it) will help with authorization for new shifters.
+ \item Obtain the runcoord password on bxmaster from the previous RC.
+  \item Log into bxmaster as runcoord and CVS update the local copy of \\
+  {\tt offline/Echidna/tools/Run\_Coordinator} \\
+Create PDF versions of the DOC and TeX files and place them in \\
+  {\tt /home/daqman/common\_areas/borexwww/docs/RunProcedures}\\
+  Print and replace in the underground folder those that have changed significantly. \\ \textbf{\emph{Read all those instructions!}}
+\item \underline{Monitor the status of the super nova (SN) system.} \\  In case of any unusual activity, make sure the SN system is disabled. Keep in contact with Keith Otis for any issues related to the SN system.
+\end{itemize}
+
+ \subsubsection{Daily}
+\begin{itemize}
+ \item Read the official e-mail account for RC: bxruncoord@lngs.infn.it at https:$//$gsmail.lngs.infn.it$/$ (passwd:  'Standard borexino one: So...'). Keep the account orderly by moving emails red to the relevant folders
+\item \underline{Check shifters' presence in Hall C.}\\ They must be on duty from 9\,AM to 7\,PM with reasonable lunch break. Run must be checked around midnight and never left unattended for more than 8\,h.
+ \item Make sure shifters perform the production and update the ELOG \\
+ \begin{itemize}
+ \item Production should be launched manually for runs that are stopped manually.  \\
+  \texttt{.$/$bx\_production.pl run\_number=12345} under \texttt{/home/production/Echidna}
+ \item MOE production should be launched under \texttt{ /home/production/Echidna/moe} \\
+  \texttt{.$/$pbs\_moe.sh 12345}
+ \item Background monitor should be launched under \texttt{ /home/production/Echidna/monitor\_dir} \\
+  \texttt{.$/$monitor.pl 12345}
+ 
+ \item ELOG should be filled: https:$//$www.lngs.infn.it$/$elog$/$Validation$/$
+ \item Upload should be done using:  \texttt{.$/$bx\_repository.pl \underline{-delete\_uploaded} upload Run012345.*}
+ \end{itemize}
+
+\item \underline{Support shifters in case of problems.} \\ Identify the problem and call the right expert:
+\begin{itemize}
+\item In case of hardware problems (PMTs, FE, Laben, Scalers, FADCs), call George Korga, Massimo Orsini and Giuseppe Bonfini. The only exception is the search for 
+flashing PMTs, which should be done by shifters; inform George, Massimo and Giuseppe of any disconnected PMT. 
+\item In case of a DAQ problem (web pages, automatic restart, Slow Control Server, Scalers, Online Monitors) 
+or a computing problem (monitors, keyboards, disks, network) call the DAQ manager (Davide D'Angelo). 
+\end{itemize}
+
+\item \underline{Responsible for final run validation decisions}, in case of problematic runs or unusual detector behavior.
+ \item Verify status of the background monitor \\
+{\tt https://bxweb.lngs.infn.it/script1/production/homepage.cgi}
+ \item Make sure shifter updates Broken Channels Monitor
+\end{itemize}
+
+ \subsubsection{Weekly (on Mondays)}
+\begin{itemize}
+ \item Verify validation from previous week  \\
+  - \underline{DST \& CNGS:} When the CNGS beam is ON, make sure the DST is produced with a CNGS file. Contact Yura Suvorov with problems. \\
+  - After checking previous week's validation, notify Yura to start the DST production (weeks start on Sundays)
+
+ \item Generate vessel shape info for each DST\\
+On bxmaster, under $/$home$/$runcoord$/$VesselShapes$/$, run: \\
+    {\tt .$/$Vshape.sh [year] [month] [week]}, \textit{e.g.}, {\tt .$/$Vshape.sh~2011~Jan~09} \\
+All the data and plots will be uploaded to the webpage: \\
+    {\tt https:$//$bxweb.lngs.infn.it$/$docs$/$VesselShapes$/$DAQ$/$}
+\item \underline{Keep production home on bxmaster in order and below quota.}  No unnecessary files should be kept in production area.
+\item When {\tt /rawdata} reaches 70\% capacity, an automatic script trims the disk to free some space. You should receive emails letting you know about this. If you or the shifter discovers that the disk is fuller than 80\%, notify the DAQ coordinator about the failure of the automatic notice.
+\item \underline{Ensure continuity and information transfer between successive shifters.}  Report shifter's absences or gaps in the shift booking page to Marco Pallavicini.
+\item \underline{Collect weekly reports from shifters and post them on the web page.}
+\end{itemize}
+
+ \subsubsection{End of the Shift}
+\begin{itemize}
+ \item Generate stability plots \\
+  - in \texttt{$/$home$/$production$/$Run\_Coordinator$/$Run\_Coordinator$/$} \\
+  - do \texttt{.$/$Check\_Detector\_Status.pl `help'} to see options, \\
+  - run macro on `channels' \& `spectrum' under Echidna directory \\
+  - take the two .pdf output files 
+ 
+ \item Update the `operations.xls' file in $/$home$/$production$/$operations$/$
+\item \underline{Collect weekly reports from shifters and post them on the web page.} Use the information in Sec.~\ref{sec:report}. Send the final report to bxwide@lngs.infn.it
+\item Change the password of runcoord on bxmaster and communicate it to Paolo Saggese and the next RC.
+\end{itemize}
+
+
+\section{Monthly Shift Report}
+\label{sec:report}
+\subsection{Information needed}
+\begin{itemize}
+ \item Duty cycle
+ \item Number of live channels, live pmts, flashers
+ \item Number of disconnected pmts with input in DB.
+ \item Number of channels failing precalibration. Average and trend.
+ \item Number of channels dead-in-neutrino. Identify new such channels with its mapping, and inform P. Lombardi and L. Ludhova.
+ \item Number of channels hot-in-neutrino. Identify new such channels with its mapping.
+ \item Number of channels having problems with measuring charge of pulser and normal signals.  
+ \item Identify new such channels with its mapping.
+ \item Po210 counts as function of time
+ \item Radon counts as function of time
+ \item C14 end point as function of time
+ \item Events reconstructed outside the Inner Vessel to monitor PPO in the buffer
+ \item Other similar things that may be useful to monitor the status of the detector and the quality of the data
+ \item Monitor the inner vessel shape (tools listed in the Procedure section)
+ \item Pay attention to any operations and significant activities that should be reported 
+
+\end{itemize}
+
+%\end{enumerate}
+
+\newpage
+
+\subsection{Report template}
+
+============================================================== \\
+
+\begin{center}
+\begin{tabular}{ l c r }
+===== & MONTHLY REPORT: MONTH 20XX & ===== \\
+===== &  & ===== \\
+===== & DUTY CYCLE: X.XX & ===== \\
+===== & RC: First Last Name & ===== \\ \\
+\end{tabular}
+\end{center}
+============================================================== 
+
+\begin{tabular}{lr}
+Shifters: &\\
+week - \textit{name}  & \\
+week - \textit{name} & \\
+(...) & \\ \\
+\end{tabular}
+
+=====================================
+
+\begin{tabular}{lr}
+Hall C environment:&\\
+Rn [ Bq/m ]&$\sim$XX \\
+T [$\,^{\circ}\mathrm{C}$]&$\sim$XX  \\ \\
+\end{tabular}
+
+=====================================
+
+\begin{tabular}{lr}
+Normal Run parameters: &\\
+BTB:&XX \\
+MTB:&XX \\
+Muon Trigger:&enabled/disabled \\
+Neutron Trigger:&enabled/disabled \\ \\
+\end{tabular}
+
+=====================================
+
+\begin{tabular}{lr}
+Runs: XXXXX $-$ XXXXX  & \\*
+\textit{List normal, calibration and junk runs.} &\\ \\
+\end{tabular}
+
+=====================================
+
+\begin{tabular}{lr}
+\underline{Status of the detector:} &\\*
+\textit{Comment on:} &\\*
+\textit{Back-grouds, stability plots, and shape of the vessel $($pnt. 15$)$.} &\\ \\
+\end{tabular}
+
+=====================================
+
+\begin{tabular}{lr}
+\underline{Relevant Notes:} &\\*
+\textit{Report any unusual performance during DAQ.} &\\ \\
+\end{tabular}
+
+=====================================
+
+\begin{tabular}{lr}
+\underline{Remarks:}  &\\*
+\textit{Bring up important information for the next RC.} &\\
+\textit{Attach pdf stability plots and vessel shape graph} &\\ \\
+\end{tabular}
+
+=====================================  \\
+
+\begin{tabular}{lr}
+Your signature  &\\
+\end{tabular}
+
+%-----------------------------------------------------------
+\newpage
+\section{Useful Information}
+\begin{itemize}
+\item E-Mail addresses, Skype user names, and phone numbers can be found in the borexino collaboration data base on http://borex.lngs.infn.it
+\item People in charge for different tasks can be found on bxweb:docs, under the heading ``Useful contact information''
+\item Yura's real name is Yury, also spelled Jurij. Yura is his nickname
+\item George's real name is Gyorgy. George is the English spelling of his name
+\end{itemize}
+
+\end{document}

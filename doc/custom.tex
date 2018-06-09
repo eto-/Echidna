@@ -1,0 +1,78 @@
+\section{Customizing the execution}
+\label{sec:custom}
+
+The user has two possibilities to custumize the behaviour of echidna: a user configuration file and command line options.
+
+Most of this customization involves over-writing the default values of the parameters of a module (or of other infrastructure objects).
+
+The deafult values  are specified in the file named \code{echidna.cfg} (\sec{conf_ech_cfg}), however editing this complex file is discouraged.
+One of the two methods described below should be chosen instead.
+
+
+\subsection{User configuration file}
+\label{sec:custom_user_cfg}
+
+A file named \code{user.cfg} is present in the main Echidna directory.
+It is inially empty (apart from a comment).
+The user is free to edit it and add lines.
+
+Line must have the following syntax:
+\qcode{module\_name.parameter\_name parameter\_value}
+
+Empty lines and comments (starting with '\#' character) are skipped.
+
+A small example from my code follows; I normally run without muons, my default file is Run 1612 
+and sometime I happen to disable the \code{bx\_precalib\_laben\_check\_tdc} so that line is commented.
+\begin{verbatim}
+bx_event_reader.file_url run://1612
+bx_precalib_muon_findpulse.enable 0
+bx_precalib_muon_pedestals.enable 0
+#bx_precalib_laben_check_tdc.enable 0
+bx_muon_decoder.enable 0
+\end{verbatim}
+
+
+\subsection{Echidna inline options}
+\label{sec:custom_options}
+
+Command line options have higher priority with respect to \code{user.cfg} directives. 
+
+The options currently present are:
+\begin{itemize}
+\item \code{-v} increments the Echidna verbosity of one level (\S\ref{sec:messages}); several -v can be
+present to increment further the verbosity (actually since the default verbosity value is warn, only
+3 -v are usefull).
+\item \code{-q} decrement the Echidna verbosity of one level (\S\ref{sec:messages}); several -q can be
+present to decrement further the verbosity (actually since the default verbosity value is warn, only
+2 -q are usefull). This option is antagonist to -v.
+\item \code{-l <file\_path>} specify a logfile with path {\code file\_path}; if file\_path is absent no
+logfile is generated.
+\item \code{-c file\_path} specifies the path of the user.cfg file (default ./user.cfg)
+\item \code{-C file\_path} specifies the path of the echidna.cfg file (default ./echidna.cfg)
+\item \code{-p FQPN value} set to value the specified parameter; this assignement has the highest
+priority.
+\item \code{-f file\_url} set the input file url for the reader, equivalent to "\code{-p bx\_event\_reader.file\_url file\_url}.
+\item \code{-o file\_url} set the output file path for the writer, equivalent to "\code{-p bx\_event\_writer.file\_name file\_path}
+\item \code{-e max\_number\_of\_events} set the maximum number of processed events.
+\end{itemize}
+
+In addition (and after) the options, the command line accepts also an argument, the ``configuration'' to be used (a string).
+These are pre-established sets of parameters defined in \code{echidna.cfg} (\sec{conf_ech_cfg}).
+If the argument is not provided, the default configuration is used.
+
+\subsection{Setting parameters}
+\label{sec:custom_param}
+
+To summarize, the order in with the parameter values are assigned is relevant:
+\begin{enumerate}
+\item echidna.cfg (default configuration)
+\item configuration (if provided on command line)
+\item user.cfg
+\item command line options
+\end{enumerate}
+
+Trying to assign a value to a non existing parameter (with any method) will issue a warning: 
+\qcode{>>> warn: bx\_module\_name: assigning value to unknown parameter "param'' will initialize it. Check for syntax error.}
+to alert the user against a probable mispelled directive. 
+However note that it is not a critical condition and the execution proceeds.
+

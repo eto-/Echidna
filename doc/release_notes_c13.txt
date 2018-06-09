@@ -1,0 +1,35 @@
+A. event external support for dst:
+    1) added support for MOE in dst (Mach4 event)
+    2) added support for FWFD in dst 
+
+B. muon tracking
+    1) new module (bx_laben_tof_tracker) and new BxLaben::BxTrackByPoints.
+    2) Global tracker: prefer tof tracking.
+    3) In class BxTrackByPoints, Impact, theta and phi are hold as variables instead of calculated by getters. Errors have been also introduced on these 3 variables.
+    4) support for EMT, not yet operative in this release.
+
+C. diverses
+    1) new laben raw hit flag for the special hit introduced with the laben firmware modification and nhits_fw counter variable.
+    2) clustered_hits_bkg filled also for tt1 events using the time before the cluster (up to Feb 2nd. 2010, not available later)
+    3)  increased out-of-gate window up to 30us   
+    4) splitting: min 10 hits required
+
+D. BUG FIXES
+    1) empty boards calculation:
+    1.1) in case the run number is later then cr14 removal its 20 boards are
+not counted any longer (they were sistematically marked as empty in
+c12)
+    1.2) there was a bug in the way the channels were group, a -1 shift. In
+other words we were not counting empty boards but grops of 8 empty
+adiacent channels 7 of wich belonging to 1 board and the 8th belonging
+to the next one. fixed.
+    1.3) Special hits (1/ch, see point C.1 above) with the information of the number of hits in the
+channel  are present in data since Feb 2nd 2010. In c12 they counted
+against empty boards setting the variable systematically to 0 after Feb 2010. fixed.
+   2) n live charge calculation, bug fixed
+   3) rec_time filling in decoded hits: fixed the bug on cluster vector alignment.
+   4) old ID tracking: fixed the bug on non-filling of exit point.
+   5) reader: Fixed directory naming in storage
+
+E. Internals
+   1) Change for new streamer and rootcint in channel_description_type_map

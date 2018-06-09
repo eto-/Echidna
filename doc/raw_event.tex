@@ -1,0 +1,68 @@
+\section{Raw Event constructors}
+
+The file reader module invokes in cascade the raw event constructors passing them only a pointer to a memory slab where the event has been read from file.
+So possibly a raw event constructor can host intellicence necessary to build the raw event.
+
+Generally the first operation every one of the following constructor does, is casting the pointer it recieves to its own \code{struct event\_disk\_format.h}\footnote{see file \code{bx\_event\_disk\_format.h} for details}, so that data words are available in a more user friendly shape.
+
+All constructors return if the first word of their event segment (size) is zero.
+
+
+\subsection{Trigger}
+Words of \code{trigger\_disk\_format} structure are simply copied to analogous private variables, with one exception.
+Just before the GPS data, a long word is present, composed by the TAB sum value (16 bits) and by the so called Trigger Word, which is in turn composed by the trgtype (LSB) and by a bitfield with active BTB inputs (MSB). Due to network/host byte ordering conversion the order of these subwords is reversed and the unpacking in this constructor takes care of it.
+We find in order:
+\begin{enumerate}
+\item trg type (8 bits)
+\item BTB inputs (8 bits)
+\item TAB sum (16 bits)
+\end{enumerate}
+
+The BTB input subword is copied into a bitfield to enhace accessibility.
+
+
+\subsection{Laben}
+
+Simple copy into specular variables, both for the event and for hit class.
+
+
+\subsection{Muon}
+
+This constructor performs the job of coupling edges into raw hits, a relatively complicated task.
+
+A loop is done over edges, with a step of 2.
+Edges reporting \emph{event number}\footnote{these edges are present only for DAQ reasons} or flagged as \emph{invalid} are silently discarded.
+
+A local TDC chip counter is kept and incremented whenever an edge, flagged as \emph{last}, is found; 
+the TDC data do not contain information on the board number, so this is evaluted through this chip counter.
+
+A method named \code{m\_check\_validity()} is in charge of checking if the two edges could belong to the same QTC pulse.
+It performs 2 checks:
+\begin{enumerate}
+\item Slopes of the two edges must be different and edges must belong to the same TDC channel. 
+If this is not the case then probably an edge was lost. The first edge is then spurious and is being discarded with a debug level message;
+the second edge instead could be a valid first edge for the following hit and will be reprocessed. 
+Control is returned to the loop which continues with appropriate counter correction.
+\item The time ordering of the two edges must be correct, i.e. the first edge time must be higher then the second one
+\footnote{Remember that in common stop mode the TDC yields times which go backward from trigger instant.}.
+If this is not the case, both edges are simply discarded with a debug level message. 
+Control is returned to the loop which simply continues.
+This patological behaviour appears usually when an LED is firing at high intensity, resulting in a high after pulse rate. 
+\end{enumerate}
+If both checks are passed, a raw hit is constructed and pushed into the vector.
+
+The raw hit constructor simply initializes the two edges and the the computed board number.
+
+A final check on TDC chips complains if the total number doesn't meet expectations (8 chips).
+
+
+\subsection{Fadc}
+
+This contructor copies event level words into analogous variables, then loops over windows to construct them.
+A debug level message is issued if no windows are present.
+
+The raw window constructor copies window level words into analogous variables.
+If window size is 0, execution is aborted with critic level message.
+The number of channels is deduced from data size and window size and channels are constructed in a loop.
+
+The fadc channel constructor simply copies the samples into a private vector.

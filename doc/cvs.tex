@@ -1,0 +1,95 @@
+\section{CVS usage and policy}
+\label{sec:cvs}
+The Echidna code is handled by CVS a "{\it version control system}" which is able 
+to record the history of source files. An exhaustive documentation of CVS is available
+using info (accessible by the command \code{info cvs}); a man-page is also available with
+a shorter, but more obscure, usage. Reading the info pages is strongly suggested to learn 
+the CVS usage, its architecture, its pitfalls.
+In this section a certain familiarity with cvs environment is assumed.
+
+The Echidna CVS repository is \code{bxmaster.lngs.infn.it:/home/cvs} which is automatically set
+if using the \code{.bashrc} from \code{/home/bashrc} in the LNGS cluster: the Echidna module is 
+called \code{Echidna}. Then to download the latest development version the following code 
+has to be issued:  \code{cvs checkout Echidna}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{pictures/cvs_branches}
+\caption{CVS branches in Echidna}
+\label{fig:cvs_branches}
+\end{center}
+\end{figure}
+
+Echidna is developed using {\bf branches}, a CVS feature which allows package versioning; please
+refer to the {\it Branching and merging} CVS info section for an exhaustive documentation on
+branches. A branch is a separate line of development; when a file is changed on a branch, those changes
+do not appear on the main trunk or other branches. Infinite branches can coexist in a CVS module, but
+in Echidna a well defined scheme is present.\\
+Since the development is cycle oriented, the branches layout will respect this approach. Figure~\ref{fig:cvs_branches}
+shows how the project branches should appear: the main trunk, which is represented as an orizzontal 
+solid black line in figure~\ref{fig:cvs_branches}, is called {\bf head branch}; the blue line represent
+branches. The development model is the following:
+\begin{itemize}
+\item free development is done in the head branch during the cycle (according with the cycle objectives).
+\item At the end of the free development, when the code is considered somehow stable, a branch is created.
+The name of the branch is "{\bf cycle\_n}" where n is the cycle index.
+\item The test procedure should validate the branch code. In the branch only bug fixes are allowed; no new code
+can be introduced.
+\item {\bf The fixes to a code on validation must be committed ONLY on the current cycle branch}, not on the main
+trunk. The modifications will be introduced into the head branch during the merging operation\footnote{To control
+which version of file is in use on a local copy of Echidna, the command cvs status file, reports the current version
+with the followig syntax: "\code{Sticky Tag: cycle\_1 (branch: 1.1.2)}".\\
+Here the \code{Stycky Tags} says that the current cvs.tex file version owns to cycle\_1 branch.
+}.
+\item When the test procedure finish the branch is merged in the main trunk (dashed line). 
+\item To avoid conflicts during the merges the head branch is partially frozen; no changes must be made
+to the code being validated. Only new modules can be committed. These changes will not become part of the
+current branch, but will be on the next branch.
+\item Creating branches and merging them is and operation reserved to the CVS manager. 
+\end{itemize}
+This policy ensures that at least a stable version is always present for analisys; the last cycle branch;
+indeed the merging procedure does not destroy the branch but pushes the modification in the main trunk.
+This way the cycle branches will be always available for use, while the main trunk is present for development.
+
+To access a branch checkout or update CVS command can be used with the flag \code{-r branch\_name}; since a local 
+copy keeps memory of the branch in use when committing, it is important to check which is the branch in use before 
+committing, else a commit can violate the policy or even commit on a closed branch.
+{\bf Never specify a tag with -r branch\_name on commit}\footnote{Even if CVS accept "\code{cvs ci -r tag file}"
+commands the meaning of this syntax does not conforms with the brach engine used in Echidna}. 
+Some examples (comments start with a '\#' character):
+
+
+\begin{verbatim}
+~$ cvs co -r cycle_1 Echidna                    #Checkout Echidna with brach cycle_1
+~/Echidna$ cvs status doc/cvs.tex               #Control the status of a cvs.tex file
+===================================================================
+File: cvs.tex           Status: Locally Modified
+
+   Working revision:    1.1.2.1
+   Repository revision: 1.1.2.1 /home/cvs/Echidna/doc/cvs.tex,v
+   Sticky Tag:          cycle_1 (branch: 1.1.2) #Fine it is in cycle_1 branch
+   Sticky Date:         (none)
+   Sticky Options:      (none)
+
+~/Echidna$ cvs ci doc/cvs.tex                   #Commit cvs.tex in the curren branch (cycle_1)
+~/Echidna$ cvs update -r HEAD .                 #Update current directory to the HEAD branch.
+\end{verbatim}
+
+By the way using this policy is simpler than describing it: users should always use the latest stable version (which
+is the latest cycle branch), as well testers. Developers should work on the head branch, except when doing bug-fixes
+to a code under validation.
+
+\subsection{.cvsrc}
+It is somehow useful to create a file with that name containing some configuration for CVS, the file must reside in the 
+users'home directory; the suggested configuration is:
+\begin{verbatim}
+cvs -z6
+diff -u
+update -Pd
+checkout -P
+\end{verbatim}
+
+The first line enables compression of data transfer over network.
+The -u switch tells diff to use the {\it unified diff format} useful for patches. The flags -N can be even useful when dealing with new files.
+The -P flags tells to update and checkout to prune empty directories, while -d tells to update to create all subdirs present in the repository.
+See the man page for further explanations.

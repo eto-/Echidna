@@ -1,0 +1,104 @@
+% Echidna documentation 
+% this file is for personal aliasis
+ 
+%%%%% davide.dangelo %%%%%%%%%%%%%%%%%%%%%%
+%---------------------------- shortcuts ----------------------
+
+% Definitions for lists, equations, ...
+\newcommand{\bit}{\begin{itemize}}
+\newcommand{\eit}{\end{itemize}}
+\newcommand{\ben}{\begin{enumerate}}
+\newcommand{\een}{\end{enumerate}}
+\newcommand{\bde}{\begin{description}}
+\newcommand{\ede}{\end{description}}
+\newcommand{\bqu}{\begin{quote}}
+\newcommand{\equ}{\end{quote}}
+\newcommand{\bmp}[1]{\begin{minipage}[b]{#1\textwidth}\centering}
+\newcommand{\emp}{\end{minipage}}
+
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\bdm}{\begin{displaymath}}
+\newcommand{\edm}{\end{displaymath}}
+
+%---------------------------- graphics ----------------------------------
+
+% Captions
+\renewcommand{\figurename}{Fig.}
+\renewcommand{\tablename}{Tab.}
+
+\newcommand{\mycapfont}{\linespread{0.9} \small \sl} % used 2 times: \captionfont and subfigure captions
+
+\renewcommand{\captionfont}{\mycapfont} % affect label and text
+\renewcommand{\captionlabelfont}{\rm} % affects label only, used to undo the above. 
+
+\makeatletter
+  \newcommand{\capfig}[2]{\def\@captype{figure}\caption{\label{fig:#1} #2}}
+  \newcommand{\captab}[2]{\def\@captype{table}\caption{\label{tab:#1} #2}}
+\makeatother
+
+% Definitions for figures and tables.
+\newcommand{\bfig}{\begin{figure} \centering}
+\newcommand{\efig}{\end{figure}}
+\newcommand{\btab}{\begin{table} \centering}
+\newcommand{\etab}{\end{table}}
+\newcommand{\bff}[2]{\begin{floatingfigure}[#1]{#2\textwidth}}
+\newcommand{\eff}{\end{floatingfigure}}
+\newcommand{\bft}{\begin{floatingfigure}}
+\newcommand{\eft}{\end{floatingfigure}}
+\newcommand{\btr}[1]{\begin{tabular}{#1}}
+\newcommand{\etr}{\end{tabular}}
+
+% Internal or special use only
+\newcommand{\getfigw}[2]{\includegraphics[width=#2\textwidth]{#1}}
+\newcommand{\getfigh}[2]{\includegraphics[height=#2\textheight]{#1}}
+
+\makeatletter
+\renewcommand{\@thesubfigure}{\figurename~\thefigure\space\thesubfigure:}
+\makeatother
+
+\newcommand{\subfig}[3]{\subfigure[\mycapfont #3]{\label{fig:#1}\getfigw{#1.eps}{#2}}}
+
+% Single figure
+\newcommand{\simfig}[3]{\bfig \getfigw{#1.eps}{#2}  \capfig{#1}{#3} \efig}
+
+% Double figure, single caption
+\newcommand{\doublefigs}[6]{\bfig \getfigw{#1.eps}{#2} \hfill \getfigw{#3.eps}{#4}  \capfig{#5}{#6} \efig}
+
+% Double figure, double caption, single numbering
+%\newcommand{\doublefigd}[6]{\bfig \subfig{#1}{#2}{#3} \hfill \subfig{#4}{#5}{#6} \addtocounter{figure}{+1} \efig}
+
+% Double figure, double caption, double numbering
+%\newcommand{\doublefigp}[6]{\bfig \bmp{#2} \getfigw{#1.eps}{1} \capfig{#1}{#3} \emp \hfill \bmp{#5} \getfigw{#4.eps}{1} \capfig{#4}{#6} \emp \efig}
+
+% Triple figure, triple caption, triple numbering
+%\newcommand{\triplefigp}[9]{\bfig \bmp{#2} \getfigw{#1.eps}{1} \capfig{#1}{#3} \emp \hfill \bmp{#5} \getfigw{#4.eps}{1} \capfig{#4}{#6} \emp  \hfill \bmp{#8} \getfigw{#7.eps}{1} \capfig{#7}{#9} \emp \efig}
+
+
+\newcommand{\fig}[1]{fig.~\ref{fig:#1}}
+\newcommand{\tab}[1]{tab.~\ref{tab:#1}}
+\newcommand{\eq}[1]{eq.~\ref{eq:#1}}
+\renewcommand{\sec}[1]{sec.~\ref{sec:#1}}
+\newcommand{\ch}[1]{chap.~\ref{ch:#1}}
+
+% Chapter: Borexino
+
+\newcommand{\iv}{\emph{inner vessel}}
+\newcommand{\ov}{\emph{outer vessel}}
+\newcommand{\al}{\ensuremath{\alpha}}
+\newcommand{\be}{\ensuremath{\beta}}
+\newcommand{\albe}{\ensuremath{\alpha/\beta}}
+\newcommand{\ga}{\ensuremath{\gamma}}
+\newcommand{\si}{\ensuremath{\sigma}}
+\newcommand{\pg}{\ensuremath{\pi}}
+\newcommand{\ura}{\ensuremath{^{238}U}}
+\newcommand{\tho}{\ensuremath{^{232}Th}}
+
+% Chapter: DAQ
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\qcode}[1]{\bqu \texttt{#1} \equ}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

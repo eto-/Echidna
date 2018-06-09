@@ -1,0 +1,6 @@
+This directory contains all the files you need in order to run Echidna on tempest, the main server of the Virginia Tech Particle Astrophysics group.
+1) Copy echidna.cfg and pbs_echidna.sh to offline/Echidna
+2) Copy Makefile_echidna to offline/Echidna and rename it Makefile
+3) Copy modules/* to offline/Echidna/modules/
+4) Run make in offline/Echidna
+At that point, you should be able to run Echidna locally.

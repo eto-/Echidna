@@ -1,0 +1,109 @@
+\documentclass[a4paper,11pt]{article}
+%-------------- CUSTOMIZATION ----------------
+\usepackage[vcentering,dvips,left=2.5cm,right=2.5cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{setspace}
+\parindent=0.5cm
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage{color}
+\pagestyle{plain}
+
+\begin{document}
+\centerline{\textbf{\LARGE{\color{black}DUTIES OF THE SHIFTERS}}}
+\begin{table}[!h]
+ \begin{flushright}
+   \small{Last update: \today}
+ \end{flushright}
+\rule{\linewidth}{0.07mm}
+\end{table}
+
+\section*{At the beginning of the week}
+\begin{enumerate}
+\item Make sure you make good contact with the run coordinator (RC) and possibly overlap for a few hours 
+with the previous shifter. Ask about the status of the system. Read the paper logbook of the last days.
+
+\item Write your name and cell phone number in the white board outside the Borexino control room, 1$\mathrm{^{st}}$ floor.
+
+\item Become familiar with all the procedures. Note that they change often, so take the time to read them again.
+
+\item Read the whiteboard in the counting room. DAQ parameters and RC contact information are listed there.
+\end{enumerate}
+
+\section*{During every shifting day}
+\begin{enumerate}
+\item The data taking has to be supervised at least 16 hours per day, usually from 08.00 to 24.00. \\
+At least one shifter is required to be present in Control Room everyday: \\
+~~Morning: 09.00 $\rightarrow$ 12.30 ~~~Afternoon: 14.30 $\rightarrow$ 19.00 \\
+For the time no shifter can be underground, tools are provided for remote run monitoring (see DataTakingProcedure.pdf).
+
+\item In case anything unexpected is noticed, please do not hesitate to call the RC; he/she will address the problem 
+and eventually call the right expert depending on the problem.\\
+Never attempt to operate on the hardware yourself (unless indicated by RC).
+
+\item Write as much info as possible on the paper logbook in clean handwriting.
+\begin{itemize}
+ \item[a. ] Always put date and hour of each entry.
+ \item[b. ] Always write your name when you are starting to write after someone else.
+\end{itemize}
+
+\item We generally take data with automatic run restart and a typical run duration of 6 h. \\
+Please make sure that the run restart happened at the time you expected; note anomalies in the logbook and inform the RC.
+
+\item When a run ends, the data processing sequence should start automatically, but you need to make sure this is the case. 
+Do not leave runs behind as they are often used to monitor the effects of scintillator operations in real time.
+
+\item Fill and update the ELOG (\textit{www.lngs.infn.it/elog/Validation}). 
+This is complementary and not redundant compared to the paper logbook. 
+
+\item When the Echidna production is done, start the Validation Procedure. 
+This is not a mere procedural execution and requires your skills as a physicist. Follow the scheme and consult with RC if in doubt.
+
+\item In case of flashers/tripping PMTs or high Rate FE boards, call the RC and eventually agree with him/her the application 
+of the proper procedure. \\
+Never perform any operation without informing the Run Coordinator.
+
+\item Once per day check the Hall C Radon and Temperature and note it in the ELOG.
+
+\item For every run with more than 650,000 events, update the Broken Channels Monitor (see DataHandlingProcedure.pdf).
+
+\item Once a day, create plots for the bad channels (see DataHandlingProcedure.pdf).
+\end{enumerate}
+
+\section*{After weekly electronic maintenance}
+After weekly electronic maintenance performed by Massino O., George K. and/or Giuseppe B. do an electronics calibration run (see CalibrationProcedure.pdf).
+If such operation has not occurred in the last week, inform the RC and discuss when to perform the next electronics calibration.
+
+\section*{At the end of your shift}
+\begin{enumerate}
+\item Check that all files that you uploaded have been deleted as well as anything you created.
+\item Clean the rawdata disk (instructions in DataHandlingProcedure.pdf)
+\item Note on the whiteboard anything that might be useful to following shifters.
+\item Run the {\small{\texttt{Shift\_analyzer.pl}}}:
+\begin{itemize}
+ \item[a. ] Become production on bxmaster.
+ \item[b. ] {\small{\texttt{cd ~/Echidna/tools}}}
+ \item[c. ] {\small{\texttt{./Shift\_analyzer.pl}}}
+ \item[d. ] Follow the on-screen instructions and address its output accordingly.
+\end{itemize}
+
+\item Write the shift report:
+\begin{itemize}
+ \item[a. ] Use the provided template (\textit{http://bxweb.lngs.infn.it/docs}).
+ \item[b. ] Rename it as sr\_YYYY\_MM\_DD\_NS.txt (where the date is the day your shift started and NS are your initials).
+ \item[c. ] Send it by email to {\small{\texttt{bxruncoord@lngs.infn.it}}}.
+ \item[d. ] Save the file also as html and copy it to: \\
+ {\small{\texttt{/home/daqman/common\_areas/borexwww/docs/ShiftReports/20XX/}}} \\
+ If you have permissions problems to do this, contact RC.
+ \item[e. ] $\underline{\mathrm{Do~not~send~it}}$ to any mailing list.
+\end{itemize}
+
+\item Leave the counting room in a tidy state:
+\begin{itemize}
+ \item[-  ] Put tools and other materials you used back to their proper locations.
+ \item[-  ] Trash your garbage, including water bottles.
+ \item[-  ] Trash your notes and any paper you have on the tables in the paper trash bin.
+ \item[-  ] Remove from the fridge any food that belongs to you.
+\end{itemize} 
+\end{enumerate} 
+\end{document}

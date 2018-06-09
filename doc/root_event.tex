@@ -1,0 +1,104 @@
+\section{Root Event}
+\label{sec:root_event}
+
+This section describes the \emph{implementation} of the ROOT event in echidna.
+Users of the Echidna ROOT file who look for the structure and meaning of variables should intead see \sec{root_event_for_users}. 
+
+\subsection{The Structure}
+\label{sec:root_struct}
+
+The event that is being written to the ROOT file is made with a different, though similar, class system 
+with respect to the one used internally by Echidna (see \ref{sec:event_structure}).
+This class system is depicted in fig.\ref{fig:root_event}.
+
+All classes inherit from \code{TObject} ROOT class and are being provided a dictionary through rootcint utility.
+The \code{bx\_writer\_module} (see \ref{sec:writer}) copies each internal event into the same BxEvent class.
+The most notable difference here is that, since the event is written in a single step,
+the different subobjects do not need to inherit from classes referring to different reconstruction levels.
+
+The structure is straightforward. The main class \code{BxEvent} holds a subobject for every detector segment:
+\begin{enumerate}
+\item \code{BxTrigger} Info related to the trigger record
+\item \code{BxLaben} Info from ID electronics
+\item \code{BxMuon} Info from OD electronics
+\item \code{BxFadc} Info from FADC electronics (disabled).
+\item \code{BxNeutron} Info from Neutron detection system.
+\item \code{BxMcTruth} Info from MonteCarlo simulation chain (empty for real data).
+\item \code{BxTrackFitted} Muon tracking info fitted from both ID and OD data (empty for non-muons).
+\item a vector of \code{BxPhysTags} objects. Written in DSTs by the bxfilter package. $\#0$ for the event $\#1,2\ldots$ for individual clusters.
+\end{enumerate}
+
+Some sub-objects, hold the lists of hits and/or clusters\footnote{or fragments or windows.} directly.
+Containers for these lists are \code{std::vector<>}.
+Nesting vectors putting hits lists inside culster objects currently prevents the benefit of ROOT splitting and is therefore not implemented.
+For reconstruction stages where both hits and clusters are present an index variable in the hit class allows the user to know the corresponding cluster. 
+Filling containers is fully custumizable by the user with \code{bx\_writer} parameters (see \ref{sec:writer}).
+
+Every event class has:
+\begin{enumerate}
+\item A default constructor.
+
+This is required by ROOT file I/O. 
+
+\item A working constructor.
+
+This is the only one called explicitly in Echidna. 
+It recieves a global flag structure (\code{bx\_write\_opts}) with data lists which are enabled by the user 
+and saves into private variables only the flags concerning itself.
+
+\item An assigment operator.
+
+It recieves a refernce to the correspondent internal event object and makes the copy.
+\end{enumerate}
+
+The working constructor and the assigment operator are filtered out through conditional compilation when rootcint runs 
+and also when the shared object for ROOT is created.
+This eliminates the dependency of ROOT event from internal event in this library, essential for using these classes safely within ROOT.
+
+Hit classes do not need assigment operators since the working constructors do everything in this case.
+
+\subsection{ROOT splitting and design choices}
+\label{sec:root_split}
+
+This note reports the result of studies on ROOT 
+class, tree and file handling and the reasons for choices in the design.
+It must be understood only in order to modify the internals, 
+while users should skip it completely.
+
+ROOT splitting is a big advantage in terms of file I/O efficiency and of graphical tool functionality (e.g. the \code{TBrowser}), 
+so the ROOT classes have been designed keeping it as requirement.
+
+\code{BxEvent} class must hold sub classes as objects,
+because pointers are not splitted in the \code{TBranch}
+and references are not supported by ROOT at all.
+This is connected to the fact that ROOT splitting cannot be done for (possibly) polymorphic objects.
+The idea of having a polymorphic light/heavy \code{BxEvent} class has therefore been abandoned.
+ 
+A \code{TClonesArray} in the main event class could be included both as an obj and as ptr,
+and it would be split correctly in both cases.
+However when placed in sub-obj, a \code{TClonesArray} will be splitted only if included as a pointer. 
+
+In turn using pointers to \code{TClonesArray} requires:
+\begin{enumerate}
+\item The default constructor must construct the \code{TClonesArray} 
+or the \code{TTree::Branch()} will segfault (!!!, internally uses the def ctor to see obj size?)
+To avoid memory leaks the size is set to 0 in this context.
+
+\item Calling new/delete for \code{BxEvent} class around the \code{TTree::Fill()} in the writer doesn't work.
+This is because ROOT caches the pointer to the \code{TClonesArray} at the \code{TBranch::SetAddress()}, 
+and these result invalid if \code{BxEvent} is recreated every time. 
+It could be solved with a new \code{TBranch::SetAddress()} at every loop, but it is unacceptably slow.
+\end{enumerate}
+
+This last point is the reason why a single event is created in the writer and is being rewritten every time with the assigment operators.
+
+Starting with some version of ROOT later then v4.00 the support for STL conbtainers have been improved.
+Therefore TClonesArray have been abandoned for std::vector whose use is more straightforward.
+They have to be included as objects in order to be split.
+In particular the need for point 1 above is removed.
+An attempt to create and destroy the object at every event using vectors has not yet been done and is postponed.
+
+After a large correspondance with P.Canal and R.Brun of the ROOT team, 
+it has been assessed that nesting lists of whichever kind prevents splitting of the innermost level 
+and the ROOT team is not planning to change this due to the cumbersome maintainance it would require.
+This is the reason of having hits outside the cluster objects.
