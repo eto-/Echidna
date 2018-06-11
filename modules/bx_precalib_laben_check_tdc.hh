@@ -28,7 +28,7 @@ class bx_precalib_laben_check_tdc: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    int i_ref_channel;
+    int32_t i_ref_channel;
     bool b_found_mctruth;
     TH2F *time_channel_distribution;
     TH2F *error_channel_distribution;

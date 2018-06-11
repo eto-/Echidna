@@ -4,8 +4,8 @@
 
 // Interface to MINUIT
 
-MinuitWrapper::MinuitWrapper(void (* fcn)(int &, double *, double &,
-			     double *, int))
+MinuitWrapper::MinuitWrapper(void (* fcn)(int32_t &, double *, double &,
+			     double *, int32_t))
 {
   mn = new TMinuit;
   mn->SetFCN(fcn);
@@ -14,7 +14,7 @@ MinuitWrapper::MinuitWrapper(void (* fcn)(int &, double *, double &,
   mn->mninit(5, 6, 7);
   
   // tell MINUIT to be quiet
-  int errflag;
+  int32_t errflag;
 #ifndef DEBUG_RECON
   mn->mncomd("SET PRINTOUT -1", errflag);
   mn->mncomd("SET NOWARNINGS", errflag);
@@ -37,7 +37,7 @@ MinuitWrapper::MinuitWrapper(void (* fcn)(int &, double *, double &,
 MinuitWrapper::~MinuitWrapper()
 {
   delete mn;
-  for (int i = 0; i < MAX_MINUIT_PARS; i++)
+  for (int32_t i = 0; i < MAX_MINUIT_PARS; i++)
     delete names[i];
 }
 
@@ -71,7 +71,7 @@ double MinuitWrapper::GetParError(size_t index)
   return errors[index];
 }
 
-void MinuitWrapper::Execute(int & errflag, int & convergence)
+void MinuitWrapper::Execute(int32_t & errflag, int32_t & convergence)
 {
   // copy saved settings into parameters
   mn->mncler();
@@ -92,7 +92,7 @@ void MinuitWrapper::Execute(int & errflag, int & convergence)
       else
 	stepsize = 1;
       
-      int dummy;
+      int32_t dummy;
       mn->mnparm(i, *(names[i]), values[i], stepsize,
 		 limits[0][i], limits[1][i], dummy);
     }
@@ -108,12 +108,12 @@ void MinuitWrapper::Execute(int & errflag, int & convergence)
 #endif
   TString s;
   double dummyf[3];
-  int dummyi, npari, nparx;
+  int32_t dummyi, npari, nparx;
 
   mn->mnstat(dummyf[0], dummyf[1], dummyf[2],
 	     npari, nparx, convergence);
   
-  for (int i = 0; i < nparx; i++)
+  for (int32_t i = 0; i < nparx; i++)
     if (is_set[i])
       mn->mnpout(i, s, values[i], errors[i], limits[0][i], limits[1][i],
 		 dummyi);

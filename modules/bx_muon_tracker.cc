@@ -77,15 +77,15 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
   //	   2 clusters found: fine
   //	  >2 clusters found: select the right ones
 
-  /*for (int ic = 0; ic < er.get_nclusters(); ic++) {
+  /*for (int32_t ic = 0; ic < er.get_nclusters(); ic++) {
     get_message (bx_message::debug) << "# " << ic << " ID " << er.get_cluster(ic).get_id() << " sss " << er.get_cluster(ic).is_sss() << " t " << er.get_cluster(ic).get_start_time() << " x " << er.get_cluster(ic).get_x() << " y " << er.get_cluster(ic).get_y() << " z " << er.get_cluster(ic).get_z() << " Q " << er.get_cluster(ic).get_charge() << dispatch;
   }*/
   // ----------------- check if coordinates of clusters are sensible
 
-  int noc = ev->get_muon().get_nclusters();
-  std::vector<int> good_v; // indicates if the cluster should be considered for tracking
-  int nogc = noc; // number of good clusters is number of clusters
-  for (int ic = 0; ic < noc ; ic++) {
+  int32_t noc = ev->get_muon().get_nclusters();
+  std::vector<int32_t> good_v; // indicates if the cluster should be considered for tracking
+  int32_t nogc = noc; // number of good clusters is number of clusters
+  for (int32_t ic = 0; ic < noc ; ic++) {
     if ( er.get_cluster(ic).get_x()>-20 && er.get_cluster(ic).get_x()<20 ) { good_v.push_back(1); }
     else {
       good_v.push_back(0);
@@ -131,7 +131,7 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
   if (ev->get_run_number()<17502) f4_entry_mean = +548.;
   else f4_entry_mean = -345.;
 
-  for (int ic=0; ic<noc; ic++) {
+  for (int32_t ic=0; ic<noc; ic++) {
     // fill the arrays
     t_cl.push_back( er.get_cluster(ic).get_start_time()+er.get_start_time_sss() );
     // test if time is aligned to first ID cluster (removed for the moment as the relative time delay between ID and OD is changing considerably over time, a less stringent cut of 1mus is introduced)
@@ -152,7 +152,7 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
 
   // compute the weight of each cluster: charge times a steep time function times a gaussian of the expected value relative to ID
 
-  for (int ic=0; ic<noc; ic++) {
+  for (int32_t ic=0; ic<noc; ic++) {
     if (good_v[ic]==1) {
       if (starttime_sc == 0) starttime_sc = t_cl[ic];
       entry_weight_cl.push_back( er.get_cluster(ic).get_charge()*exp(-fabs(t_cl[ic]-starttime_sc)/f4_entry_tau) ); 
@@ -163,11 +163,11 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
     //get_message (bx_message::debug) << "# " << ic << " ID " << er.get_cluster(ic).get_id() << " t=" << t_cl[ic] << " Q=" << er.get_cluster(ic).get_charge() << " WEn=" << entry_weight_cl[ic] << dispatch;
   }
 
-  int entry_id=0;
+  int32_t entry_id=0;
   double entry_weight=0;
   
   // find "heaviest" cluster
-  for (int ic=0; ic<noc; ic++) {
+  for (int32_t ic=0; ic<noc; ic++) {
     if (entry_weight_cl[ic]>entry_weight) {
       entry_weight = entry_weight_cl[ic];
       entry_id = er.get_cluster(ic).get_id();
@@ -195,10 +195,10 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
 
   float weightsum = 0;
   // entry uncertainty
-  int entryhits = 0;
+  int32_t entryhits = 0;
   double dt_first = -1e9;
   float maxweight = 0;
-  for (int ihit=0; ihit<er.get_clustered_nhits(); ihit++) {
+  for (int32_t ihit=0; ihit<er.get_clustered_nhits(); ihit++) {
     if ( er.get_clustered_hit(ihit).get_affiliation() != entry_id ) continue;
     if (dt_first == -1e9) dt_first = er.get_clustered_hit(ihit).get_time();
     double weight = er.get_clustered_hit(ihit).get_charge()*exp(-(er.get_clustered_hit(ihit).get_time()-dt_first)/f4_tau);
@@ -248,7 +248,7 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
 
   std::vector<double> lambda_v;
   std::vector<double> impact_v;
-  for (int ic=0; ic<noc; ic++) {
+  for (int32_t ic=0; ic<noc; ic++) {
     if (good_v[ic]==1) {
       lambda_v.push_back( - ( (er.get_cluster(ic).get_x()-ep.x)*ep.x + (er.get_cluster(ic).get_y()-ep.y)*ep.y + (er.get_cluster(ic).get_z()-ep.z)*ep.z ) / ( pow(er.get_cluster(ic).get_x()-ep.x,2) + pow(er.get_cluster(ic).get_y()-ep.y,2) + pow(er.get_cluster(ic).get_z()-ep.z,2) ) );
       impact_v.push_back( sqrt( pow(ep.x+(er.get_cluster(ic).get_x()-ep.x)*lambda_v[ic],2) + pow(ep.y+(er.get_cluster(ic).get_y()-ep.y)*lambda_v[ic],2) + pow(ep.z+(er.get_cluster(ic).get_z()-ep.z)*lambda_v[ic],2)) );
@@ -282,7 +282,7 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
   // check if time alignment is okay
   std::vector<double> exit_weight_cl;
   
-  for (int ic=0; ic<noc; ic++) {
+  for (int32_t ic=0; ic<noc; ic++) {
     exit_weight_cl.push_back(0);
     //get_message (bx_message::debug) << "ic=" << ic << "exit_weight_cl=" << exit_weight_cl[ic] << dispatch;
     float optimal_dt = 0, dr = 0;
@@ -311,9 +311,9 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
   }
 
   // find the heaviest exit cluster
-  int exit_id=0;
+  int32_t exit_id=0;
   double exit_weight=0;
-  for (int ic=0; ic<noc; ic++) {
+  for (int32_t ic=0; ic<noc; ic++) {
     if (exit_weight_cl[ic]>exit_weight) {
       exit_weight = exit_weight_cl[ic];
       exit_id = er.get_cluster(ic).get_id();
@@ -326,7 +326,7 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
   }
 
   //get_message (bx_message::debug) << "WEIGHT RESULTS" << dispatch;
-  /*for (int ic=0; ic<noc; ic++) {
+  /*for (int32_t ic=0; ic<noc; ic++) {
     get_message (bx_message::debug) << "# " << ic << " ID " << ic+1 << " good=" << good_v[ic] << ", EnW=" << entry_weight_cl[ic] << ", ExW=" << exit_weight_cl[ic] << dispatch;
   }*/
  
@@ -342,8 +342,8 @@ bx_echidna_event* bx_muon_tracker::doit (bx_echidna_event *ev) {
   weightsum = 0;
   maxweight = 0;
   dt_first = -1e9;
-  int exithits = 0;
-  for (int ihit=0; ihit<er.get_clustered_nhits(); ihit++) {
+  int32_t exithits = 0;
+  for (int32_t ihit=0; ihit<er.get_clustered_nhits(); ihit++) {
     if ( er.get_clustered_hit(ihit).get_affiliation() != exit_id ) continue;
     if (dt_first==-1e9) dt_first = er.get_clustered_hit(ihit).get_time();
     float weight = er.get_clustered_hit(ihit).get_charge()*exp(-(er.get_clustered_hit(ihit).get_time()-dt_first)/f4_tau);

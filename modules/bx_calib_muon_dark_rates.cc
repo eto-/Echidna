@@ -42,7 +42,7 @@ bx_calib_muon_dark_rates::bx_calib_muon_dark_rates () : bx_base_module("bx_calib
       
 // begin
 void bx_calib_muon_dark_rates::begin () {
-  int nch = constants::muon::channels;
+  int32_t nch = constants::muon::channels;
 
   // reset ctrs
   i4_trg_ctr = 0; 
@@ -56,7 +56,7 @@ void bx_calib_muon_dark_rates::begin () {
   f4_gate_width = f4_gate_end-f4_gate_start;
 
   // Histograms for barn 
-  ok_dark_rates = new TH1F ("OD_ok_dark_rates","OD Dark Rates of good PMTs", 10 * (int) (1.1 * f4_dark_rate_thresh_high)  , 0,  1.1 * f4_dark_rate_thresh_high);
+  ok_dark_rates = new TH1F ("OD_ok_dark_rates","OD Dark Rates of good PMTs", 10 * (int32_t) (1.1 * f4_dark_rate_thresh_high)  , 0,  1.1 * f4_dark_rate_thresh_high);
   ok_dark_rates->SetXTitle("kHz");
   ok_dark_rates->SetYTitle("channels/100Hz");
   barn_interface::get ()->store (barn_interface::file, ok_dark_rates, this);
@@ -87,18 +87,18 @@ bx_echidna_event* bx_calib_muon_dark_rates::doit (bx_echidna_event *ev) {
   const bx_muon_event& er = ev->get_muon ();
   
   //loop on decoded hits
-  for(int i = 0; i < er.get_decoded_nhits (); i++) {
+  for(int32_t i = 0; i < er.get_decoded_nhits (); i++) {
 
     // skip non-ordinary channels
     if(!er.get_decoded_hit (i).get_db_channel ()->is_ordinary () ) continue;
 
-    int mch = er.get_decoded_hit (i).get_raw_hit().get_muon_channel ();
+    int32_t mch = er.get_decoded_hit (i).get_raw_hit().get_muon_channel ();
     float time = er.get_decoded_hit (i).get_time ();
                   
     //fill maps
-    //    int hole_id = er.get_decoded_hit (i).get_db_channel ()->pmt_hole_id ();
-    //    int ring = hole_id / 100;
-    //    int column = abs(hole_id % 100);
+    //    int32_t hole_id = er.get_decoded_hit (i).get_db_channel ()->pmt_hole_id ();
+    //    int32_t ring = hole_id / 100;
+    //    int32_t column = abs(hole_id % 100);
         
     //    random_hits_map_cumulative->Fill(column, ring); 	
     //    random_hits_map-> Fill(column, ring); 
@@ -129,9 +129,9 @@ void bx_calib_muon_dark_rates::end () {
   }
 
   // channel counters
-  int n_ordinary_lg = constants::muon::channels; // to be decremented later
-  int dead_ctr = 0; 
-  int hot_ctr = 0; 
+  int32_t n_ordinary_lg = constants::muon::channels; // to be decremented later
+  int32_t dead_ctr = 0; 
+  int32_t hot_ctr = 0; 
 
   // variables for calculating mean dark rate of the detector
   // _all: sum/mean over all pmts in ordinary lg; _ok sum/mean excluding hot/dead 
@@ -143,11 +143,11 @@ void bx_calib_muon_dark_rates::end () {
   std::vector<double> dark_sigmas (constants::muon::channels);  
   std::vector<pmt_status_t> pmt_status(constants::muon::channels);
   
-  int nhits_all = 0;
+  int32_t nhits_all = 0;
 
   // loop on mch
-  for (int mch = 0; mch < constants::muon::channels; mch++) {
-    int lg = constants::muon::channel_offset + mch + 1;
+  for (int32_t mch = 0; mch < constants::muon::channels; mch++) {
+    int32_t lg = constants::muon::channel_offset + mch + 1;
     if ( (bx_dbi::get ()->get_channel (lg).is_ordinary ()) ) {
 
       // we are optimistic, pmt is good until someone says the opposite
@@ -203,7 +203,7 @@ void bx_calib_muon_dark_rates::end () {
 
   } // end of loop on channels
 
-  int n_ok_pmts = n_ordinary_lg - hot_ctr - dead_ctr;
+  int32_t n_ok_pmts = n_ordinary_lg - hot_ctr - dead_ctr;
 
   //barn_interface::get ()->network_send (dark_rate_vs_channel, this);
                                    
@@ -241,8 +241,8 @@ void bx_calib_muon_dark_rates::end () {
   run_info.set_muon_hot (hot_ctr, this);           
 
   // checking individual channels
-  for(int mch = 0; mch < constants::muon::channels; mch++) {
-    int lg = mch + constants::muon::channel_offset + 1;
+  for(int32_t mch = 0; mch < constants::muon::channels; mch++) {
+    int32_t lg = mch + constants::muon::channel_offset + 1;
 
     // get values from the previous calibration run     
     float previous_muon_dark_noise = run_info.get_muon_dark_noise (lg) ;
@@ -266,13 +266,13 @@ void bx_calib_muon_dark_rates::end () {
       previous_muon_pmt_status = good;
     } 
     else 
-      previous_muon_pmt_status = pmt_status_t(int(translation_map[previous_muon_pmt_status_descr]) % 10);
+      previous_muon_pmt_status = pmt_status_t(int32_t(translation_map[previous_muon_pmt_status_descr]) % 10);
     
     if(previous_muon_pmt_status != pmt_status[mch]){
       get_message(bx_message::warn) << "Dark rate status changed for mch " << mch 
 				    << " from " <<  previous_muon_pmt_status 
 				    << " to " << pmt_status[mch] << dispatch;
-      pmt_status [mch] = pmt_status_t(int(pmt_status [mch]) + 10);
+      pmt_status [mch] = pmt_status_t(int32_t(pmt_status [mch]) + 10);
     }
      
     run_info.set_muon_pmt_status  (lg, translation_map.rfind (pmt_status[mch])->first, this);

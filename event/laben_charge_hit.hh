@@ -37,9 +37,9 @@ class laben_charge_hit: public bx_named {
     float f4_zero_charge_limit;
 
       // Hit data
-    unsigned char u1_peak, u1_base;
+    uint8_t u1_peak, u1_base;
     float f4_prev_dt;
-    unsigned char u1_prev_peak, u1_prev_base;
+    uint8_t u1_prev_peak, u1_prev_base;
     float f4_channel_bin_to_charge, f4_channel_bin_to_charge_mean;
 
       // Some real constants

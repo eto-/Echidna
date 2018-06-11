@@ -27,12 +27,12 @@ class bx_precalib_muon_pedestals: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    unsigned short min_evnum;
-    unsigned short max_evnum;
-    unsigned short min_pedestal_width; 
-    unsigned short max_pedestal_width; 
-    unsigned short precalib_pulse_tolerance; 
-    unsigned short pulse_time;
+    uint16_t min_evnum;
+    uint16_t max_evnum;
+    uint16_t min_pedestal_width; 
+    uint16_t max_pedestal_width; 
+    uint16_t precalib_pulse_tolerance; 
+    uint16_t pulse_time;
 
     TH2S* pedestals;
     TH1F* means;

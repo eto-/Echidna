@@ -283,8 +283,8 @@ bx_echidna_event* bx_calib_monitor::doit (bx_echidna_event *ev) {
   const bx_laben_event& er = ev->get_laben();
   const bx_trigger_event& et = ev->get_trigger();
   bool trg_type = et.get_trgtype();
-  int btb_inputs = et.get_btb_inputs();
-  int n_clusters = er.get_nclusters();
+  int32_t btb_inputs = et.get_btb_inputs();
+  int32_t n_clusters = er.get_nclusters();
   double n_decoded = er.get_decoded_nhits();
   double trigger_time = er.get_trigger_rawt();
   double mean_time = 0;
@@ -306,8 +306,8 @@ bx_echidna_event* bx_calib_monitor::doit (bx_echidna_event *ev) {
     double y = pos.get_y();
     double x_y = ::sqrtf(x*x + y*y); 
 
-    unsigned long event_time_nsec;
-    unsigned long event_time_sec;
+    uint32_t event_time_nsec;
+    uint32_t event_time_sec;
     et.get_gps_time ( event_time_sec, event_time_nsec);
     double time_this_event =  event_time_sec + (double) event_time_nsec * 1E-9 ; 
 
@@ -352,7 +352,7 @@ bx_echidna_event* bx_calib_monitor::doit (bx_echidna_event *ev) {
       is_bi = true;
       f_Bi_E = charge;
     }
-    unsigned long elapsed_time_sec = event_time_sec - f_prev_bunch_time;
+    uint32_t elapsed_time_sec = event_time_sec - f_prev_bunch_time;
     if(elapsed_time_sec > f_buffer_time){
       if(f_prev_bunch_time > 0){
 	m_send_and_reset_histos();
@@ -402,7 +402,7 @@ bx_echidna_event* bx_calib_monitor::doit (bx_echidna_event *ev) {
 
   }
   else if (trg_type == 1 && btb_inputs == 0 ){
-    for(int i = 0; i < n_decoded; i++){
+    for(int32_t i = 0; i < n_decoded; i++){
       double hits_time = er.get_decoded_hit(i).get_raw_time();
       hits_t_trigger_t->Fill(hits_time - trigger_time);
     }

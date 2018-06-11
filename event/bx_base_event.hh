@@ -12,6 +12,7 @@
 #ifndef _BX_BASE_EVENT_HH
 #define _BX_BASE_EVENT_HH
 
+#include <stdint.h>
 #include <vector>
 
 #include "bx_rec_general.hh"

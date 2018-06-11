@@ -41,7 +41,7 @@ public:
 
   double Likelihood(double x, double y, double z, double t) const;
 
-  ScintPDF *get_pdf(int i = 0) {return &scint_pdf[i];}
+  ScintPDF *get_pdf(int32_t i = 0) {return &scint_pdf[i];}
 
 };
 

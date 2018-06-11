@@ -14,7 +14,7 @@
 #include <math.h>
 
 // ctor
-interpolator::interpolator (int n, const double* x, const double* y): bx_named("interpolator"),  i4_order(n) {
+interpolator::interpolator (int32_t n, const double* x, const double* y): bx_named("interpolator"),  i4_order(n) {
   if (i4_order < 2) {
     get_message(bx_message::error) << "no interpolation done (< 2 points)" << dispatch;
     return;
@@ -25,7 +25,7 @@ interpolator::interpolator (int n, const double* x, const double* y): bx_named("
 
   f8_x_coord = new double[i4_order];
   f8_y_coord = new double[i4_order];
-  for (int i = 0; i < i4_order; i++) {
+  for (int32_t i = 0; i < i4_order; i++) {
     f8_x_coord[i] = x[i];
     f8_y_coord[i] = y[i];
   }
@@ -34,7 +34,7 @@ interpolator::interpolator (int n, const double* x, const double* y): bx_named("
   f8_deriv[0] = 0.;
   par[0] = 0.;
 
-  for (int i = 1; i < i4_order - 1; i++) {
+  for (int32_t i = 1; i < i4_order - 1; i++) {
     double sig = (f8_x_coord[i] - f8_x_coord[i - 1])/(f8_x_coord[i + 1] - f8_x_coord[i - 1]);
     double p = sig * f8_deriv[i - 1] + 2.;
     f8_deriv[i] = (sig - 1.) / p;
@@ -44,7 +44,7 @@ interpolator::interpolator (int n, const double* x, const double* y): bx_named("
   
   f8_deriv[i4_order - 1] = 0.;
       
-  for (int i = i4_order - 2; i >= 0; i--) {
+  for (int32_t i = i4_order - 2; i >= 0; i--) {
     f8_deriv[i] = f8_deriv[i] * f8_deriv[i + 1] + par[i];
   }
   
@@ -53,14 +53,14 @@ interpolator::interpolator (int n, const double* x, const double* y): bx_named("
 
 // return the interpolated value
 double interpolator::get_value (double val) {
-  int low = 0;
-  int up = i4_order - 1;
+  int32_t low = 0;
+  int32_t up = i4_order - 1;
 
   if (val < f8_x_coord[low]) return f8_y_coord[low];
   if (val > f8_x_coord[up]) return f8_y_coord[up];
     
   while (up-low > 1) {
-    int index = (low+up)/2;
+    int32_t index = (low+up)/2;
     if ( f8_x_coord[index] > val ) up = index;
     else low = index;
   }

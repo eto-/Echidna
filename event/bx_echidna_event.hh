@@ -27,10 +27,10 @@ class bx_echidna_event {
     bx_echidna_event (const char *disk_event);
     virtual ~bx_echidna_event () {}
 
-    unsigned long get_event_size_bytes  () const { return u4_event_size_bytes; }
-    unsigned long get_run_number        () const { return u4_run_number;       }
-    unsigned long get_event_number      () const { return u4_event_number;     }
-    unsigned short get_enabled_crates   () const { return (unsigned short)(~u4_enabled_crates >> 16); }
+    uint32_t get_event_size_bytes  () const { return u4_event_size_bytes; }
+    uint32_t get_run_number        () const { return u4_run_number;       }
+    uint32_t get_event_number      () const { return u4_event_number;     }
+    uint16_t get_enabled_crates   () const { return (uint16_t)(~u4_enabled_crates >> 16); }
 
     bool          is_laben_enabled (int c) const { return (c>0 && c<=constants::laben::ncrates) ? is_crate_enabled (c) : false; }
     bool          is_laben_enabled      () const { bool ret_val = false; 
@@ -41,8 +41,8 @@ class bx_echidna_event {
     bool          is_mctruth_enabled    () const { return mctruth.get_nframes() > 0; }
     bool          is_neutron_enabled    () const { return neutron.is_associated(); }
 
-    unsigned long get_builder_time_seconds     () const { return u4_builder_time_seconds;     }
-    unsigned long get_builder_time_nanoseconds () const { return u4_builder_time_nanoseconds; }
+    uint32_t get_builder_time_seconds     () const { return u4_builder_time_seconds;     }
+    uint32_t get_builder_time_nanoseconds () const { return u4_builder_time_nanoseconds; }
     bool          is_tracked_global     () const { return track_global.is_valid(); }
     bool          is_tracked_cmt        () const { return !track_cmt.get_error(); }
 
@@ -66,21 +66,21 @@ class bx_echidna_event {
     bx_track_by_points&  get_track_cmt () { return track_cmt;   }
 
   private:
-    bool is_crate_enabled (unsigned char c) const { return is_crate_enabled_daq (c) && is_crate_enabled_runtime (c); }
-    bool is_crate_enabled_daq (unsigned char c) const { if (c==0) return true; 
+    bool is_crate_enabled (uint8_t c) const { return is_crate_enabled_daq (c) && is_crate_enabled_runtime (c); }
+    bool is_crate_enabled_daq (uint8_t c) const { if (c==0) return true; 
                                                         if (c <=16) return u4_enabled_crates & (1 << (c-1)); 
 						        else return false; }
-    bool is_crate_enabled_runtime (unsigned char c) const { if (c==0) return true; 
+    bool is_crate_enabled_runtime (uint8_t c) const { if (c==0) return true; 
                                                             if (c <=16) return ! (u4_enabled_crates & (1 << (15+c))); 
 						            else return false; }
     void  m_dump_crates_status();
 
-    unsigned long u4_event_size_bytes;
-    unsigned long u4_run_number;
-    unsigned long u4_event_number;
-    unsigned long u4_enabled_crates; //0-15 bits: daq (0=OFF, 1=ON); 16-31 bits: runtime (0=ON, 1=OFF); AAA: INVERTED LOGIC!!!
-    unsigned long u4_builder_time_seconds;
-    unsigned long u4_builder_time_nanoseconds;
+    uint32_t u4_event_size_bytes;
+    uint32_t u4_run_number;
+    uint32_t u4_event_number;
+    uint32_t u4_enabled_crates; //0-15 bits: daq (0=OFF, 1=ON); 16-31 bits: runtime (0=ON, 1=OFF); AAA: INVERTED LOGIC!!!
+    uint32_t u4_builder_time_seconds;
+    uint32_t u4_builder_time_nanoseconds;
 
     bx_trigger_event trigger;
     bx_laben_event   laben;

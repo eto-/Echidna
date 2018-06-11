@@ -35,7 +35,7 @@ class bx_energy_reco_dbn: public bx_base_module {
     float f4_nhits_dbn;
     const static double SSpline_Y[3][55]; 
     const static double SSpline_M[3][55]; 
-    float Spline(int N, float X , const double *data,const double *m,double *y);
+    float Spline(int32_t N, float X , const double *data,const double *m,double *y);
     TH1F *pHisto_npe;
     TH1F *pHisto_pe;
     TH1F *pHisto_nhits;

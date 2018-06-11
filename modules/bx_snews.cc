@@ -27,7 +27,7 @@ namespace {
   //global variables for XLM-RPC.
   std::string server_address = "http://snews.daqnet.borex:8080/RPC2";
   std::string my_name = "Echidna";
-  int key = 0;
+  int32_t key = 0;
 
   void BrainInit () {
     XmlRpcClient::Initialize("online echidna snews client", "1");
@@ -36,7 +36,7 @@ namespace {
     XmlRpcClient::Terminate();
   }
 
-  int BrainUnregister () {
+  int32_t BrainUnregister () {
     // Build our parameter array.
     XmlRpcValue param_array = XmlRpcValue::makeArray();
     param_array.arrayAppendItem( XmlRpcValue::makeString( my_name ) );
@@ -51,7 +51,7 @@ namespace {
     return res;
   }
 
-  int BrainRegister () {
+  int32_t BrainRegister () {
     // Build our parameter array.
     XmlRpcValue param_array = XmlRpcValue::makeArray();
     param_array.arrayAppendItem( XmlRpcValue::makeString( my_name ) );
@@ -66,7 +66,7 @@ namespace {
     return keys;
   }
 
-  int BrainTrigger (double alarm_time, double level, double duration, double signal, double probability) {
+  int32_t BrainTrigger (double alarm_time, double level, double duration, double signal, double probability) {
     // Build our parameter array.
     XmlRpcValue param_array = XmlRpcValue::makeArray();
     param_array.arrayAppendItem( XmlRpcValue::makeString( my_name ) );
@@ -86,7 +86,7 @@ namespace {
     return status;
   }
 
-  int BrainLinger () {
+  int32_t BrainLinger () {
     // Build our parameter array.
     XmlRpcValue param_array = XmlRpcValue::makeArray();
     param_array.arrayAppendItem( XmlRpcValue::makeString( my_name ) );
@@ -105,10 +105,10 @@ namespace {
 namespace {
   void BrainInit () { }
   void BrainEnd () { }
-  int BrainUnregister () { return true; }
-  int BrainRegister () { return true; }
-  int BrainTrigger (double alarm_time, double level, double duration, double signal, double probability) { return true; }
-  int BrainLinger () { return true; }
+  int32_t BrainUnregister () { return true; }
+  int32_t BrainRegister () { return true; }
+  int32_t BrainTrigger (double alarm_time, double level, double duration, double signal, double probability) { return true; }
+  int32_t BrainLinger () { return true; }
 };
 #endif
 /////////////////////////////////////////////////////////////////////
@@ -166,7 +166,7 @@ bx_echidna_event* bx_snews::doit (bx_echidna_event *ev) {
 	&& ev->get_laben().get_cluster(0).get_split_npeaks () > 0 
 	&& ev->get_laben().get_cluster(0).get_split_peak(0).get_start_time () > 40)) {
       EventData CurEv;
-      unsigned long Sec,NSec;
+      uint32_t Sec,NSec;
       ev->get_trigger().get_gps_time(Sec,NSec);
       CurEv.Time = Sec + double(NSec) * 10e-9;
       CurEv.NHits = ev->get_laben().get_cluster(0).get_clustered_nhits();

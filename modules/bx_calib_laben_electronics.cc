@@ -162,7 +162,7 @@ void bx_calib_laben_electronics::begin () {
 
 
 
-  for(int trg = 0; trg < 3; trg++) {
+  for(int32_t trg = 0; trg < 3; trg++) {
     barn_interface::get ()->store (barn_interface::file, trigref_correl_vs_lg[trg], this);
     barn_interface::get ()->store (barn_interface::file, end_gate_correl_vs_lg[trg], this);
     barn_interface::get ()->store (barn_interface::file, Nhits_vs_lg[trg], this);
@@ -173,10 +173,10 @@ void bx_calib_laben_electronics::begin () {
     Nevents_type[trg] = 0;
 
       // Internal vectors and arrays
-    hits[trg] = new int[constants::laben::channels];
+    hits[trg] = new int32_t[constants::laben::channels];
     std::fill_n (hits[trg], constants::laben::channels, 0);
  
-    raw_hits[trg] = new int[constants::laben::channels];
+    raw_hits[trg] = new int32_t[constants::laben::channels];
     std::fill_n (raw_hits[trg], constants::laben::channels, 0);
  
   }
@@ -190,7 +190,7 @@ bx_echidna_event* bx_calib_laben_electronics::doit (bx_echidna_event *ev) {
   double Nraw_hits = ev->get_laben ().get_raw_nhits ();
   double Ndecoded_hits = ev->get_laben ().get_decoded_nhits ();
 
-  int event_trg_type = -10;
+  int32_t event_trg_type = -10;
   if (ev->get_trigger ().is_pulser ()) event_trg_type = 0;
   if (ev->get_trigger ().is_laser394 ()) event_trg_type = 1;
   if (ev->get_trigger ().is_neutrino ()) event_trg_type = 2;
@@ -204,7 +204,7 @@ bx_echidna_event* bx_calib_laben_electronics::doit (bx_echidna_event *ev) {
   Nevents_type[event_trg_type]++;
  
     //raw hits - FIFO control for all 3 trigger types (neu, pulser, laser) together
-  for (int i = 0; i < ev->get_laben ().get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < ev->get_laben ().get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = ev->get_laben ().get_raw_hit (i);
     if (hit.check_flag (bx_laben_raw_hit::fifo_full))  fifo_full_vs_lg->Fill (hit.get_logical_channel ());
     if (hit.check_flag (bx_laben_raw_hit::fifo_empty)) fifo_empty_vs_lg->Fill (hit.get_logical_channel ());
@@ -216,21 +216,21 @@ bx_echidna_event* bx_calib_laben_electronics::doit (bx_echidna_event *ev) {
   double trigger_offset  = -1 * run_info.get_laben_gate_start ();
  
     //vectors for the calculation of multiplicity_dt
-  std::vector<int> lg_one_event(constants::laben::channels, 0);
+  std::vector<int32_t> lg_one_event(constants::laben::channels, 0);
   std::vector<double> time_by_lg_one_event(constants::laben::channels, 0);
 
     //loop in all raw hits 
-  for (int i = 0; i < Nraw_hits; i++) {
-    int lg = ev->get_laben ().get_raw_hit (i).get_logical_channel ();
+  for (int32_t i = 0; i < Nraw_hits; i++) {
+    int32_t lg = ev->get_laben ().get_raw_hit (i).get_logical_channel ();
     raw_hits[event_trg_type][lg - 1]++;
     raw_Nhits_vs_lg[event_trg_type]->Fill(lg);
   }    
 
     //loop in all decoded hits 
-  for (int i = 0; i < Ndecoded_hits; i++) {
+  for (int32_t i = 0; i < Ndecoded_hits; i++) {
 
       //lg properties
-    int lg = ev->get_laben ().get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
+    int32_t lg = ev->get_laben ().get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
     double charge = ev->get_laben ().get_decoded_hit (i).get_charge_bin ();
     hits[event_trg_type][lg - 1]++;
     lg_one_event[lg - 1]++;
@@ -277,8 +277,8 @@ bx_echidna_event* bx_calib_laben_electronics::doit (bx_echidna_event *ev) {
   if(event_trg_type == 2){ //neutrino event
     if (ev->get_trigger().get_btb_inputs() == 0) { //1 cluster, btb input 0
       if(Ndecoded_hits < 100) {  // less than 100 hits
-	  for(int i = 0; i < Ndecoded_hits; i++){
-	    int lg = ev->get_laben ().get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
+	  for(int32_t i = 0; i < Ndecoded_hits; i++){
+	    int32_t lg = ev->get_laben ().get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
 	    double charge = ev->get_laben ().get_decoded_hit (i).get_charge_bin ();
 	    charge_tt1_vs_lg->Fill (lg, charge); 
 	  }
@@ -304,7 +304,7 @@ void bx_calib_laben_electronics::end () {
   std::vector<std::vector<multiplicity> > prev_multiplicity_n_vec(constants::laben::channels);
 
  //inizialize vectors
-  for(int ch = 0; ch < constants::laben::channels; ch++) {
+  for(int32_t ch = 0; ch < constants::laben::channels; ch++) {
     charge_base_status_vec.push_back (std::vector<ADC_status>());
     charge_peak_status_vec.push_back (std::vector<ADC_status>());
     charge_status_vec.push_back (std::vector<ADC_status>());
@@ -321,104 +321,104 @@ void bx_calib_laben_electronics::end () {
 
 
     //find Nlg_x from the previous run 
-  int prev_Nlg_fifo_empty =0;
-  int prev_Nlg_fifo_full =0;
-  int prev_Nlg_loosing_raw_hits[3] = {};
+  int32_t prev_Nlg_fifo_empty =0;
+  int32_t prev_Nlg_fifo_full =0;
+  int32_t prev_Nlg_loosing_raw_hits[3] = {};
         
-  int prev_Nlg_laser_ref_correl          = 0;
-  int prev_Nlg_trigger_ref_correl[3]     = {};
-  int prev_Nlg_end_of_gate_correl[3]     = {};
-  int prev_Nlg_bad_timing_shape_in_laser = 0;
+  int32_t prev_Nlg_laser_ref_correl          = 0;
+  int32_t prev_Nlg_trigger_ref_correl[3]     = {};
+  int32_t prev_Nlg_end_of_gate_correl[3]     = {};
+  int32_t prev_Nlg_bad_timing_shape_in_laser = 0;
 
-  int prev_Nlg_dead[4]         = {};
-  int prev_Nlg_low_eff[4]      = {};
-  int prev_Nlg_hot[4]          = {};
-  int prev_Nlg_retriggering[3] = {};
+  int32_t prev_Nlg_dead[4]         = {};
+  int32_t prev_Nlg_low_eff[4]      = {};
+  int32_t prev_Nlg_hot[4]          = {};
+  int32_t prev_Nlg_retriggering[3] = {};
   
-  int prev_Nlg_base_many_zeros        = 0;
-  int prev_Nlg_base_many_FF           = 0;
-  int prev_Nlg_base_too_spread        = 0;
-  int prev_Nlg_base_shifted_from_mean = 0;
-  int prev_Nlg_base_bad_rms           = 0;
-  int prev_Nlg_base_very_small_rms    = 0;
+  int32_t prev_Nlg_base_many_zeros        = 0;
+  int32_t prev_Nlg_base_many_FF           = 0;
+  int32_t prev_Nlg_base_too_spread        = 0;
+  int32_t prev_Nlg_base_shifted_from_mean = 0;
+  int32_t prev_Nlg_base_bad_rms           = 0;
+  int32_t prev_Nlg_base_very_small_rms    = 0;
    
-  int prev_Nlg_peak_many_zeros        = 0;
-  int prev_Nlg_peak_many_FF           = 0;
-  int prev_Nlg_peak_too_spread        = 0;
-  int prev_Nlg_peak_shifted_from_mean = 0;
-  int prev_Nlg_peak_bad_rms           = 0;
-  int prev_Nlg_peak_very_small_rms    = 0;
+  int32_t prev_Nlg_peak_many_zeros        = 0;
+  int32_t prev_Nlg_peak_many_FF           = 0;
+  int32_t prev_Nlg_peak_too_spread        = 0;
+  int32_t prev_Nlg_peak_shifted_from_mean = 0;
+  int32_t prev_Nlg_peak_bad_rms           = 0;
+  int32_t prev_Nlg_peak_very_small_rms    = 0;
  
-  int prev_Nlg_charge_many_zeros           = 0;
-  int prev_Nlg_charge_many_FF              = 0;
-  int prev_Nlg_charge_many_negative_values = 0;
-  int prev_Nlg_charge_too_spread           = 0;
-  int prev_Nlg_charge_shifted_from_mean    = 0;
-  int prev_Nlg_charge_bad_rms              = 0;
-  int prev_Nlg_charge_low_gain               = 0;
-  int prev_Nlg_charge_high_gain               = 0;
+  int32_t prev_Nlg_charge_many_zeros           = 0;
+  int32_t prev_Nlg_charge_many_FF              = 0;
+  int32_t prev_Nlg_charge_many_negative_values = 0;
+  int32_t prev_Nlg_charge_too_spread           = 0;
+  int32_t prev_Nlg_charge_shifted_from_mean    = 0;
+  int32_t prev_Nlg_charge_bad_rms              = 0;
+  int32_t prev_Nlg_charge_low_gain               = 0;
+  int32_t prev_Nlg_charge_high_gain               = 0;
 
-  int module_says_DB_write = 1;
+  int32_t module_says_DB_write = 1;
              
     //vectors of lg, input 0 = does not have this characteristics, input 1 = has this characteristics, 
-  std::vector<int> prev_lg_fifo_empty(constants::laben::channels, 0) ;
-  std::vector<int> prev_lg_fifo_full (constants::laben::channels, 0);
-  std::vector<int> prev_lg_loosing_raw_hits_p (constants::laben::channels, 0);
-  std::vector<int> prev_lg_loosing_raw_hits_l (constants::laben::channels, 0);
-  std::vector<int> prev_lg_loosing_raw_hits_n (constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_fifo_empty(constants::laben::channels, 0) ;
+  std::vector<int32_t> prev_lg_fifo_full (constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_loosing_raw_hits_p (constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_loosing_raw_hits_l (constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_loosing_raw_hits_n (constants::laben::channels, 0);
   
-  std::vector<int> prev_lg_laser_ref_correl(constants::laben::channels, 0);
-  std::vector<int> prev_lg_trigger_ref_correl_p(constants::laben::channels, 0);
-  std::vector<int> prev_lg_trigger_ref_correl_l(constants::laben::channels, 0);
-  std::vector<int> prev_lg_trigger_ref_correl_n(constants::laben::channels, 0);
-  std::vector<int> prev_lg_end_of_gate_correl_p(constants::laben::channels, 0);
-  std::vector<int> prev_lg_end_of_gate_correl_l(constants::laben::channels, 0);
-  std::vector<int> prev_lg_end_of_gate_correl_n(constants::laben::channels, 0);
-  std::vector<int> prev_lg_bad_timing_shape_in_laser(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_laser_ref_correl(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_trigger_ref_correl_p(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_trigger_ref_correl_l(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_trigger_ref_correl_n(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_end_of_gate_correl_p(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_end_of_gate_correl_l(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_end_of_gate_correl_n(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_bad_timing_shape_in_laser(constants::laben::channels, 0);
 
-  std::vector<int> prev_lg_dead_p(constants::laben::channels, 0);
-  std::vector<int> prev_lg_dead_l(constants::laben::channels, 0);
-  std::vector<int> prev_lg_dead_n(constants::laben::channels, 0);
-  std::vector<int> prev_lg_dead_raw(constants::laben::channels, 0);
-  std::vector<int> prev_lg_low_eff_p(constants::laben::channels, 0);
-  std::vector<int> prev_lg_low_eff_l(constants::laben::channels, 0);
-  std::vector<int> prev_lg_low_eff_n(constants::laben::channels, 0);
-  std::vector<int> prev_lg_low_eff_raw(constants::laben::channels, 0);
-  std::vector<int> prev_lg_hot_p(constants::laben::channels, 0);
-  std::vector<int> prev_lg_hot_l(constants::laben::channels, 0);
-  std::vector<int> prev_lg_hot_n(constants::laben::channels, 0);
-  std::vector<int> prev_lg_hot_raw(constants::laben::channels, 0);
-  std::vector<int> prev_lg_retriggering_p(constants::laben::channels, 0);
-  std::vector<int> prev_lg_retriggering_l(constants::laben::channels, 0);
-  std::vector<int> prev_lg_retriggering_n(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_dead_p(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_dead_l(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_dead_n(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_dead_raw(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_low_eff_p(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_low_eff_l(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_low_eff_n(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_low_eff_raw(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_hot_p(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_hot_l(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_hot_n(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_hot_raw(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_retriggering_p(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_retriggering_l(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_retriggering_n(constants::laben::channels, 0);
   
-  std::vector<int> prev_lg_base_many_zeros(constants::laben::channels, 0);
-  std::vector<int> prev_lg_base_many_FF(constants::laben::channels, 0);
-  std::vector<int> prev_lg_base_too_spread(constants::laben::channels, 0);
-  std::vector<int> prev_lg_base_shifted_from_mean(constants::laben::channels, 0);
-  std::vector<int> prev_lg_base_bad_rms(constants::laben::channels, 0);
-  std::vector<int> prev_lg_base_very_small_rms(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_base_many_zeros(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_base_many_FF(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_base_too_spread(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_base_shifted_from_mean(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_base_bad_rms(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_base_very_small_rms(constants::laben::channels, 0);
   
-  std::vector<int> prev_lg_peak_many_zeros(constants::laben::channels, 0);
-  std::vector<int> prev_lg_peak_many_FF(constants::laben::channels, 0);
-  std::vector<int> prev_lg_peak_too_spread(constants::laben::channels, 0);
-  std::vector<int> prev_lg_peak_shifted_from_mean(constants::laben::channels, 0);
-  std::vector<int> prev_lg_peak_bad_rms(constants::laben::channels, 0);
-  std::vector<int> prev_lg_peak_very_small_rms(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_peak_many_zeros(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_peak_many_FF(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_peak_too_spread(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_peak_shifted_from_mean(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_peak_bad_rms(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_peak_very_small_rms(constants::laben::channels, 0);
   
-  std::vector<int> prev_lg_charge_many_zeros(constants::laben::channels, 0);
-  std::vector<int> prev_lg_charge_many_FF(constants::laben::channels, 0);
-  std::vector<int> prev_lg_charge_many_negative_values(constants::laben::channels, 0);
-  std::vector<int> prev_lg_charge_too_spread(constants::laben::channels, 0);
-  std::vector<int> prev_lg_charge_shifted_from_mean(constants::laben::channels, 0);
-  std::vector<int> prev_lg_charge_bad_rms(constants::laben::channels, 0);
-  std::vector<int> prev_lg_charge_low_gain(constants::laben::channels, 0);
-  std::vector<int> prev_lg_charge_high_gain(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_charge_many_zeros(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_charge_many_FF(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_charge_many_negative_values(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_charge_too_spread(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_charge_shifted_from_mean(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_charge_bad_rms(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_charge_low_gain(constants::laben::channels, 0);
+  std::vector<int32_t> prev_lg_charge_high_gain(constants::laben::channels, 0);
 
 
   db_run& run_info_prev = bx_dbi::get ()->get_run ();
   
-  for(int ch = 0; ch < constants::laben::channels ; ch++) {
+  for(int32_t ch = 0; ch < constants::laben::channels ; ch++) {
      
     // base
     const std::vector<std::string>& laben_charge_base_status_v = run_info_prev.get_laben_charge_base_status  (ch + 1);
@@ -535,120 +535,120 @@ void bx_calib_laben_electronics::end () {
   get_message(bx_message::log) << "prev_Nlg_charge_high_gain             " << prev_Nlg_charge_high_gain               << dispatch;
   get_message(bx_message::log) << "prev_Nlg_laser_ref_correl           " <<  prev_Nlg_laser_ref_correl                 << dispatch;
   									     
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_dead_in_" <<  trg_names[trg]   << " "       << prev_Nlg_dead[trg]  << dispatch;
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_low_eff_in_" <<  trg_names[trg]   << " "    << prev_Nlg_low_eff[trg]  << dispatch;
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_hot_in_" <<  trg_names[trg]    << " "       << prev_Nlg_hot[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_dead_in_" <<  trg_names[trg]   << " "       << prev_Nlg_dead[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_low_eff_in_" <<  trg_names[trg]   << " "    << prev_Nlg_low_eff[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_hot_in_" <<  trg_names[trg]    << " "       << prev_Nlg_hot[trg]  << dispatch;
 
   get_message(bx_message::log) << "prev_Nlg_dead_in_raw_neutrino " << prev_Nlg_dead[3]  << dispatch;
   get_message(bx_message::log) << "prev_Nlg_low_eff_in_raw_neutrino " << prev_Nlg_low_eff[3]  << dispatch;
   get_message(bx_message::log) << "prev_Nlg_hot_in_raw_neutrino " << prev_Nlg_hot[3]  << dispatch;
 
 
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_retriggering_in_" <<  trg_names[trg] << " " << prev_Nlg_retriggering[trg]  << dispatch;
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_trigger_ref_correl_in_" << trg_names[trg]  << " " << prev_Nlg_trigger_ref_correl[trg]  << dispatch;
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_end_of_gate_correl_in_" << trg_names[trg]  << " " << prev_Nlg_end_of_gate_correl[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_retriggering_in_" <<  trg_names[trg] << " " << prev_Nlg_retriggering[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_trigger_ref_correl_in_" << trg_names[trg]  << " " << prev_Nlg_trigger_ref_correl[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "prev_Nlg_end_of_gate_correl_in_" << trg_names[trg]  << " " << prev_Nlg_end_of_gate_correl[trg]  << dispatch;
 								      
   get_message(bx_message::log) << "prev_Nlg_fifo_empty          " <<  prev_Nlg_fifo_empty                 << dispatch; 						      
   get_message(bx_message::log) << "prev_Nlg_fifo_full           " <<  prev_Nlg_fifo_full                  << dispatch; 						      
-  for(int trg = 0; trg < 3; trg ++) get_message(bx_message::log) << "prev_Nlg_loosing_raw_hits_in_" << trg_names[trg]  << " " << prev_Nlg_loosing_raw_hits[trg] << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++) get_message(bx_message::log) << "prev_Nlg_loosing_raw_hits_in_" << trg_names[trg]  << " " << prev_Nlg_loosing_raw_hits[trg] << dispatch;
   
   //get_message(bx_message::log) << "prev_Nlg_bad_timing_shape_in_laser      " << prev_Nlg_bad_timing_shape_in_laser        << dispatch;
 								      
     // current run
-  int Nlg_fifo_empty = 0;
-  int Nlg_fifo_full = 0;
-  int Nlg_loosing_raw_hits[3] = {};
+  int32_t Nlg_fifo_empty = 0;
+  int32_t Nlg_fifo_full = 0;
+  int32_t Nlg_loosing_raw_hits[3] = {};
   
-  int Nlg_laser_ref_correl          = 0;
-  int Nlg_trigger_ref_correl[3]     = {};
-  int Nlg_end_of_gate_correl[3]     = {};
-  int Nlg_bad_timing_shape_in_laser = 0;
+  int32_t Nlg_laser_ref_correl          = 0;
+  int32_t Nlg_trigger_ref_correl[3]     = {};
+  int32_t Nlg_end_of_gate_correl[3]     = {};
+  int32_t Nlg_bad_timing_shape_in_laser = 0;
   
-  int Nlg_dead[4]         = {};
-  int Nlg_low_eff[4]      = {};
-  int Nlg_hot[4]          = {};
-  int Nlg_retriggering[3] = {};
+  int32_t Nlg_dead[4]         = {};
+  int32_t Nlg_low_eff[4]      = {};
+  int32_t Nlg_hot[4]          = {};
+  int32_t Nlg_retriggering[3] = {};
   
-  int Nlg_base_many_zeros        = 0;
-  int Nlg_base_many_FF           = 0;
-  int Nlg_base_too_spread        = 0;
-  int Nlg_base_shifted_from_mean = 0;
-  int Nlg_base_bad_rms           = 0;
-  int Nlg_base_very_small_rms    = 0;
+  int32_t Nlg_base_many_zeros        = 0;
+  int32_t Nlg_base_many_FF           = 0;
+  int32_t Nlg_base_too_spread        = 0;
+  int32_t Nlg_base_shifted_from_mean = 0;
+  int32_t Nlg_base_bad_rms           = 0;
+  int32_t Nlg_base_very_small_rms    = 0;
   
-  int Nlg_peak_many_zeros        = 0;
-  int Nlg_peak_many_FF           = 0;
-  int Nlg_peak_too_spread        = 0;
-  int Nlg_peak_shifted_from_mean = 0;
-  int Nlg_peak_bad_rms           = 0;
-  int Nlg_peak_very_small_rms    = 0;
+  int32_t Nlg_peak_many_zeros        = 0;
+  int32_t Nlg_peak_many_FF           = 0;
+  int32_t Nlg_peak_too_spread        = 0;
+  int32_t Nlg_peak_shifted_from_mean = 0;
+  int32_t Nlg_peak_bad_rms           = 0;
+  int32_t Nlg_peak_very_small_rms    = 0;
   
-  int Nlg_charge_many_zeros           = 0;
-  int Nlg_charge_many_FF              = 0;
-  int Nlg_charge_many_negative_values = 0;
-  int Nlg_charge_too_spread           = 0;
-  int Nlg_charge_shifted_from_mean    = 0;
-  int Nlg_charge_bad_rms              = 0;
-  int Nlg_charge_low_gain             = 0;
-  int Nlg_charge_high_gain             = 0;
+  int32_t Nlg_charge_many_zeros           = 0;
+  int32_t Nlg_charge_many_FF              = 0;
+  int32_t Nlg_charge_many_negative_values = 0;
+  int32_t Nlg_charge_too_spread           = 0;
+  int32_t Nlg_charge_shifted_from_mean    = 0;
+  int32_t Nlg_charge_bad_rms              = 0;
+  int32_t Nlg_charge_low_gain             = 0;
+  int32_t Nlg_charge_high_gain             = 0;
 
 
     //last two bins of the following vectors are used to store
     //pen-last: number of lg which did loose the characteristics
     //    last: number of lg which did "gain" the characteristics
-  std::vector<int> lg_fifo_empty(constants::laben::channels + 2, 0) ;
-  std::vector<int> lg_fifo_full (constants::laben::channels + 2, 0);
-  std::vector<int> lg_loosing_raw_hits_p (constants::laben::channels + 2, 0);
-  std::vector<int> lg_loosing_raw_hits_l (constants::laben::channels + 2, 0);
-  std::vector<int> lg_loosing_raw_hits_n (constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_fifo_empty(constants::laben::channels + 2, 0) ;
+  std::vector<int32_t> lg_fifo_full (constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_loosing_raw_hits_p (constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_loosing_raw_hits_l (constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_loosing_raw_hits_n (constants::laben::channels + 2, 0);
   
-  std::vector<int> lg_laser_ref_correl(constants::laben::channels + 2, 0);
-  std::vector<int> lg_trigger_ref_correl_p(constants::laben::channels + 2, 0);
-  std::vector<int> lg_trigger_ref_correl_l(constants::laben::channels + 2, 0);
-  std::vector<int> lg_trigger_ref_correl_n(constants::laben::channels + 2, 0);
-  std::vector<int> lg_end_of_gate_correl_p(constants::laben::channels + 2, 0);
-  std::vector<int> lg_end_of_gate_correl_l(constants::laben::channels + 2, 0);
-  std::vector<int> lg_end_of_gate_correl_n(constants::laben::channels + 2, 0);
-  std::vector<int> lg_bad_timing_shape_in_laser(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_laser_ref_correl(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_trigger_ref_correl_p(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_trigger_ref_correl_l(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_trigger_ref_correl_n(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_end_of_gate_correl_p(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_end_of_gate_correl_l(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_end_of_gate_correl_n(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_bad_timing_shape_in_laser(constants::laben::channels + 2, 0);
 
-  std::vector<int> lg_dead_p(constants::laben::channels + 2, 0);
-  std::vector<int> lg_dead_l(constants::laben::channels + 2, 0);
-  std::vector<int> lg_dead_n(constants::laben::channels + 2, 0);
-  std::vector<int> lg_dead_raw(constants::laben::channels + 2, 0);
-  std::vector<int> lg_low_eff_p(constants::laben::channels + 2, 0);
-  std::vector<int> lg_low_eff_l(constants::laben::channels + 2, 0);
-  std::vector<int> lg_low_eff_n(constants::laben::channels + 2, 0);
-  std::vector<int> lg_low_eff_raw(constants::laben::channels + 2, 0);
-  std::vector<int> lg_hot_p(constants::laben::channels + 2, 0);
-  std::vector<int> lg_hot_l(constants::laben::channels + 2, 0);
-  std::vector<int> lg_hot_n(constants::laben::channels + 2, 0);
-  std::vector<int> lg_hot_raw(constants::laben::channels + 2, 0);
-  std::vector<int> lg_retriggering_p(constants::laben::channels + 2, 0);
-  std::vector<int> lg_retriggering_l(constants::laben::channels + 2, 0);
-  std::vector<int> lg_retriggering_n(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_dead_p(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_dead_l(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_dead_n(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_dead_raw(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_low_eff_p(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_low_eff_l(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_low_eff_n(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_low_eff_raw(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_hot_p(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_hot_l(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_hot_n(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_hot_raw(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_retriggering_p(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_retriggering_l(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_retriggering_n(constants::laben::channels + 2, 0);
   
-  std::vector<int> lg_base_many_zeros(constants::laben::channels + 2, 0);
-  std::vector<int> lg_base_many_FF(constants::laben::channels + 2, 0);
-  std::vector<int> lg_base_too_spread(constants::laben::channels + 2, 0);
-  std::vector<int> lg_base_shifted_from_mean(constants::laben::channels + 2, 0);
-  std::vector<int> lg_base_bad_rms(constants::laben::channels + 2, 0);
-  std::vector<int> lg_base_very_small_rms(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_base_many_zeros(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_base_many_FF(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_base_too_spread(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_base_shifted_from_mean(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_base_bad_rms(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_base_very_small_rms(constants::laben::channels + 2, 0);
   
-  std::vector<int> lg_peak_many_zeros(constants::laben::channels + 2, 0);
-  std::vector<int> lg_peak_many_FF(constants::laben::channels + 2, 0);
-  std::vector<int> lg_peak_too_spread(constants::laben::channels + 2, 0);
-  std::vector<int> lg_peak_shifted_from_mean(constants::laben::channels + 2, 0);
-  std::vector<int> lg_peak_bad_rms(constants::laben::channels + 2, 0);
-  std::vector<int> lg_peak_very_small_rms(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_peak_many_zeros(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_peak_many_FF(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_peak_too_spread(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_peak_shifted_from_mean(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_peak_bad_rms(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_peak_very_small_rms(constants::laben::channels + 2, 0);
   
-  std::vector<int> lg_charge_many_zeros(constants::laben::channels + 2, 0);
-  std::vector<int> lg_charge_many_FF(constants::laben::channels + 2, 0);
-  std::vector<int> lg_charge_many_negative_values(constants::laben::channels + 2, 0);
-  std::vector<int> lg_charge_too_spread(constants::laben::channels + 2, 0);
-  std::vector<int> lg_charge_shifted_from_mean(constants::laben::channels + 2, 0);
-  std::vector<int> lg_charge_bad_rms(constants::laben::channels + 2, 0);
-  std::vector<int> lg_charge_low_gain(constants::laben::channels + 2, 0);
-  std::vector<int> lg_charge_high_gain(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_charge_many_zeros(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_charge_many_FF(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_charge_many_negative_values(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_charge_too_spread(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_charge_shifted_from_mean(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_charge_bad_rms(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_charge_low_gain(constants::laben::channels + 2, 0);
+  std::vector<int32_t> lg_charge_high_gain(constants::laben::channels + 2, 0);
 
 
   std::vector<double> electronics_eff_list(constants::laben::channels, -10);
@@ -667,13 +667,13 @@ void bx_calib_laben_electronics::end () {
   double sigma_charge_ref = 0;
 
   //calculate Ndecoded_hits/Nrawhits
-  for(int ch = 1; ch <= constants::laben::channels ; ch++) {
-    int lg_to_check = 0;
+  for(int32_t ch = 1; ch <= constants::laben::channels ; ch++) {
+    int32_t lg_to_check = 0;
     if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_trigger()) lg_to_check = 1;
     if(lg_to_check){	
-      for(int trg = 0;trg < 3; trg ++ ) {
+      for(int32_t trg = 0;trg < 3; trg ++ ) {
 	double frac_Nhits;
 	if(raw_hits[trg][ch - 1]) frac_Nhits = (double) hits[trg][ch - 1] / (double) raw_hits[trg][ch - 1];
 	else frac_Nhits = -1;
@@ -697,7 +697,7 @@ void bx_calib_laben_electronics::end () {
       }
     }
     else {
-      for(int trg = 0;trg < 3; trg ++ ) {
+      for(int32_t trg = 0;trg < 3; trg ++ ) {
 	frac_Nhits_vs_lg[trg]->SetBinContent(ch, -2);
 	if(raw_hits[trg][ch - 1] && !bx_dbi::get ()->get_channel (ch).is_laser() && !bx_dbi::get ()->get_channel (ch).is_trigger()) 
 	  get_message(bx_message::warn) << "Lg " << ch << " has raw hits in trigger type " << trg_names[trg] << " and is not an ordinary, neither reference channel" << dispatch;
@@ -712,12 +712,12 @@ void bx_calib_laben_electronics::end () {
   double S_full = 0;  
   double mean_empty = 0;     
   double S_empty = 0;  
-  int nlg_to_check = 0;
-  int nlg_has_empty = 0;
-  int nlg_has_full = 0;
+  int32_t nlg_to_check = 0;
+  int32_t nlg_has_empty = 0;
+  int32_t nlg_has_full = 0;
 
-  for(int ch = 1; ch <= constants::laben::channels ; ch++) {
-    int lg_to_check = 0;
+  for(int32_t ch = 1; ch <= constants::laben::channels ; ch++) {
+    int32_t lg_to_check = 0;
     if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_trigger()) lg_to_check = 1;
@@ -747,9 +747,9 @@ void bx_calib_laben_electronics::end () {
     get_message(bx_message::info) << "Truncated mean fifo empty is going to be calculated " << dispatch;
     mean_empty = 0;     
     S_empty = 0;
-    int nlg_to_check_trunc = 0;
-    for(int ch = 1; ch <= constants::laben::channels ; ch++) {
-      int lg_to_check = 0;
+    int32_t nlg_to_check_trunc = 0;
+    for(int32_t ch = 1; ch <= constants::laben::channels ; ch++) {
+      int32_t lg_to_check = 0;
       if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
       if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) lg_to_check = 1;
       if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_trigger()) lg_to_check = 1;
@@ -780,9 +780,9 @@ void bx_calib_laben_electronics::end () {
     get_message(bx_message::info) << "Truncated mean fifo full is going to be calculated " << dispatch;
     mean_full = 0;
     S_full = 0;  
-    int nlg_to_check_trunc = 0;
-    for(int ch = 1; ch <= constants::laben::channels ; ch++) {
-      int lg_to_check = 0;
+    int32_t nlg_to_check_trunc = 0;
+    for(int32_t ch = 1; ch <= constants::laben::channels ; ch++) {
+      int32_t lg_to_check = 0;
       if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
       if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) lg_to_check = 1;
       if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_trigger()) lg_to_check = 1;
@@ -807,13 +807,13 @@ void bx_calib_laben_electronics::end () {
     //*************************  
     //claculate mean and rms for Nhits_pulser, laser, neutrino, raw_neutrino excluding dead in pulser lg 
    //(This algorithm is due to Knuth,[1] who cites Welford.[2] from Wikipedia
-  for(int trg = 0; trg < 3; trg++) {
+  for(int32_t trg = 0; trg < 3; trg++) {
     double nlg_to_check = 0; 
     double mean = 0;     
     double S = 0;  
     if(Nevents_type[trg]){
-      for(int ch = 1; ch <= constants::laben::channels ; ch++) {
-	int lg_to_check = 0;
+      for(int32_t ch = 1; ch <= constants::laben::channels ; ch++) {
+	int32_t lg_to_check = 0;
 	if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1; //ref channels NOT used to calculate mean
 	if(lg_to_check){
 	  double eff_pulser = hits[0][ch - 1]/ (float)Nevents_type[0] ;
@@ -846,8 +846,8 @@ void bx_calib_laben_electronics::end () {
 	  mean = 0;     
 	  S = 0; 
 	  nlg_to_check = 0;
-	  for(int ch = 1; ch <= constants::laben::channels ; ch++) {
-	    int lg_to_check = 0;
+	  for(int32_t ch = 1; ch <= constants::laben::channels ; ch++) {
+	    int32_t lg_to_check = 0;
 	    if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;  //ref channels NOT used to calculate mean
 	    if(lg_to_check){
 	      double eff_pulser = hits[0][ch - 1]/ (float)Nevents_type[0] ;
@@ -880,8 +880,8 @@ void bx_calib_laben_electronics::end () {
     double mean = 0;     
     double S = 0;  
     
-    for(int ch = 1; ch <= constants::laben::channels ; ch++) {
-      int lg_to_check = 0;
+    for(int32_t ch = 1; ch <= constants::laben::channels ; ch++) {
+      int32_t lg_to_check = 0;
       if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1; //ref channels NOT used to calculate mean
       if(lg_to_check){
 	double eff_pulser = hits[0][ch - 1]/ (float)Nevents_type[0] ;
@@ -905,8 +905,8 @@ void bx_calib_laben_electronics::end () {
 	mean = 0;     
 	S = 0; 
 	nlg_to_check = 0;
-	for(int ch = 1; ch <= constants::laben::channels ; ch++) {
-	  int lg_to_check = 0;
+	for(int32_t ch = 1; ch <= constants::laben::channels ; ch++) {
+	  int32_t lg_to_check = 0;
 	  if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;  //ref channels NOT used to calculate mean
 	  if(lg_to_check){
 	    double eff_pulser = hits[0][ch - 1]/ (float)Nevents_type[0] ;
@@ -967,14 +967,14 @@ void bx_calib_laben_electronics::end () {
   
     //*************************  
     // find single electronic channels  with too many fifo empty flags
-  for(int ch = 1; ch <= constants::laben::channels; ch++) {
-    int lg_to_check = 0;
+  for(int32_t ch = 1; ch <= constants::laben::channels; ch++) {
+    int32_t lg_to_check = 0;
     if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_trigger()) lg_to_check = 1;
     if(lg_to_check){
       double n_empty_this_lg = fifo_empty_vs_lg->GetBinContent (ch);
-      int nrms_fifo_empty;
+      int32_t nrms_fifo_empty;
       if (flag_empty_trunc == 1) nrms_fifo_empty = 10;
       if (flag_empty_trunc == 0) nrms_fifo_empty = 3;
       if(n_empty_this_lg > mean_empty + nrms_fifo_empty  * rms_empty){
@@ -987,14 +987,14 @@ void bx_calib_laben_electronics::end () {
   }
 
     // find single electronic channels  with too many fifo full flags
-  for(int ch = 1; ch <= constants::laben::channels; ch++) {
-    int lg_to_check = 0;
+  for(int32_t ch = 1; ch <= constants::laben::channels; ch++) {
+    int32_t lg_to_check = 0;
     if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_trigger()) lg_to_check = 1;
     if(lg_to_check){
       double n_full_this_lg = fifo_full_vs_lg->GetBinContent (ch);
-      int nrms_fifo_full;
+      int32_t nrms_fifo_full;
       if (flag_full_trunc == 1) nrms_fifo_full = 10;
       if (flag_full_trunc == 0) nrms_fifo_full = 3;
       if(n_full_this_lg > mean_full + nrms_fifo_full * rms_full){
@@ -1007,9 +1007,9 @@ void bx_calib_laben_electronics::end () {
   }
   
     //fill trigref and lasref
-  int found_lasref = 0;
-  int found_trigref = 0;
-  for(int ch = 1; ch <= constants::laben::channels; ch++) {
+  int32_t found_lasref = 0;
+  int32_t found_trigref = 0;
+  for(int32_t ch = 1; ch <= constants::laben::channels; ch++) {
     if (bx_dbi::get ()->get_channel (ch).is_laser() ) {
        found_lasref ++;
        lasref->SetBinContent(found_lasref,ch);
@@ -1022,11 +1022,11 @@ void bx_calib_laben_electronics::end () {
   
 
   // Status of the single electronic channels  1 (dead, hot, low_eff)
-  for(int trg = 0; trg < 3; trg++) {
-    for(int ch = 1; ch <= constants::laben::channels; ch++) {
-      int lg_to_check = 0;
-      int is_trigger_ref = 0;
-      int is_laser_ref = 0;
+  for(int32_t trg = 0; trg < 3; trg++) {
+    for(int32_t ch = 1; ch <= constants::laben::channels; ch++) {
+      int32_t lg_to_check = 0;
+      int32_t is_trigger_ref = 0;
+      int32_t is_laser_ref = 0;
 
       if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
       if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) {
@@ -1040,10 +1040,10 @@ void bx_calib_laben_electronics::end () {
       
        if(lg_to_check){	
 	if(Nevents_type[trg] && rms_nhits[trg]){
-	  int dead = 0;
-	  int hits_in_lg_for_dead = hits[trg][ch - 1];
+	  int32_t dead = 0;
+	  int32_t hits_in_lg_for_dead = hits[trg][ch - 1];
 	    //lasref in neutrino should have 0 hits, so to cheat the check, the value is set to the mean
-	  if (is_laser_ref && trg == 2) hits_in_lg_for_dead =  (int) mean_nhits[2];
+	  if (is_laser_ref && trg == 2) hits_in_lg_for_dead =  (int32_t) mean_nhits[2];
 	  //dead  ?
 	  if(hits_in_lg_for_dead <=  f_dead * mean_nhits[trg]){
 	    Nlg_dead[trg] ++;
@@ -1057,7 +1057,7 @@ void bx_calib_laben_electronics::end () {
 	    if(trg == 2) multiplicity_n_vec[ch - 1].push_back(dead_in_neutrino);
 	  }
 	    //is hot?
-	  int hits_in_lg_for_hot = hits[trg][ch - 1];
+	  int32_t hits_in_lg_for_hot = hits[trg][ch - 1];
 	    //for ref channels remove refence hits
 	  if (is_trigger_ref) hits_in_lg_for_hot = hits_in_lg_for_hot - Nevents_type[trg];
 	  if (is_laser_ref && trg == 1) hits_in_lg_for_hot = hits_in_lg_for_hot - Nevents_type[1];
@@ -1072,7 +1072,7 @@ void bx_calib_laben_electronics::end () {
 	    if(trg == 2) multiplicity_n_vec[ch - 1].push_back(hot_in_neutrino);
 	  }
 	    // low_eff ?
-	  int ref_for_low = (int) mean_nhits[trg];
+	  int32_t ref_for_low = (int32_t) mean_nhits[trg];
 	    //for ref channels refernce nTriggers
 	  if (is_trigger_ref) ref_for_low = Nevents_type[trg];
 	  if (is_laser_ref && trg == 1) ref_for_low = Nevents_type[1];
@@ -1094,10 +1094,10 @@ void bx_calib_laben_electronics::end () {
 
 
   // Multiplicity in Raw hits, neutrino triggers: dead, hot, low_eff)
-  for(int ch = 1; ch <= constants::laben::channels; ch++) {
-    int lg_to_check = 0;
-    int is_trigger_ref = 0;
-    int is_laser_ref = 0;
+  for(int32_t ch = 1; ch <= constants::laben::channels; ch++) {
+    int32_t lg_to_check = 0;
+    int32_t is_trigger_ref = 0;
+    int32_t is_laser_ref = 0;
 
     if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) {
@@ -1111,10 +1111,10 @@ void bx_calib_laben_electronics::end () {
       
     if(lg_to_check){	
       if(Nevents_type[2] && rms_raw_nhits){
-	int dead = 0;
-	int hits_in_lg_for_dead = raw_hits[2][ch - 1];
+	int32_t dead = 0;
+	int32_t hits_in_lg_for_dead = raw_hits[2][ch - 1];
 	  //lasref in neutrino should have 0 hits, so to cheat the check, the value is set to the mean
-	if (is_laser_ref) hits_in_lg_for_dead =  (int) mean_raw_nhits;
+	if (is_laser_ref) hits_in_lg_for_dead =  (int32_t) mean_raw_nhits;
 	  //dead  ?
 	if(hits_in_lg_for_dead <=  f_dead * mean_raw_nhits){
 	  Nlg_dead[3] ++;
@@ -1124,7 +1124,7 @@ void bx_calib_laben_electronics::end () {
 	  multiplicity_n_vec[ch - 1].push_back(dead_in_raw);
 	}
 	  //is hot in raw?
-	int hits_in_lg_for_hot = raw_hits[2][ch - 1];
+	int32_t hits_in_lg_for_hot = raw_hits[2][ch - 1];
 	  //for ref channels remove refence hits
 	if (is_trigger_ref) hits_in_lg_for_hot = hits_in_lg_for_hot - Nevents_type[2];
 	if(hits_in_lg_for_hot > (mean_raw_nhits + f_hot[2] * rms_raw_nhits)){
@@ -1134,7 +1134,7 @@ void bx_calib_laben_electronics::end () {
 	  multiplicity_n_vec[ch - 1].push_back(hot_in_raw);
 	}
 	  // low_eff in raw?
-	int ref_for_low = (int) mean_raw_nhits;
+	int32_t ref_for_low = (int32_t) mean_raw_nhits;
 	  //for ref channels refernce nTriggers
 	if (is_trigger_ref) ref_for_low = Nevents_type[2];
 	if (is_laser_ref) ref_for_low = 0; //cannot be low eff for neutrino and pulser triggers
@@ -1152,8 +1152,8 @@ void bx_calib_laben_electronics::end () {
 
   if(  (charge_tt1_vs_lg->Integral () / 2000.)  > 50) {//we have some statistics
 
-    for(int ch = 1; ch <= constants::laben::channels; ch++) {
-      int lg_to_check = 0;
+    for(int32_t ch = 1; ch <= constants::laben::channels; ch++) {
+      int32_t lg_to_check = 0;
       
       if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
       if(bx_dbi::get ()->get_channel (ch).is_laser() || bx_dbi::get ()->get_channel (ch).is_trigger()) lg_to_check = 0; // do not check charge for reference triggers
@@ -1192,15 +1192,15 @@ void bx_calib_laben_electronics::end () {
   
     //*************************  
     //Status of the single electronic channels 2 (retriggering, correlations for not dead lg, ADC quality)
-  for(int ch = 1; ch <= constants::laben::channels; ch++) {
-    int lg_to_check = 0;                 
+  for(int32_t ch = 1; ch <= constants::laben::channels; ch++) {
+    int32_t lg_to_check = 0;                 
     if(bx_dbi::get ()->get_channel (ch).is_ordinary()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_laser()) lg_to_check = 1;
     if(get_parameter ("check_reference_lg").get_int () && bx_dbi::get ()->get_channel (ch).is_trigger()) lg_to_check = 1;
   
     if(lg_to_check){	
     
-      for(int trg = 0; trg < 3; trg++){  
+      for(int32_t trg = 0; trg < 3; trg++){  
           //check if triggers of a given type present
 	if (Nevents_type[trg]){
 	    //if not dead, 
@@ -1225,7 +1225,7 @@ void bx_calib_laben_electronics::end () {
 	      double mean_nhits_around_trg = trigref_correl_vs_lg[trg]->Integral(1,constants::laben::channels,300,700) / (constants::laben::channels -  Nlg_dead[trg]) ;    
 	      TH1D* trigref_correl_one_lg = trigref_correl_vs_lg[trg]->ProjectionY("trigref_correl_one_lg",ch,ch);
 	      double nhits_around_trg_one_lg = trigref_correl_one_lg->Integral (300,700);
-	      if (nhits_around_trg_one_lg > (mean_nhits_around_trg + 6 * std::max(1, (int) std::sqrt(mean_nhits_around_trg)))) {
+	      if (nhits_around_trg_one_lg > (mean_nhits_around_trg + 6 * std::max(1, (int32_t) std::sqrt(mean_nhits_around_trg)))) {
 	        //almost all hits around trigger reference (+- 100 ns)
 		if(trigref_correl_one_lg->Integral(400,600)/trigref_correl_one_lg->Integral(1,1000) > 0.75){
 		  Nlg_trigger_ref_correl[trg] ++;
@@ -1241,7 +1241,7 @@ void bx_calib_laben_electronics::end () {
 		  trigref_correl_one_lg->SetAxisRange(-200,200);
 		  double rms = trigref_correl_one_lg->GetRMS ();
 		  double max = trigref_correl_one_lg->GetMaximum ();
-		  if( (max > 10 * std::max(1,(int) mean_nhits_around_trg / 400)) && rms > 2 && rms < 100 ){
+		  if( (max > 10 * std::max(1,(int32_t) mean_nhits_around_trg / 400)) && rms > 2 && rms < 100 ){
 		    Nlg_trigger_ref_correl[trg] ++;
 		    if(trg == 0) lg_trigger_ref_correl_p[ch - 1] = 1;
 		    if(trg == 1) lg_trigger_ref_correl_l[ch - 1] = 1;
@@ -1259,7 +1259,7 @@ void bx_calib_laben_electronics::end () {
 	    double mean_nhits_around_end_gate = end_gate_correl_vs_lg[trg]->Integral(1,constants::laben::channels,300,700) / (constants::laben::channels -  Nlg_dead[trg]);    	  
 	    TH1D* end_gate_correl_one_lg = end_gate_correl_vs_lg[trg]->ProjectionY("end_gate_correl_one_lg",ch,ch);
 	    double nhits_around_end_gate_one_lg = end_gate_correl_one_lg->Integral (300,700);
-	    if (nhits_around_end_gate_one_lg > (mean_nhits_around_end_gate + 6 * std::max(1, (int) std::sqrt(mean_nhits_around_end_gate)))){
+	    if (nhits_around_end_gate_one_lg > (mean_nhits_around_end_gate + 6 * std::max(1, (int32_t) std::sqrt(mean_nhits_around_end_gate)))){
 	        //almost all hits around end of gate
 	      if(end_gate_correl_one_lg->Integral(400,600)/end_gate_correl_one_lg->Integral(1,1000) > 0.75){
 		Nlg_end_of_gate_correl[trg] ++;
@@ -1275,16 +1275,16 @@ void bx_calib_laben_electronics::end () {
 		end_gate_correl_one_lg->SetAxisRange(-200,200);
 		double rms = end_gate_correl_one_lg->GetRMS ();
 		double max = end_gate_correl_one_lg->GetMaximum ();
-		if( (max > 10 * std::max(1,(int) mean_nhits_around_end_gate/400)) && rms > 2 && rms < 100 ){
-		  int not_flat = 0;
+		if( (max > 10 * std::max(1,(int32_t) mean_nhits_around_end_gate/400)) && rms > 2 && rms < 100 ){
+		  int32_t not_flat = 0;
 		    //not flat before 0 inside gate ?
-		  for(int j = 0; j < 4; j++){
+		  for(int32_t j = 0; j < 4; j++){
 		    double diff = std::fabs(end_gate_correl_one_lg->Integral ((j+1)*100,(j+2)*100) - end_gate_correl_one_lg->Integral (1 + j*100, (j+1)*100 ));
 		    double mean = (end_gate_correl_one_lg->Integral ((j+1)*100,(j+2)*100) + end_gate_correl_one_lg->Integral (1 + j*100, (j+1)*100 )) / 2.;
 		    if (diff/mean > 1 && mean > 100) not_flat = 1;
 		  }
 		  if(not_flat == 0){//check not flat after 0 out of gate ?
-		    for(int j = 5; j < 9; j++){
+		    for(int32_t j = 5; j < 9; j++){
 		      double diff = std::fabs(end_gate_correl_one_lg->Integral ((j+1)*100,(j+2)*100) - end_gate_correl_one_lg->Integral (1 + j*100, (j+1)*100 ));
 		      double mean = (end_gate_correl_one_lg->Integral ((j+1)*100,(j+2)*100) + end_gate_correl_one_lg->Integral (1 + j*100, (j+1)*100 )) / 2.;
 		      if (diff/mean > 1 && mean > 100) not_flat = 1;
@@ -1388,9 +1388,9 @@ void bx_calib_laben_electronics::end () {
 	     //integral and max bin in region without 0 and FF
 	    double integral_base_big = base_one_lg->Integral (2,256);
 	    base_one_lg->SetAxisRange (1,255);
-	    int max_bin = base_one_lg->GetMaximumBin ();
-	    int int_from  = (int) std::max(1.,max_bin - 20.);
-	    int int_to = (int) std::min(255.,max_bin + 20.);
+	    int32_t max_bin = base_one_lg->GetMaximumBin ();
+	    int32_t int_from  = (int32_t) std::max(1.,max_bin - 20.);
+	    int32_t int_to = (int32_t) std::min(255.,max_bin + 20.);
 	    
 	    double integral_base_around_max = base_one_lg->Integral (int_from, int_to);	     
 	      
@@ -1434,9 +1434,9 @@ void bx_calib_laben_electronics::end () {
 	  if(peak_one_lg->Integral (2,256) > 0){
 	    double integral_peak_big = base_one_lg->Integral (2,256);
 	    peak_one_lg->SetAxisRange (1,255);
-	    int max_bin = peak_one_lg->GetMaximumBin ();
-	    int int_from  = (int) std::max(1.,max_bin - 20.);
-	    int int_to = (int) std::min(255.,max_bin + 20.);
+	    int32_t max_bin = peak_one_lg->GetMaximumBin ();
+	    int32_t int_from  = (int32_t) std::max(1.,max_bin - 20.);
+	    int32_t int_to = (int32_t) std::min(255.,max_bin + 20.);
 	    double integral_peak_around_max = peak_one_lg->Integral (int_from, int_to);
 	    
 	      //peak too spread 
@@ -1478,7 +1478,7 @@ void bx_calib_laben_electronics::end () {
 	    //strange charge distribution		  
 	  if ( base_one_lg->Integral (2,254) > 0 && peak_one_lg->Integral (2,254) > 0){
 	    double integral_charge_big = charge_one_lg->Integral ();
-	    int max_bin = charge_one_lg->GetMaximumBin ();
+	    int32_t max_bin = charge_one_lg->GetMaximumBin ();
 	    double integral_charge_around_max = charge_one_lg->Integral (max_bin - 20, max_bin + 20);	     
 	    
 	      //charge too spread
@@ -1521,7 +1521,7 @@ void bx_calib_laben_electronics::end () {
 	double mean_nhits_around_laser = lasref_correl_vs_lg->Integral(1,constants::laben::channels,300,700) / (constants::laben::channels -  Nlg_dead[1]) ;   
 	TH1D* lasref_correl_one_lg = lasref_correl_vs_lg->ProjectionY("lasref_correl_one_lg",ch,ch);
 	double nhits_around_laser_one_lg = lasref_correl_one_lg->Integral (300,700);
-	if (nhits_around_laser_one_lg > (mean_nhits_around_laser + 6 * std::max(1,(int) std::sqrt(mean_nhits_around_laser)))) {
+	if (nhits_around_laser_one_lg > (mean_nhits_around_laser + 6 * std::max(1,(int32_t) std::sqrt(mean_nhits_around_laser)))) {
 	    //almost all hits around laser ref. +- 100 ns
 	  if(lasref_correl_one_lg->Integral(400,600)/lasref_correl_one_lg->Integral(1,1000) > 0.75){
 	    Nlg_laser_ref_correl ++;		
@@ -1532,7 +1532,7 @@ void bx_calib_laben_electronics::end () {
 	    lasref_correl_one_lg->SetAxisRange(-200,200);
 	    double rms = lasref_correl_one_lg->GetRMS ();
 	    double max = lasref_correl_one_lg->GetMaximum ();
-	    if( (max > 10 * std::max(1,(int) mean_nhits_around_laser/400)) && rms > 2 && rms < 100 ){
+	    if( (max > 10 * std::max(1,(int32_t) mean_nhits_around_laser/400)) && rms > 2 && rms < 100 ){
 	      Nlg_laser_ref_correl ++;
 	      get_message(bx_message::log) << "Lg " << ch << " correlated with laser ref. in laser, ratio " << dispatch;
 	      timing_status_pl_vec[ch - 1].push_back(laser_ref_correl);
@@ -1545,7 +1545,7 @@ void bx_calib_laben_electronics::end () {
 
   get_message(bx_message::log) << "Nlg_fifo_empty          " <<  Nlg_fifo_empty                 << dispatch; 						      
   get_message(bx_message::log) << "Nlg_fifo_full           " <<  Nlg_fifo_full                  << dispatch; 						      
-  for(int trg = 0; trg < 3; trg ++) get_message(bx_message::log) << "Nlg_loosing_raw_hits_in_" << trg_names[trg]  << " " << Nlg_loosing_raw_hits[trg] << dispatch; 
+  for(int32_t trg = 0; trg < 3; trg ++) get_message(bx_message::log) << "Nlg_loosing_raw_hits_in_" << trg_names[trg]  << " " << Nlg_loosing_raw_hits[trg] << dispatch; 
 
   get_message(bx_message::debug) << "end" << dispatch;
   get_message(bx_message::log) << "Nlg_base_many_zeros        " << Nlg_base_many_zeros          << dispatch;
@@ -1573,17 +1573,17 @@ void bx_calib_laben_electronics::end () {
   
   get_message(bx_message::log) << "Nlg_laser_ref_correl               " << Nlg_laser_ref_correl                 << dispatch;
   
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_dead_in_" <<  trg_names[trg] << " " << Nlg_dead[trg]  << dispatch;
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_low_eff_in_" <<  trg_names[trg] << " " << Nlg_low_eff[trg]  << dispatch;
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_hot_in_" <<  trg_names[trg] << " " << Nlg_hot[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_dead_in_" <<  trg_names[trg] << " " << Nlg_dead[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_low_eff_in_" <<  trg_names[trg] << " " << Nlg_low_eff[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_hot_in_" <<  trg_names[trg] << " " << Nlg_hot[trg]  << dispatch;
 
   get_message(bx_message::log) << "Nlg_dead_in_raw_neutrino " << Nlg_dead[3]  << dispatch;
   get_message(bx_message::log) << "Nlg_low_eff_in_raw_neutrino " <<  Nlg_low_eff[3]  << dispatch;
   get_message(bx_message::log) << "Nlg_hot_in_raw_neutrino " << Nlg_hot[3]  << dispatch;
 
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_retriggering_in_" <<  trg_names[trg]  << " " << Nlg_retriggering[trg]  << dispatch;
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_trigger_ref_correl_in_" << trg_names[trg]  << " " << Nlg_trigger_ref_correl[trg]  << dispatch;
-  for(int trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_end_of_gate_correl_in_" << trg_names[trg]  << " " << Nlg_end_of_gate_correl[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_retriggering_in_" <<  trg_names[trg]  << " " << Nlg_retriggering[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_trigger_ref_correl_in_" << trg_names[trg]  << " " << Nlg_trigger_ref_correl[trg]  << dispatch;
+  for(int32_t trg = 0; trg < 3; trg ++)  get_message(bx_message::log) << "Nlg_end_of_gate_correl_in_" << trg_names[trg]  << " " << Nlg_end_of_gate_correl[trg]  << dispatch;
 
   get_message(bx_message::log) << "Nlg_bad_timing_shape_in_laser      " << Nlg_bad_timing_shape_in_laser        << dispatch;
       
@@ -1592,7 +1592,7 @@ void bx_calib_laben_electronics::end () {
 
     // to check how many channels did change status
   
-  for(int ch = 1; ch <= constants::laben::channels; ch ++){
+  for(int32_t ch = 1; ch <= constants::laben::channels; ch ++){
         if ((lg_fifo_empty[ch - 1] - prev_lg_fifo_empty[ch - 1]) == -1) lg_fifo_empty[constants::laben::channels] += 1;
     if ((lg_fifo_empty[ch - 1] - prev_lg_fifo_empty[ch - 1]) ==  1) lg_fifo_empty[constants::laben::channels + 1] += 1;
   
@@ -1839,7 +1839,7 @@ void bx_calib_laben_electronics::end () {
   delete [] hits[2];
     
     //check if the situation did not change with respect to the previous run
-  int i_Nlg_status_change   = get_parameter ("Nlg_status_change").get_int ();
+  int32_t i_Nlg_status_change   = get_parameter ("Nlg_status_change").get_int ();
 
      //for base
   if( abs(Nlg_base_many_zeros - prev_Nlg_base_many_zeros) >  i_Nlg_status_change)
@@ -1891,27 +1891,27 @@ void bx_calib_laben_electronics::end () {
   if( abs(Nlg_laser_ref_correl - prev_Nlg_laser_ref_correl) >  i_Nlg_status_change)
     get_message(bx_message::log) << "Nlg_laser_ref_correl changed by " << (Nlg_laser_ref_correl - prev_Nlg_laser_ref_correl) << " from the previous run "  << dispatch;
     
-  for(int trg = 0; trg < 3; trg ++){
+  for(int32_t trg = 0; trg < 3; trg ++){
     if( abs(Nlg_dead[trg] - prev_Nlg_dead[trg]) >  i_Nlg_status_change)
       get_message(bx_message::log) << "Nlg_dead_in_" << trg_names[trg] << " changed by " << (Nlg_dead[trg] - prev_Nlg_dead[trg]) << " from the previous run "  << dispatch;
   }
-  for(int trg = 0; trg < 3; trg ++){
+  for(int32_t trg = 0; trg < 3; trg ++){
     if( abs(Nlg_low_eff[trg] - prev_Nlg_low_eff[trg]) >  i_Nlg_status_change)
       get_message(bx_message::log) << "Nlg_low_eff_in_" << trg_names[trg] << " changed by " << (Nlg_low_eff[trg] - prev_Nlg_low_eff[trg]) << " from the previous run "  << dispatch;
   } 
-  for(int trg = 0; trg < 3; trg ++){
+  for(int32_t trg = 0; trg < 3; trg ++){
     if( abs(Nlg_hot[trg] - prev_Nlg_hot[trg]) >  i_Nlg_status_change)
       get_message(bx_message::log) << "Nlg_hot_in_" << trg_names[trg] << " changed by " << (Nlg_hot[trg] - prev_Nlg_hot[trg]) << " from the previous run "  << dispatch;
   }
-  for(int trg = 0; trg < 3; trg ++){
+  for(int32_t trg = 0; trg < 3; trg ++){
     if( abs(Nlg_retriggering[trg] - prev_Nlg_retriggering[trg]) >  i_Nlg_status_change)
       get_message(bx_message::log) << "Nlg_retriggering_in_" << trg_names[trg] << " changed by " << (Nlg_retriggering[trg] - prev_Nlg_retriggering[trg]) << " from the previous run "  << dispatch;
   }
-  for(int trg = 0; trg < 3; trg ++){
+  for(int32_t trg = 0; trg < 3; trg ++){
     if( abs(Nlg_trigger_ref_correl[trg] - prev_Nlg_trigger_ref_correl[trg]) >  i_Nlg_status_change)
       get_message(bx_message::log) << "Nlg_trigger_ref_correl_in_" << trg_names[trg] << " changed by " << (Nlg_trigger_ref_correl[trg] - prev_Nlg_trigger_ref_correl[trg]) << " from the previous run "  << dispatch;
   } 
-  for(int trg = 0; trg < 3; trg ++){
+  for(int32_t trg = 0; trg < 3; trg ++){
     if( abs(Nlg_end_of_gate_correl[trg] - prev_Nlg_end_of_gate_correl[trg]) >  i_Nlg_status_change)
       get_message(bx_message::log) << "Nlg_end_of_gate_correl_in_" << trg_names[trg] << " changed by " << (Nlg_end_of_gate_correl[trg] - prev_Nlg_end_of_gate_correl[trg]) << " from the previous run "  << dispatch;
   } 
@@ -1921,7 +1921,7 @@ void bx_calib_laben_electronics::end () {
   if(abs(prev_Nlg_fifo_full - Nlg_fifo_full) > i_Nlg_status_change)
     get_message(bx_message::log) << "Nlg_fifo_full changed by " << prev_Nlg_fifo_full - Nlg_fifo_full << " channels " << dispatch; 						      
  
-  for(int trg = 0; trg < 3; trg ++){
+  for(int32_t trg = 0; trg < 3; trg ++){
     if(abs(prev_Nlg_loosing_raw_hits[trg] - Nlg_loosing_raw_hits[trg]) > i_Nlg_status_change)
       get_message(bx_message::log) << "Nlgl_loosing_raw_hits_in_" << trg_names[trg] << " changed by " << Nlg_loosing_raw_hits[trg] - prev_Nlg_loosing_raw_hits[trg] << " channels " << dispatch; 
   }					      
@@ -1934,7 +1934,7 @@ void bx_calib_laben_electronics::end () {
   if(get_parameter ("db_write").get_bool () &&  Nlg_dead[2] < get_parameter ("Nlg_dead_nu_thresh").get_float () &&  mean_nhits[2] > get_parameter ("mean_nhits_nu_thresh").get_float ()  && module_says_DB_write){ 
     db_run& run_info = bx_dbi::get ()->get_run ();
     std::vector<std::string> vstr;
-    for(int ch = 0; ch < constants::laben::channels; ch++) {
+    for(int32_t ch = 0; ch < constants::laben::channels; ch++) {
       
       vstr.clear ();
       for (unsigned i = 0; i < charge_base_status_vec[ch].size (); i++) vstr.push_back (ADC_translation_map.rfind (charge_base_status_vec[ch][i])->first);
@@ -1985,7 +1985,7 @@ void bx_calib_laben_electronics::end () {
     //FIXME READ n from database
   double refr_indx = 1;
   double time_shift =  13.4 / 3E+8 * 1E+9 * refr_indx;
-  int bin_of_maximum;
+  int32_t bin_of_maximum;
   double rms_main_laser_peak;
 
 
@@ -2002,9 +2002,9 @@ void bx_calib_laben_electronics::end () {
       get_message(bx_message::warn) << "Too braod laser--peak resolution of rms " << rms_main_laser_peak << " ns " << dispatch;  
     lasref_correl_all_lg->SetAxisRange(-500, 1500);
       //check if we are within histo bounderies and calculate ratio of hits in the direct and reflected peak
-    if((bin_of_maximum - 2 * (int) rms_main_laser_peak) > 0 && (bin_of_maximum + (int) time_shift + 2 * (int) rms_main_laser_peak) < 1500) {  
-      double Nhits_main_peak_all_lg = lasref_correl_all_lg->Integral(bin_of_maximum - 2 *(int) rms_main_laser_peak, bin_of_maximum + 2 * (int) rms_main_laser_peak );
-      double Nhits_reflected_peak_all_lg = lasref_correl_all_lg->Integral(bin_of_maximum + (int) time_shift - 3 * (int) rms_main_laser_peak, bin_of_maximum + (int) time_shift + 3 *(int) rms_main_laser_peak);
+    if((bin_of_maximum - 2 * (int32_t) rms_main_laser_peak) > 0 && (bin_of_maximum + (int32_t) time_shift + 2 * (int32_t) rms_main_laser_peak) < 1500) {  
+      double Nhits_main_peak_all_lg = lasref_correl_all_lg->Integral(bin_of_maximum - 2 *(int32_t) rms_main_laser_peak, bin_of_maximum + 2 * (int32_t) rms_main_laser_peak );
+      double Nhits_reflected_peak_all_lg = lasref_correl_all_lg->Integral(bin_of_maximum + (int32_t) time_shift - 3 * (int32_t) rms_main_laser_peak, bin_of_maximum + (int32_t) time_shift + 3 *(int32_t) rms_main_laser_peak);
       if(Nhits_main_peak_all_lg && Nhits_reflected_peak_all_lg){
 	laser_peaks_ratio = Nhits_reflected_peak_all_lg/ Nhits_main_peak_all_lg;
 	error_laser_peaks_ratio = std::sqrt( pow((laser_peaks_ratio / sqrt(Nhits_reflected_peak_all_lg)), 2) + pow ((laser_peaks_ratio/sqrt(Nhits_main_peak_all_lg)),2)); 
@@ -2020,8 +2020,8 @@ void bx_calib_laben_electronics::end () {
 
 	    /*	      //strange hit-time distribution in laser triggers ?
 	    lasref_correl_one_lg->SetAxisRange(-500,1500);
-	    double Nhits_main_peak_one_lg = lasref_correl_one_lg->Integral(bin_of_maximum - 2 *(int) rms_main_laser_peak , bin_of_maximum + 2 *(int) rms_main_laser_peak);
-	    double Nhits_reflected_peak_one_lg = lasref_correl_one_lg->Integral(bin_of_maximum + (int) time_shift - 3 *(int) rms_main_laser_peak, bin_of_maximum + (int) time_shift + 3 *(int) rms_main_laser_peak);
+	    double Nhits_main_peak_one_lg = lasref_correl_one_lg->Integral(bin_of_maximum - 2 *(int32_t) rms_main_laser_peak , bin_of_maximum + 2 *(int32_t) rms_main_laser_peak);
+	    double Nhits_reflected_peak_one_lg = lasref_correl_one_lg->Integral(bin_of_maximum + (int32_t) time_shift - 3 *(int32_t) rms_main_laser_peak, bin_of_maximum + (int32_t) time_shift + 3 *(int32_t) rms_main_laser_peak);
 	    if( std::fabs(lasref_correl_one_lg->GetMaximumBin () - bin_of_maximum) < 90){ 
 	      std::cout << "Lg " <<  ch << " Nhits main peak " << Nhits_main_peak_one_lg << " reflected " << Nhits_reflected_peak_one_lg << std::endl;
 	      if(Nhits_main_peak_one_lg && Nhits_reflected_peak_one_lg){

@@ -43,7 +43,7 @@ class flight_path: public bx_named {
     bool inited;
     float f4_ref_index;
     float f4_c_medium_m_ns;
-    static int create_histo;
+    static int32_t create_histo;
     static TH2F *path;
 
       // some cached values

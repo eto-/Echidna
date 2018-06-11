@@ -30,9 +30,9 @@ bx_precalib_laben_d80::bx_precalib_laben_d80 (): bx_base_module("bx_precalib_lab
 // module interface
 void bx_precalib_laben_d80::begin () {
     // allocate the matrix
-  d80_delay_map = new int*[constants::laben::channels]; 
-  for (int i = 0; i < constants::laben::channels; i++) {
-    d80_delay_map[i] = new int[600];
+  d80_delay_map = new int32_t*[constants::laben::channels]; 
+  for (int32_t i = 0; i < constants::laben::channels; i++) {
+    d80_delay_map[i] = new int32_t[600];
     std::fill_n (d80_delay_map[i], 600, 0);
   }
 
@@ -54,11 +54,11 @@ bx_echidna_event* bx_precalib_laben_d80::doit (bx_echidna_event *ev) {
   if (er.get_raw_nhits ()) b_has_data = true;
 
     // Use only first hit
-  int fired_channels[constants::laben::channels];
+  int32_t fired_channels[constants::laben::channels];
   std::fill_n (fired_channels, constants::laben::channels, 0);
   
   laben_time_hit t_hit;
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
     if (fired_channels[hit.get_logical_channel () - 1]++) continue;
     t_hit.init (hit);
@@ -66,7 +66,7 @@ bx_echidna_event* bx_precalib_laben_d80::doit (bx_echidna_event *ev) {
     if (!t_hit.is_good (0.25)) continue;
     if (d80 < 50.) d80 = 50.;
     else if (d80 > 109.) d80 = 109.;
-    d80_delay_map[hit.get_logical_channel () - 1][int ((d80 - 50.) * 10.)] ++;
+    d80_delay_map[hit.get_logical_channel () - 1][int32_t ((d80 - 50.) * 10.)] ++;
     d80_channel_distrubution->Fill (hit.get_logical_channel (), d80);
   }
   return ev;
@@ -77,11 +77,11 @@ void bx_precalib_laben_d80::end () {
 
     db_run& run_info = bx_dbi::get ()->get_run ();
   
-    for (int i = 0; i < constants::laben::channels; i++) {
+    for (int32_t i = 0; i < constants::laben::channels; i++) {
         // calculate the histogram mean
       double sum = 0.;
-      long int counts = 0;
-      for (int j = 0; j < 600; j++) {
+      int32_t counts = 0;
+      for (int32_t j = 0; j < 600; j++) {
          counts += d80_delay_map[i][j];
          sum += (float(j) / 10 + 50) * d80_delay_map[i][j];
       }
@@ -103,7 +103,7 @@ void bx_precalib_laben_d80::end () {
   }
 
     // deallocate the matrix
-  for (int i = 0; i < constants::laben::channels; i++) delete [] d80_delay_map[i];
+  for (int32_t i = 0; i < constants::laben::channels; i++) delete [] d80_delay_map[i];
   delete [] d80_delay_map;
 
   get_message(bx_message::debug) << "end" << dispatch;

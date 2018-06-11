@@ -24,9 +24,9 @@ bx_precalib_laben_phases::bx_precalib_laben_phases (): bx_base_module("bx_precal
 
 // module interface
 void bx_precalib_laben_phases::begin () {
-  right_phase_v = new int[constants::laben::channels];
-  inverse_phase_v = new int[constants::laben::channels];
-  error_phase_v = new int[constants::laben::channels];
+  right_phase_v = new int32_t[constants::laben::channels];
+  inverse_phase_v = new int32_t[constants::laben::channels];
+  error_phase_v = new int32_t[constants::laben::channels];
 
   std::fill_n (right_phase_v, constants::laben::channels, 0);
   std::fill_n (inverse_phase_v, constants::laben::channels, 0);
@@ -46,11 +46,11 @@ bx_echidna_event* bx_precalib_laben_phases::doit (bx_echidna_event *ev) {
   if (er.get_raw_nhits ()) b_has_data = true;
 
     // Use only first hit
-  int fired_channels[constants::laben::channels];
+  int32_t fired_channels[constants::laben::channels];
   std::fill_n (fired_channels, constants::laben::channels, 0);
   
   laben_time_hit t_hit;
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
     if (fired_channels[hit.get_logical_channel () - 1]++) continue;
     t_hit.init (hit);
@@ -75,14 +75,14 @@ void bx_precalib_laben_phases::end () {
   
     db_run& run_info = bx_dbi::get ()->get_run ();
   
-    for (int i = 0; i < constants::laben::channels; i++) {
+    for (int32_t i = 0; i < constants::laben::channels; i++) {
       bool rising_on_even = true;
       if (error_phase_v[i] * 2 >= (inverse_phase_v[i] + right_phase_v[i]) && error_phase_v[i]) 
         get_message(bx_message::info) << "channel " << i + 1 << " too many errors " << error_phase_v[i] << " against " << inverse_phase_v[i] << " + " << right_phase_v[i] << dispatch;
 
       if (inverse_phase_v[i] > right_phase_v[i]) rising_on_even = false;
 
-      int v = rising_on_even;
+      int32_t v = rising_on_even;
       if (error_phase_v[i] >= (inverse_phase_v[i] + right_phase_v[i])) {
         if (error_phase_v[i]) v = 2;
         else v = -1;

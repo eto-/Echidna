@@ -86,10 +86,10 @@ bx_echidna_event* bx_cmt_tracker::doit (bx_echidna_event *ev) {
       get_message (bx_message::debug) << "test doit called " << i4_times-1 << " times" << dispatch;
 
   // Example: loop on hits
-  for (int i=0 ; i<er.get_decoded_nhits(); i++) {    
+  for (int32_t i=0 ; i<er.get_decoded_nhits(); i++) {    
     // get a const reference to the hit you want to process
     const bx_laben_decoded_hit& h = er.get_decoded_hit(i);
-    int lg = h.get_raw_hit().get_logical_channel();
+    int32_t lg = h.get_raw_hit().get_logical_channel();
 
     // Option: you can select only channels of a given type 
     if (profile_info.logical_channel_description(lg) != db_profile::ordinary)
@@ -99,7 +99,7 @@ bx_echidna_event* bx_cmt_tracker::doit (bx_echidna_event *ev) {
     double pedestal = run_info.get_muon_precalib_pedestal(lg);
 
     // Get a user parameter
-    unsigned long my_sample_parameter = (unsigned long)(get_parameter("my_sample_parameter").get_int());
+    uint32_t my_sample_parameter = (uint32_t)(get_parameter("my_sample_parameter").get_int());
 
     // Compute something ...
     double my_computed_value = (h.get_raw_time()-pedestal)*my_sample_parameter;
@@ -127,7 +127,7 @@ void bx_cmt_tracker::end () {
     /*    db_run& run_info = bx_dbi::get ()->get_run (); */
 
     // Example: Loop on channels
-    for(int i=0; i<constants::muon::channels; i++) { 
+    for(int32_t i=0; i<constants::muon::channels; i++) { 
       // compute your stuff...
 
       // Save it to db; contact db interface maintainer for appropriate setters.

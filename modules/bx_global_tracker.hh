@@ -32,18 +32,18 @@ class bx_global_tracker : public bx_base_module {
     virtual void end ();
 
   private:
-    int   i4_global_events;		  // counter for all muon events
-    int   i4_tracked_events;		// counter for reconstructed events
+    int32_t   i4_global_events;		  // counter for all muon events
+    int32_t   i4_tracked_events;		// counter for reconstructed events
 
-    int   i4_enable_histos;
+    int32_t   i4_enable_histos;
 
-    int   i4_min_nhits;
+    int32_t   i4_min_nhits;
     float f4_max_dev;
     float f4_omega;
     float f4_chi2max44;
     float f4_max_par;
 
-    float *m_fit_track(float *px, float *py, float *pz, float *pdx, float *pdy, float *pdz, int npts, int bpt); 
+    float *m_fit_track(float *px, float *py, float *pz, float *pdx, float *pdy, float *pdz, int32_t npts, int32_t bpt); 
 };
 
 #endif

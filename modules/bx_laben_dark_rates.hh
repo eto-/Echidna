@@ -30,7 +30,7 @@ class bx_laben_dark_rates : public bx_base_module {
   private:
   
   bool db_write;
-  int N_tt64;
+  int32_t N_tt64;
   double sum_dec_hits_per_lg;
   double error_sum_dec_hits_per_lg;
 

@@ -136,23 +136,23 @@ void bx_pid_shape::begin () {
   std::fill_n (p_disabled_lg, constants::laben::channels + 1, false); // Init vector at 0
 
   //vector of disabled lg
-  const std::vector<int>& v = detector_interface::get ()->get_disabled_channels ();
+  const std::vector<int32_t>& v = detector_interface::get ()->get_disabled_channels ();
   //do a map from v
-  for (int i = 0; i < (int) v.size (); i++) if (v[i] <= constants::laben::channels) {
-    int disabled_lg = v[i];
+  for (int32_t i = 0; i < (int32_t) v.size (); i++) if (v[i] <= constants::laben::channels) {
+    int32_t disabled_lg = v[i];
     p_disabled_lg[disabled_lg] = true;
   }
 
     // count good ordinary lg for crates, feb and laben boards
-  for (int ilg = 1;  ilg < (1 + nlg); ilg++) {
+  for (int32_t ilg = 1;  ilg < (1 + nlg); ilg++) {
     if((bx_dbi::get ()->get_channel (ilg).is_ordinary ()) ) {
       if(!p_disabled_lg[ilg]) {
 	n_good_lg ++;
 	
-	int crate = constants::crate (ilg);
-	int fe_board= constants::laben::frontend::board_in_rack (ilg);
-	int feb = fe_board + (crate - 1) * constants::laben::frontend::board_per_rack;
-	int lab = (ilg - 1) / constants::laben::channels_per_board + 1;
+	int32_t crate = constants::crate (ilg);
+	int32_t fe_board= constants::laben::frontend::board_in_rack (ilg);
+	int32_t feb = fe_board + (crate - 1) * constants::laben::frontend::board_per_rack;
+	int32_t lab = (ilg - 1) / constants::laben::channels_per_board + 1;
 	
 	crate_weight[crate - 1] += 1;
 	feb_weight[feb - 1] += 1;
@@ -187,10 +187,10 @@ void bx_pid_shape::begin () {
 
 
   //fill weight histos
-  for(int crate = 1; crate <= n_crate; crate ++) h_crate_weight->SetBinContent (crate, crate_weight[crate - 1]);
-  for(int feb = 1; feb <= n_feb; feb ++) h_feb_weight->SetBinContent (feb, feb_weight[feb - 1]);
-  for(int lbnb = 1; lbnb <= n_laben; lbnb ++) h_laben_weight->SetBinContent (lbnb, laben_weight[lbnb - 1]);
-  for(int lg = 1; lg <= nlg; lg ++) {
+  for(int32_t crate = 1; crate <= n_crate; crate ++) h_crate_weight->SetBinContent (crate, crate_weight[crate - 1]);
+  for(int32_t feb = 1; feb <= n_feb; feb ++) h_feb_weight->SetBinContent (feb, feb_weight[feb - 1]);
+  for(int32_t lbnb = 1; lbnb <= n_laben; lbnb ++) h_laben_weight->SetBinContent (lbnb, laben_weight[lbnb - 1]);
+  for(int32_t lg = 1; lg <= nlg; lg ++) {
     h_lg_weight->SetBinContent (lg, lg_weight[lg - 1]);
     if(lg_weight[lg - 1])  {
       const db_channel_laben& info_channel = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(lg));
@@ -205,15 +205,15 @@ void bx_pid_shape::begin () {
  }
 
   //count number of on crate/feb/laben
-  for(int t = 1; t < (n_crate + 1);t++){
+  for(int32_t t = 1; t < (n_crate + 1);t++){
     if(crate_weight[t-1] > 0) n_on_crate++;
   }
   
-  for(int t = 1; t < (n_feb + 1);t++){
+  for(int32_t t = 1; t < (n_feb + 1);t++){
     if(feb_weight[t-1] > 0) n_on_feb++;
   }
   
-  for(int t = 1; t < (n_laben + 1);t++){
+  for(int32_t t = 1; t < (n_laben + 1);t++){
     if(laben_weight[t-1] > 0) n_on_laben++;
   }
   
@@ -251,16 +251,16 @@ void bx_pid_shape::begin () {
 bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
 
 
-  int evnum = ev->get_event_number ();
+  int32_t evnum = ev->get_event_number ();
 
-  int n_crate = constants::laben::ncrates; //14
-  int n_feb = n_crate *  constants::laben::frontend::board_per_rack; // 14 * 12 = 196
-  int n_laben = n_crate * constants::laben::board_per_rack; // 14 * 20 = 280
+  int32_t n_crate = constants::laben::ncrates; //14
+  int32_t n_feb = n_crate *  constants::laben::frontend::board_per_rack; // 14 * 12 = 196
+  int32_t n_laben = n_crate * constants::laben::board_per_rack; // 14 * 20 = 280
     
-  int index_hot_electronics = 0;
-  int index_low_electronics = 0;
+  int32_t index_hot_electronics = 0;
+  int32_t index_low_electronics = 0;
   
-  for (int cluster = 0; cluster < ev->get_laben ().get_nclusters (); cluster++) {
+  for (int32_t cluster = 0; cluster < ev->get_laben ().get_nclusters (); cluster++) {
 
     //reset histos 
     feb_1cl->Reset ();
@@ -275,7 +275,7 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
     theta_vs_phi_PMT_ev_alive->Reset ();
 
         //number of clustered hits
-    int nhits =  ev->get_laben ().get_cluster (cluster).get_clustered_nhits (); 
+    int32_t nhits =  ev->get_laben ().get_cluster (cluster).get_clustered_nhits (); 
     //double ev_charge =  ev->get_laben ().get_cluster (cluster).get_charge (); 
     
        //get shaped_cluster
@@ -289,7 +289,7 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
     const TVector3 mi_pos (mi_x, mi_y, mi_z);
 
     //calculate live PMT weight transhormed in the eve. position
-    for(int lg = 1; lg <= nlg; lg ++) {
+    for(int32_t lg = 1; lg <= nlg; lg ++) {
       if(!bx_dbi::get ()->get_channel (lg).is_empty ()) {
 	const db_channel_laben& info_channel = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(lg));
 	const TVector3 PMT_pos (info_channel.pmt_x (), info_channel.pmt_y (), info_channel.pmt_z ());
@@ -348,23 +348,23 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
 
        	
     // Loop on every clustered hit
-    for (int hit = 0; hit < nhits; hit++) {
+    for (int32_t hit = 0; hit < nhits; hit++) {
 
         // Get db_channel pointer for hit
       const db_channel_laben* ch_info =  ev->get_laben ().get_cluster (cluster). get_clustered_hit (hit).get_decoded_hit ().get_db_channel ();
-      //        int npe =  ev->get_laben ().get_cluster (cluster). get_clustered_hit (hit).get_decoded_hit ().get_charge_npe ();
+      //        int32_t npe =  ev->get_laben ().get_cluster (cluster). get_clustered_hit (hit).get_decoded_hit ().get_charge_npe ();
 	
 	//  *******************************
 	// crates, fe and laben boards
 	//  *******************************
 	
 	  // get crate, fe and laben boards corresponding to each clustered hit 
-      int  lg = ch_info->get_lg ();
+      int32_t  lg = ch_info->get_lg ();
 
-      int crate = constants::crate (lg);
-      int fe_board= constants::laben::frontend::board_in_rack (lg);
-      int feb = fe_board + (crate - 1) * constants::laben::frontend::board_per_rack;
-      int lab = (lg - 1) / constants::laben::channels_per_board + 1;
+      int32_t crate = constants::crate (lg);
+      int32_t fe_board= constants::laben::frontend::board_in_rack (lg);
+      int32_t feb = fe_board + (crate - 1) * constants::laben::frontend::board_per_rack;
+      int32_t lab = (lg - 1) / constants::laben::channels_per_board + 1;
       
       // fill histos
       //lg
@@ -488,8 +488,8 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
 
     
    // crate distribution for this event
-    int nhitted_crates = 0;
-    for(int cr = 1; cr < (1 + n_crate); cr++){
+    int32_t nhitted_crates = 0;
+    for(int32_t cr = 1; cr < (1 + n_crate); cr++){
       double bin_content =  crate_1cl->GetBinContent (cr);
       if (bin_content > 0.) nhitted_crates ++;
       percentage_of_nhits_crate->Fill(cr, bin_content/nhits*100.);
@@ -507,8 +507,8 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
     
     
         // feb distribution for this event
-    int nhitted_feb = 0;
-    for(int fe = 1; fe < (1 + n_feb); fe++){
+    int32_t nhitted_feb = 0;
+    for(int32_t fe = 1; fe < (1 + n_feb); fe++){
       double bin_content =  feb_1cl->GetBinContent (fe);
       if (bin_content > 0.) nhitted_feb ++;
       percentage_of_nhits_feb->Fill(fe,bin_content/nhits*100.);
@@ -526,8 +526,8 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
    
     
       // laben distribution for this event
-    int nhitted_laben = 0;
-    for(int lab = 1; lab < (1 + n_laben); lab++){
+    int32_t nhitted_laben = 0;
+    for(int32_t lab = 1; lab < (1 + n_laben); lab++){
       double bin_content =  laben_1cl->GetBinContent (lab);
       if (bin_content > 0.) nhitted_laben ++;
       percentage_of_nhits_laben->Fill(lab, bin_content/nhits*100.);
@@ -546,8 +546,8 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
    
     
       // lg distribution for this event
-    int nhitted_lg = 0;
-    for(int l = 1; l < (1 + constants::laben::channels); l++){
+    int32_t nhitted_lg = 0;
+    for(int32_t l = 1; l < (1 + constants::laben::channels); l++){
       double bin_content =  lg_1cl->GetBinContent (l);
       if (bin_content > 0.) nhitted_lg ++;
       percentage_of_nhits_lg->Fill(l, bin_content/nhits*100.);
@@ -589,8 +589,8 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
     double sum_xi = 0.; //sum of theta_vs_phi histo
     double sum_xi2 = 0.;
 
-    for(int i = 1; i <= i4_nbins; i++) {
-      for(int j = 1; j <= i4_nbins;j++) {
+    for(int32_t i = 1; i <= i4_nbins; i++) {
+      for(int32_t j = 1; j <= i4_nbins;j++) {
 	double norm = 1;
         const double alive = theta_vs_phi_PMT_ev_alive->GetBinContent(i, j);
 	const double all = theta_vs_phi_PMT_ev_tot->GetBinContent(i, j);
@@ -612,7 +612,7 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
     const double f8_virt_var = (f8_virt_pmt_var/f8_virt_pmt_mean);
     virt_pmt_rel_var->Fill(f8_virt_var);
   
-    const int n_bins = i4_nbins * i4_nbins;
+    const int32_t n_bins = i4_nbins * i4_nbins;
     const double mean = sum_xi /(i4_nbins * i4_nbins);
 
     //set fit function: plane with angle
@@ -638,13 +638,13 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
     double sum_log_fact = 0.; // sum of the logaritms of ni!
     double a = 0., b = 0.;
 
-    for(int i = 1; i <= i4_nbins; i++) {
-      for(int j = 1; j <= i4_nbins; j++) {
+    for(int32_t i = 1; i <= i4_nbins; i++) {
+      for(int32_t j = 1; j <= i4_nbins; j++) {
 	double ni =  theta_vs_phi->GetBinContent (i, j);//= bin content
 	a += ni;
 	b += ni*ni;
 	
-	for(int k = 1; k <= (int) (ni + 0.5); k++) //+0.5 to have (int) 3.9 = 4!!
+	for(int32_t k = 1; k <= (int32_t) (ni + 0.5); k++) //+0.5 to have (int32_t) 3.9 = 4!!
 	  sum_log_fact += ::log((double) k); //sum = log (ni!)
 	
       }
@@ -705,10 +705,10 @@ void bx_pid_shape::end () {
   delete [] p_disabled_lg;
 
   //evnum of suspicious_events
-  int number_of_bad_events = ev_el.size ();
+  int32_t number_of_bad_events = ev_el.size ();
   get_message(bx_message::log) << "Number of electronics bad events is " << number_of_bad_events << dispatch;
   suspicious_events = new TH1F ("suspicious_events", "suspicious_events", number_of_bad_events , 1., number_of_bad_events + 1.);
-  for (int i=1;i <= number_of_bad_events; i++) suspicious_events->SetBinContent(i, ev_el[i-1]);
+  for (int32_t i=1;i <= number_of_bad_events; i++) suspicious_events->SetBinContent(i, ev_el[i-1]);
   
   barn_interface::get ()->store (barn_interface::file, suspicious_events, this);
   

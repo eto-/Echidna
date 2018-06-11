@@ -28,8 +28,8 @@ class bx_muon_iv: public bx_base_module {
   
   //std::vector<double> *my_vector;
   //bool m_check_this_and_that(const bx_laben_event& er);
-  int muon_event;
-  int npe_satur_thresh;
+  int32_t muon_event;
+  int32_t npe_satur_thresh;
   double hits_satur_thresh; 
   double pmt_hitted_thresh;
   double pmt_satur_thresh;

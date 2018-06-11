@@ -49,18 +49,18 @@ bx_echidna_event* bx_baricentrator::doit (bx_echidna_event *ev) {
     // Loop on every cluster
   Int_t size_clusters = ev->get_laben ().get_nclusters ();
   Int_t size_mclusters = ev->get_laben ().get_nclusters_muons (); 
-  for (int i = 0; i < size_clusters + size_mclusters; i++) {
+  for (int32_t i = 0; i < size_clusters + size_mclusters; i++) {
     bx_laben_cluster& cluster = (i < size_clusters ) ? ev->get_laben().get_cluster(i) : ev->get_laben().get_cluster_muon(i-size_clusters);
     bx_baricenter& b = cluster.get_baricenter();
 
       // 1) -------------------------------------------------------------------------
       // Calculate the mean values for baricenter position and hit time distribution
       // Mean values
-    int count = 0;
+    int32_t count = 0;
     double mean_x = 0., mean_y = 0., mean_z = 0., mean_t = 0.;
 
       // Loop on every hit
-    for (int j = 0; j < cluster.get_clustered_nhits (); j++) {
+    for (int32_t j = 0; j < cluster.get_clustered_nhits (); j++) {
         // Get clustered hit reference
       const bx_laben_clustered_hit& hit = cluster.get_clustered_hit (j);
       
@@ -71,7 +71,7 @@ bx_echidna_event* bx_baricentrator::doit (bx_echidna_event *ev) {
       const db_channel_laben* ch_info = hit.get_decoded_hit ().get_db_channel ();
 
         // Define the multeplicity of this hit
-      int pe_count = get_hit_charge (hit);
+      int32_t pe_count = get_hit_charge (hit);
 
         // Accumulate values
       double t_filtered;
@@ -107,7 +107,7 @@ bx_echidna_event* bx_baricentrator::doit (bx_echidna_event *ev) {
       // Calculate the mean optical time of flight from the baricenter position
     double mean_tof = 0;
     
-    for (int j = 0; j < cluster.get_clustered_nhits (); j++) {
+    for (int32_t j = 0; j < cluster.get_clustered_nhits (); j++) {
       const bx_laben_clustered_hit& hit = cluster.get_clustered_hit (j);
       if (hit.get_time () > f8_first_hits_gate) continue;
     
@@ -132,7 +132,7 @@ bx_echidna_event* bx_baricentrator::doit (bx_echidna_event *ev) {
       // Calculate the sigma of the difference from the optical tof and the measured tof for each hit
     double sigma = 0;
     
-    for (int j = 0; j < cluster.get_clustered_nhits (); j++) {
+    for (int32_t j = 0; j < cluster.get_clustered_nhits (); j++) {
       const bx_laben_clustered_hit& hit = cluster.get_clustered_hit (j);
       if (hit.get_time () > f8_first_hits_gate) continue;
       
@@ -158,7 +158,7 @@ bx_echidna_event* bx_baricentrator::doit (bx_echidna_event *ev) {
   return ev;
 }
 
-int bx_baricentrator::get_hit_charge (const bx_laben_clustered_hit& hit) {
+int32_t bx_baricentrator::get_hit_charge (const bx_laben_clustered_hit& hit) {
   if (!b_use_charge) return 1;
   return hit.get_decoded_hit ().get_charge_npe ();
 }

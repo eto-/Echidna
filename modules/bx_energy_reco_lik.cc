@@ -23,7 +23,7 @@
 namespace { 
   // MINUIT ROOT workaround
   bx_energy_reco_lik *current_module;
-  void fcn (int &npar, double *gin, double &f, double *x, int iflag) 
+  void fcn (int32_t &npar, double *gin, double &f, double *x, int32_t iflag) 
   { f = current_module->lik_fcn (x); }
 };
 
@@ -53,7 +53,7 @@ void bx_energy_reco_lik::begin () {
   f4_lg_entry_radius = bx_dbi::get()->get_profile().light_guide_entry_aperture();
   f4_cathode_radius = bx_dbi::get()->get_profile().pmt_chathode_radius();
 
-  for (int i=0; i < constants::laben::channels; ++i)  {
+  for (int32_t i=0; i < constants::laben::channels; ++i)  {
     const db_channel_laben& channel_info = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(i+1));
     ((*f4_pmt_positions)[i])[0] = channel_info.pmt_x();
     ((*f4_pmt_positions)[i])[1] = channel_info.pmt_y();
@@ -74,7 +74,7 @@ bx_echidna_event* bx_energy_reco_lik::doit (bx_echidna_event *ev) {
   double f8_value, f8_error;
 
   // Loop on every cluster
-  for (int i = 0; i < ev->get_laben().get_nclusters(); i++)  {
+  for (int32_t i = 0; i < ev->get_laben().get_nclusters(); i++)  {
   
     // Get position from rec_cluster
     //bx_energy_lik& e_lik = ev->get_laben().get_cluster(i).get_energy_lik();
@@ -83,11 +83,11 @@ bx_echidna_event* bx_energy_reco_lik::doit (bx_echidna_event *ev) {
     // Get starting point and initialize minuit parameters
     p_minuit->DefineParameter (0, "E", vstart[0], step[0], 1.0, 3000.0);
 
-    u1_collected_charge = new std::vector<unsigned char>(constants::laben::channels, 0);
+    u1_collected_charge = new std::vector<uint8_t>(constants::laben::channels, 0);
     const bx_laben_cluster& cluster = ev->get_laben().get_cluster(i);
 
     // Loop on every hit
-    for (int i = 0; i < cluster.get_clustered_nhits(); ++i)  {
+    for (int32_t i = 0; i < cluster.get_clustered_nhits(); ++i)  {
 
 	//  db_channel for each hit
 	const bx_laben_clustered_hit& hit = cluster.get_clustered_hit(i);
@@ -109,7 +109,7 @@ bx_echidna_event* bx_energy_reco_lik::doit (bx_echidna_event *ev) {
 
 
     // Loop on every channel to reconstruct event's energy
-    for (int k=0; k < constants::laben::channels; ++k)  {
+    for (int32_t k=0; k < constants::laben::channels; ++k)  {
 	const db_channel& ch_info = bx_dbi::get()->get_channel(k+1);
 	if (!ch_info.is_ordinary()) continue;
 
@@ -218,7 +218,7 @@ double bx_energy_reco_lik::lik_fcn (double *x) {
     f8_result = 0.;
 
     // Loop on every channel to reconstruct event's energy
-    for (int k=0; k < constants::laben::channels; ++k)  {
+    for (int32_t k=0; k < constants::laben::channels; ++k)  {
 	const db_channel& ch_info = bx_dbi::get()->get_channel(k+1);
 	if (!ch_info.is_ordinary()) continue;	
         if ( (*v_omega_attenuation)[k] == 888.0 ) continue;

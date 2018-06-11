@@ -26,7 +26,7 @@ bx_calib_laben_charge_peak::bx_calib_laben_charge_peak (): bx_base_module("bx_ca
 void bx_calib_laben_charge_peak::begin () {
   get_message(bx_message::debug) << "begin" << dispatch;
   // creation of the 2-dim histogram 
-  int nch = constants::laben::channels;
+  int32_t nch = constants::laben::channels;
   bx_adc_charge_calib = new TH2S ("bx_adc_charge_calib", "ADC Charge Calibration Histogram", nch, 1, nch + 1, 511, -255.5, 255.5);
   barn_interface::get ()->store (barn_interface::file, bx_adc_charge_calib, this);
 
@@ -71,11 +71,11 @@ bx_echidna_event* bx_calib_laben_charge_peak::doit (bx_echidna_event *ev) {
   const bx_laben_event& el = ev->get_laben();
   // Update has data field
   if (el.get_raw_nhits ()) b_has_data = true;
-  int nhits = el.get_decoded_nhits();
-  for(int i = 0; i < nhits; i++){
+  int32_t nhits = el.get_decoded_nhits();
+  for(int32_t i = 0; i < nhits; i++){
     const bx_laben_decoded_hit& hit = el.get_decoded_hit(i);
     const bx_laben_raw_hit& rawhit = hit.get_raw_hit();
-    unsigned short ch = rawhit.get_logical_channel();
+    uint16_t ch = rawhit.get_logical_channel();
     float chbin = hit.get_charge_bin();
     float q = hit.get_charge_pe();
     //TIME
@@ -105,7 +105,7 @@ void bx_calib_laben_charge_peak::end () {
   db_run& run_info = bx_dbi::get()->get_run ();
 
   //initialize vectors which will set the visitors at the end to the values from the previous run
-  for (int i = 0; i < constants::laben::channels; i++) {
+  for (int32_t i = 0; i < constants::laben::channels; i++) {
     f_charge_peak[i] = run_info.get_laben_charge_peak (i + 1);
     f_charge_sigma[i]  = run_info.get_laben_charge_sigma (i + 1);
   }
@@ -114,7 +114,7 @@ void bx_calib_laben_charge_peak::end () {
   TH1D *mean_proj = bx_adc_charge_calib->ProjectionY("mean_proj");
   mean_proj->SetAxisRange(5,250);
   float peak_run = mean_proj->GetBinCenter(mean_proj->GetMaximumBin());
-  int nent = (Int_t) mean_proj->Integral();
+  int32_t nent = (Int_t) mean_proj->Integral();
   float mean_entries = (float) nent/(constants::laben::channels);
   mean_proj->Delete();
   get_message(bx_message::log) << "Mean value of the Laser Peak in this run: " << peak_run << " ADC bin" << dispatch;
@@ -124,13 +124,13 @@ void bx_calib_laben_charge_peak::end () {
   TF1* g0 = new TF1("g0","gaus",0.,255.);
   Double_t tpar[3];
  
-  int not_connected = 0;
-  int no_light = 0;
-  int not_conv = 0;
-  int large_drift = 0;
+  int32_t not_connected = 0;
+  int32_t no_light = 0;
+  int32_t not_conv = 0;
+  int32_t large_drift = 0;
 
     //looop on single channels
-  for (int i = 0; i < constants::laben::channels; i++) {
+  for (int32_t i = 0; i < constants::laben::channels; i++) {
 
       // discard non Pmt channels (empty)  and PMTs which are disconnected
     const db_channel_laben &ch_info = dynamic_cast <const db_channel_laben&> (bx_dbi::get ()->get_channel (i + 1));
@@ -151,11 +151,11 @@ void bx_calib_laben_charge_peak::end () {
      //single channel mean and rms
     double mean = proj->GetMean();
     double rms = proj->GetRMS();
-    nent = (int) proj->Integral();
+    nent = (int32_t) proj->Integral();
     
 
     // discard channels with no direct light
-    if (nent < (int) mean_entries/100 || nent < 100) {
+    if (nent < (int32_t) mean_entries/100 || nent < 100) {
       get_message(bx_message::log) << "Connected Pmt in ordinary lg " << i+1 << ": low statistics; entries = " << nent << dispatch;
       proj->Delete();
       no_light++;  
@@ -178,7 +178,7 @@ void bx_calib_laben_charge_peak::end () {
     tpar[1] = proj->GetBinCenter(proj->GetMaximumBin());
     tpar[2] = rms;
     g0->SetParameters(&tpar[0]);
-    int FitResult = proj->Fit ("g0","QRL0"); //if fit does not fail FitResult = 0
+    int32_t FitResult = proj->Fit ("g0","QRL0"); //if fit does not fail FitResult = 0
     g0->GetParameters(tpar);
  
 
@@ -252,7 +252,7 @@ void bx_calib_laben_charge_peak::end () {
   
   g0->Delete();
   
-  int good_ch = constants::laben::channels - not_connected - no_light - not_conv;
+  int32_t good_ch = constants::laben::channels - not_connected - no_light - not_conv;
       
   get_message(bx_message::info) << not_connected << " channels not connected to any Pmt" << dispatch;
   get_message(bx_message::info) << no_light << " channels with no direct light" << dispatch;
@@ -263,7 +263,7 @@ void bx_calib_laben_charge_peak::end () {
     //fill the visitors to db_run
   if (get_parameter ("write_calib").get_bool () && (float)good_ch/(constants::laben::channels - not_connected) > 0.8){
     //set the visitors
-    for (int i=0; i<constants::laben::channels; i++) {
+    for (int32_t i=0; i<constants::laben::channels; i++) {
       run_info.set_laben_charge_peak (i + 1, f_charge_peak[i], this);
       run_info.set_laben_charge_sigma (i + 1, f_charge_sigma[i], this);
       get_message(bx_message::log) << "Values in DB: lG: "<< i + 1 << " peak " <<  f_charge_peak[i] << " rms " <<  f_charge_sigma[i]  << dispatch;

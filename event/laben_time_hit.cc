@@ -20,11 +20,11 @@
 const float laben_time_hit::ramp_length_ns = 50.;
 const float laben_time_hit::window_upper_bound = 17.;	// These values correspond to an error of 0.45
 const float laben_time_hit::window_lower_bound = 14.;	// 		" "
-const unsigned char laben_time_hit::spire_threshold = 10;
+const uint8_t laben_time_hit::spire_threshold = 10;
 const float laben_time_hit::d80 = 80.;
   // Define the window bounds for a gray counter to be close to a cycle end/start.
-const unsigned short laben_time_hit::gray_crossing_window_low = 800;
-const unsigned short laben_time_hit::gray_crossing_window_high = (1UL << 16) - 800;
+const uint16_t laben_time_hit::gray_crossing_window_low = 800;
+const uint16_t laben_time_hit::gray_crossing_window_high = (1UL << 16) - 800;
 
 laben_time_hit::laben_time_hit (bool use_calib_data): bx_named ("laben_time_hit"), b_use_calib_data(use_calib_data) { }
 

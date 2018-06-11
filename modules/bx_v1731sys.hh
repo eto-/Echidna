@@ -41,9 +41,9 @@ private:
   FILE*       p_connect;            // used in v1731 event_getter
   std::string s_curr_file_name;     
   long        i4_curr_file_position;
-  unsigned long last_neutron_gpsstime;  // used for run w0 trgID aq
+  uint32_t last_neutron_gpsstime;  // used for run w0 trgID aq
   long          last_neutron_file_position;
-  int           last_neutron_laben_nclusters;
+  int32_t           last_neutron_laben_nclusters;
   void m_load_file_map();
   void m_clear_ev(bx_neutron_event&);
   void m_write_ev(bx_neutron_event&, const v1731_neutron_analyzer::neutron_analyzer&);

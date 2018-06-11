@@ -30,7 +30,7 @@ class bx_energy_reco_mc: public bx_base_module {
     const static double nhits[5][3], charge[5][3], npe[5][3];    
     interpolator2d *interpol; 
     float m_get_energy(float radius, float nhits);
-    int method;
+    int32_t method;
 };
 
 #endif

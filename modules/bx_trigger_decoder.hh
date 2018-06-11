@@ -33,22 +33,22 @@ class bx_trigger_decoder : public bx_base_module {
 
   private:
     bool b_was_a_muon;
-    unsigned int u4_prev_trgid;
-    int i4_missing_events;
-    int i4_missing_neutron_triggers;
-    int i4_year, i4_mon, i4_day, i4_hour, i4_min, i4_sec;                                  
-    int i4_prev_year,i4_prev_mon,i4_prev_day,i4_prev_hour,i4_prev_min,i4_prev_sec;                                                                            //
-    unsigned long prev_gps_times[2];
+    uint32_t u4_prev_trgid;
+    int32_t i4_missing_events;
+    int32_t i4_missing_neutron_triggers;
+    int32_t i4_year, i4_mon, i4_day, i4_hour, i4_min, i4_sec;                                  
+    int32_t i4_prev_year,i4_prev_mon,i4_prev_day,i4_prev_hour,i4_prev_min,i4_prev_sec;                                                                            //
+    uint32_t prev_gps_times[2];
     
     TH1F *build_dt;
     TH1F *ppc0_dt;
 
     void m_decode_trgtype(const bx_trigger_event&, bx_trigger_decoded_event&);
     // decode GPS clock infos
-    void gpsclock_decode(unsigned long, unsigned long, unsigned long, 
-	                 int, 
-			 int&, int&, int&, int&, int&, int&, int&, int&, 
-			 unsigned long&, unsigned long&, time_t&);
+    void gpsclock_decode(uint32_t, uint32_t, uint32_t, 
+	                 int32_t, 
+			 int32_t&, int32_t&, int32_t&, int32_t&, int32_t&, int32_t&, int32_t&, int32_t&, 
+			 uint32_t&, uint32_t&, time_t&);
 };
 
 #endif

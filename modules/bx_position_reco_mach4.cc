@@ -20,8 +20,8 @@ const static bx_position_reco_mach4 *pm;
 
 
 //Wrapper functions to put member functions into Minuit
-static void minuit_likelihood_fcn(int &npar, double * grad, double & fcnval,
-								  double *xval, int iflag)
+static void minuit_likelihood_fcn(int32_t &npar, double * grad, double & fcnval,
+								  double *xval, int32_t iflag)
 {
 	//                         x        y       z        t
 	fcnval = pm->Likelihood(xval[0], xval[1], xval[2], xval[3]);
@@ -222,7 +222,7 @@ bx_echidna_event* bx_position_reco_mach4::doit(bx_echidna_event *ev)
 			//
 			  
 			//initialize variables
-			for(int k =0; k<8; k++) pos_info[k] = 0; 
+			for(int32_t k =0; k<8; k++) pos_info[k] = 0; 
 			pos_info[3] = t_1st - 17.6;
 			
 			pos_fixed.f4_user = refidx;
@@ -288,7 +288,7 @@ bool bx_position_reco_mach4::Reconstruct(double n_idx,
 										 double *pos_info)
 {
 	
-	int errflag, convergence, is_valid = 0;
+	int32_t errflag, convergence, is_valid = 0;
 	//size_t n = end_hit - first_hit;
 	//  double r = std::sqrt(x*x + y*y + z*z);
 	
@@ -350,7 +350,7 @@ double bx_position_reco_mach4::Likelihood(double x, double y, double z, double t
 			double tof = time_of_flight(x, y, z,
 										xpmt[channel], ypmt[channel], zpmt[channel]);
 			
-			int photons = int(cluster->get_clustered_hit(i).get_decoded_hit().get_charge_pe() + 0.5);
+			int32_t photons = int32_t(cluster->get_clustered_hit(i).get_decoded_hit().get_charge_pe() + 0.5);
 			//Correct PDF for multiple occupancies
 			
 			if(photons <= 1)

@@ -27,16 +27,16 @@ class bx_snews: public bx_base_module {
     
     struct EventData{
       double 		Time;
-      int		NHits;
-      unsigned long 	ID;
+      int32_t		NHits;
+      uint32_t 	ID;
     };
     
   private:
     std::list <EventData> Train;
     bool registered;
     double last_linger;
-    int linger;
-    int allarmreturn;
+    int32_t linger;
+    int32_t allarmreturn;
     bool connect_brain;
 };
 #endif

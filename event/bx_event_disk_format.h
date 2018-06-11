@@ -2,64 +2,64 @@
 #define _BX_EVENT_DISK_FORMAT_H
 
 struct event_header_disk_format { /* 40 bytes */
-  unsigned long event_size_bytes;
-  unsigned long run_number;
-  unsigned long event_number;
-  unsigned long enabled_crates;
-  unsigned long laben_offset;
-  unsigned long fadc_offset;
-  unsigned long muon_offset;
-  unsigned long mctruth_offset;
-  unsigned long builder_time_seconds;
-  unsigned long builder_time_nanoseconds;
+  uint32_t event_size_bytes;
+  uint32_t run_number;
+  uint32_t event_number;
+  uint32_t enabled_crates;
+  uint32_t laben_offset;
+  uint32_t fadc_offset;
+  uint32_t muon_offset;
+  uint32_t mctruth_offset;
+  uint32_t builder_time_seconds;
+  uint32_t builder_time_nanoseconds;
 };
 
 struct trigger_disk_format { /* 40 bytes */
-  unsigned short length;
-  unsigned short error;
-  unsigned short blocks;
-  unsigned short version;
-  unsigned long  dsp_registers;
-  unsigned short btb_firmware;
-  unsigned short btb_threshold;
-  unsigned long  trg_time;
-  unsigned long  evid;
-  unsigned char  trgtype;
-  unsigned char  btb_inputs;
-  unsigned short tab_sum;
-  unsigned long  gps1;
-  unsigned long  gps2;
-  unsigned long  gps3;
+  uint16_t length;
+  uint16_t error;
+  uint16_t blocks;
+  uint16_t version;
+  uint32_t  dsp_registers;
+  uint16_t btb_firmware;
+  uint16_t btb_threshold;
+  uint32_t  trg_time;
+  uint32_t  evid;
+  uint8_t  trgtype;
+  uint8_t  btb_inputs;
+  uint16_t tab_sum;
+  uint32_t  gps1;
+  uint32_t  gps2;
+  uint32_t  gps3;
 };
 
 struct laben_header_disk_format { /* 8 bytes */
-  unsigned long  entries;
-  unsigned long  errors;
+  uint32_t  entries;
+  uint32_t  errors;
 };
 
 struct laben_hit_disk_format { /* 12 bytes */
-  unsigned short channel;
-  unsigned char  time_s[2];
-  unsigned short time_l;
-  unsigned char  charge[2];
-  unsigned short flags;
-  unsigned short errors;
+  uint16_t channel;
+  uint8_t  time_s[2];
+  uint16_t time_l;
+  uint8_t  charge[2];
+  uint16_t flags;
+  uint16_t errors;
 };
 
 struct muon_header_disk_format { /* 12 bytes */
-  unsigned long  nwords;
-  unsigned long  trgid;
-  unsigned long  error_flag;
+  uint32_t  nwords;
+  uint32_t  trgid;
+  uint32_t  error_flag;
 };
 
 struct muon_edge_disk_format { /* 4 bytes */
-  unsigned long tdc_word;
+  uint32_t tdc_word;
 };
 
 struct mctruth_header_disk_format { /* 8 bytes */
-  unsigned long  length;
-  unsigned short frames;
-  signed short   trigger_jitter;
+  uint32_t  length;
+  uint16_t frames;
+  int16_t   trigger_jitter;
   /* >= 1 frames follow */
 };
 
@@ -87,8 +87,8 @@ struct mctruth_user_disk_format {
 };
 
 struct mctruth_frame_disk_format { /* 64 bytes */
-  unsigned short length;
-  unsigned short file_id;
+  uint16_t length;
+  uint16_t file_id;
   double         elec_event_time;
   int            event_id;           // Event ID
   int            n_sequence;         // Sequence number of isotope in the chain
@@ -111,9 +111,9 @@ struct mctruth_frame_disk_format { /* 64 bytes */
 };
 
 struct mctruth_subframe_disk_format { /* > 4 bytes */
-  unsigned short length;
-  unsigned short type;		/* enum mctruth_subframe_type = 2 */
-  unsigned short tracking_iphs[0];	/* in profile_id 0 (alligned at 4 bytes boundary) */
+  uint16_t length;
+  uint16_t type;		/* enum mctruth_subframe_type = 2 */
+  uint16_t tracking_iphs[0];	/* in profile_id 0 (alligned at 4 bytes boundary) */
   float 	 tracking_thps[0];
 };
 
@@ -124,14 +124,14 @@ struct mctruth_subframe_disk_format { /* > 4 bytes */
 /* }; */
 
 /* struct mctruth_file_scattered_info_subframe_disk_format { /\* 100 bytes *\/ */
-/*   unsigned short length; */
-/*   unsigned short info_type;		/\* enum mctruth_subframe_type = 1 *\/ */
-/*   unsigned short file_id; */
-/*   unsigned char  mode;                  /\* uses enum mctruth_file_mode *\/ */
+/*   uint16_t length; */
+/*   uint16_t info_type;		/\* enum mctruth_subframe_type = 1 *\/ */
+/*   uint16_t file_id; */
+/*   uint8_t  mode;                  /\* uses enum mctruth_file_mode *\/ */
 /*   char 		 filename[77]; */
-/*   unsigned long  geneb_nrun; */
+/*   uint32_t  geneb_nrun; */
 /*   float		 geneb_tempostat; */
-/*   unsigned long  geneb_nevents; */
+/*   uint32_t  geneb_nevents; */
 /*   float		 overriding_rate; */
 /* }; */
 

@@ -32,7 +32,7 @@ class bx_calib_muon_charge_peak: public bx_base_module {
     virtual void end ();
   private:
     TH2S* muon_charge_calib;
-    int i4_nevents;
+    int32_t i4_nevents;
     float f4_time_offset;
     float f4_time_allowance;
     float f4_chi2_max;

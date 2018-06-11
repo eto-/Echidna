@@ -33,7 +33,7 @@ void bx_pid_ab_mach4::LoadGattiShapes(TFile *f, const std::string & ahist, const
 	alpha_shape -> Scale(1 / alpha_shape -> Integral());
 	beta_shape -> Scale(1 / beta_shape -> Integral());
 	
-	int min_bin, max_bin;
+	int32_t min_bin, max_bin;
 	TAxis *tmp = alpha_shape -> GetXaxis();
 	
 	min_bin = tmp -> GetFirst();
@@ -49,8 +49,8 @@ void bx_pid_ab_mach4::LoadGattiShapes(TFile *f, const std::string & ahist, const
 	std::vector<double> &weights = ref.second;
 	ref.first = name;
 	
-	weights.resize(int((gatti_hist_max - gatti_hist_min) / gatti_bin_size));
-	for (int i = min_bin; i <= max_bin; i++) {
+	weights.resize(int32_t((gatti_hist_max - gatti_hist_min) / gatti_bin_size));
+	for (int32_t i = min_bin; i <= max_bin; i++) {
 		double a = alpha_shape -> GetBinContent(i);
 		double b = beta_shape -> GetBinContent(i);
 		weights[i - min_bin] = (a - b) / (a + b);
@@ -108,8 +108,8 @@ double bx_pid_ab_mach4::GetGattiWeight(size_t i, double t, bool *flag)
 { // careful: no checks to see if gatti_weights is valid here!
 	if (i >= gatti_weights.size()) return 0;
 	std::vector<double> &weights = gatti_weights[i].second;
-	int j = int((t - gatti_hist_min) / gatti_bin_size);
-	if (j < 0 || j >= int(weights.size())) {
+	int32_t j = int32_t((t - gatti_hist_min) / gatti_bin_size);
+	if (j < 0 || j >= int32_t(weights.size())) {
 		if (flag) *flag = false;
 		return 0;
 	}
@@ -117,7 +117,7 @@ double bx_pid_ab_mach4::GetGattiWeight(size_t i, double t, bool *flag)
 	return weights[j];
 }
 
-void bx_pid_ab_mach4::DoGattiFilter(bx_echidna_event *ev, int iclus, double ref_time, std::vector<double>* times)
+void bx_pid_ab_mach4::DoGattiFilter(bx_echidna_event *ev, int32_t iclus, double ref_time, std::vector<double>* times)
 {
 	if (!gatti_weights_loaded) return; // nothing to do without the weights...
 	
@@ -149,20 +149,20 @@ void bx_pid_ab_mach4::DoGattiFilter(bx_echidna_event *ev, int iclus, double ref_
 bx_echidna_event* bx_pid_ab_mach4::doit (bx_echidna_event *ev) {
 	
 	// get number of clusters
-	int nc = ev->get_laben().get_nclusters();
+	int32_t nc = ev->get_laben().get_nclusters();
 	
 	if (nc <= 0)
 		return ev;
 	
 	// loop on clusters and compute alpha-beta variables
-	for(int iclus=0; iclus<nc; iclus++) {
+	for(int32_t iclus=0; iclus<nc; iclus++) {
 		
 		// get echidna ab_cluster
 //		bx_laben_ab_mach4_cluster& ab = ev->get_laben().get_ab_mach4_cluster(iclus);
 		
 		// set variables to invalid values
-//		for(int index=0; index<17; index++) ab.v_tailtot_mach4[index] = -100.;
-//		for(int index=0; index<4; index++) ab.v_gatti_mach4[index] = -100.;		
+//		for(int32_t index=0; index<17; index++) ab.v_tailtot_mach4[index] = -100.;
+//		for(int32_t index=0; index<4; index++) ab.v_gatti_mach4[index] = -100.;		
 		
 /*		ab.f4_peak_mach4 = -100.;
 		ab.f4_mean_mach4 = -100.;
@@ -225,7 +225,7 @@ bx_echidna_event* bx_pid_ab_mach4::doit (bx_echidna_event *ev) {
 			size_t offset = 5 * (bin + 6);
 			double ttr = 0;
 			
-			for (int i = (int)times.size() - 1; i >= 0; i--) {
+			for (int32_t i = (int32_t)times.size() - 1; i >= 0; i--) {
 				if (times[i] - t_peak >= (double)offset)
 					ttr++;
 				else

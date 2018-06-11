@@ -31,7 +31,7 @@ class bx_calib_muon_time_align: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    int i4_nevents;
+    int32_t i4_nevents;
     TH2S* muon_time_calib;
 };
 

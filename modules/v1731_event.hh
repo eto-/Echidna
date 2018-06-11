@@ -45,33 +45,33 @@ public:
 
   //friend functions of v1731event
 public:
-  void set_time_reference(v1731event&, unsigned long u4_time_ref);
+  void set_time_reference(v1731event&, uint32_t u4_time_ref);
   void set_trigger_id(v1731event&, unsigned u4_trgid);
   void set_active(v1731event&, short i1_b, short i1_ch, bool b_in_active);
   void set_zle_enabled(v1731event&, bool b_in_zle_enabled);
   void set_hf_samples(v1731event&, short i1_b, short i1_ch, TH1F hf_in_samples);
   void set_length(v1731event&, short i1b, short i1_ch, long i4_in_lenght);
   void increase_num_of_good_zones(v1731event&, short i1_b, short i1_ch);
-  void set_good_zones(v1731event&, short i1_b,short i1_ch, unsigned long u4_in_begin, unsigned long u4_in_length);
+  void set_good_zones(v1731event&, short i1_b,short i1_ch, uint32_t u4_in_begin, uint32_t u4_in_length);
   void set_bins(v1731event&, short i1_b, short i1_ch, long i4_ch_size);
   void fill(v1731event&, short i1_b, short i1_ch, float f_position, float f_weigth);
   void digi_sum_fill(v1731event&, float f_position, float f_weigth);
 
 private:
   bool b_error_occurred;
-  int load_event(gzFile&, long i4_start_position, long i4_event_position);
-  int read_event(gzFile&, v1731event& v1731);
-  int check_zle(short i1_zle);
-  short check_mask(short i1_num, int i2_mask, bool* b_active);
+  int32_t load_event(gzFile&, long i4_start_position, long i4_event_position);
+  int32_t read_event(gzFile&, v1731event& v1731);
+  int32_t check_zle(short i1_zle);
+  short check_mask(short i1_num, int32_t i2_mask, bool* b_active);
   enum zle_action {skip, good};
-  zle_action check_zle_control_word(unsigned long u4_control_word, unsigned long& u4_num_of_data_to);
+  zle_action check_zle_control_word(uint32_t u4_control_word, uint32_t& u4_num_of_data_to);
 
   bool b_zle_enabled;  //true if zero lenght suppression is enabled (~always)
   bool b_active_board[4];
   bool b_active_channel[4][8];
   short i1_num_active_boards;
   short i1_num_active_channel[4];
-  unsigned long u4_trigger_time_tag[4];
+  uint32_t u4_trigger_time_tag[4];
 
 };
 
@@ -86,8 +86,8 @@ class v1731_event::v1731event: public bx_named{
   bool get_active(short i2b, short i2ch) const {return ( ((i2b<4)&&(i2ch<8)) ? b_active[i2b][i2ch] : false);}
   bool get_zle_enabled() const {return b_zle_enabled;}
   long get_event_length(short i2b, short i2ch) const {return ( ((i2b<4)&&(i2ch<8)) ? i4_event_length[i2b][i2ch] : 0);}
-  unsigned long get_time_reference() const {return u4_time_reference;}
-  unsigned long get_trigger_id() const {return u4_trigger_id;}
+  uint32_t get_time_reference() const {return u4_time_reference;}
+  uint32_t get_trigger_id() const {return u4_trigger_id;}
   float get_sample_at_time(short i1_b, short i1_ch, float f_time) const 
   {return hf_samples[i1_b][i1_ch].GetBinContent(((long)(f_time/2.))+1);};
   float get_sample_at_bin(short i1_b, short i1_ch, long i4_bin) const 
@@ -97,13 +97,13 @@ class v1731_event::v1731event: public bx_named{
     f_array[i4s]=hf_samples[i1_b][i1_ch].GetBinContent(i4s + i4_begin +1);
   }
   };
-  int get_number_of_good_zones(short i2b, short i2ch) const 
+  int32_t get_number_of_good_zones(short i2b, short i2ch) const 
   {return ( ((i2b<4) && (i2ch<8)) ? i2_num_of_good_zones[i2b][i2ch] : 0 );};
-  long get_begin_of_good_zone(short i2b, short i2ch, int i4_zone) const
+  long get_begin_of_good_zone(short i2b, short i2ch, int32_t i4_zone) const
   {return i4_begin_of_good[i2b][i2ch].at(i4_zone);};
-  long get_length_of_good_zone(short i2b, short i2ch, int i4_zone) const
+  long get_length_of_good_zone(short i2b, short i2ch, int32_t i4_zone) const
   {return i4_length_of_good[i2b][i2ch].at(i4_zone);};
-  void clusterize(int base, int thr, int bck, int fwd);
+  void clusterize(int32_t base, int32_t thr, int32_t bck, int32_t fwd);
   bool is_clusterized() const {return b_clusterized;}
 
 
@@ -114,22 +114,22 @@ private:
   TH1F hf_samples[4][8];
   TH1F hf_digi_sum;
   long i4_event_length[4][8];
-  int i2_num_of_good_zones[4][8];
+  int32_t i2_num_of_good_zones[4][8];
   std::vector <long> i4_begin_of_good[4][8];
   std::vector <long> i4_end_of_good[4][8];
   std::vector <long> i4_length_of_good[4][8];
-  unsigned long u4_time_reference;
-  unsigned long u4_trigger_id;
+  uint32_t u4_time_reference;
+  uint32_t u4_trigger_id;
 
 public:
-  friend void v1731_event::v1731event_decoder::set_time_reference(v1731event&, unsigned long u4_time_ref);
+  friend void v1731_event::v1731event_decoder::set_time_reference(v1731event&, uint32_t u4_time_ref);
   friend void v1731_event::v1731event_decoder::set_trigger_id(v1731event&, unsigned u4_trgid);
   friend void v1731_event::v1731event_decoder::set_active(v1731event&, short i1_b, short i1_ch, bool b_in_active);  
   friend void v1731_event::v1731event_decoder::set_zle_enabled(v1731event&, bool b_in_zle_enabled);
   friend void v1731_event::v1731event_decoder::set_hf_samples(v1731event&, short i1_b, short i1_ch, TH1F hf_in_samples);
   friend void v1731_event::v1731event_decoder::set_length(v1731event&, short i1b, short i1_ch, long i4_in_lenght);
   friend void v1731_event::v1731event_decoder::increase_num_of_good_zones(v1731event&, short i1_b, short i1_ch);
-  friend void v1731_event::v1731event_decoder::set_good_zones(v1731event&, short i1_b, short i1_ch, unsigned long u4_in_begin, unsigned long u4_in_length);
+  friend void v1731_event::v1731event_decoder::set_good_zones(v1731event&, short i1_b, short i1_ch, uint32_t u4_in_begin, uint32_t u4_in_length);
   friend void v1731_event::v1731event_decoder::set_bins(v1731event&, short i1_b, short i1_ch, long i4_ch_size);
   friend void v1731_event::v1731event_decoder::fill(v1731event&, short i1_b, short i1_ch, float f_position, float f_weigth);
   friend void v1731_event::v1731event_decoder::digi_sum_fill(v1731event&, float f_position, float f_weigth);

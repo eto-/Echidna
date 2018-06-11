@@ -56,7 +56,7 @@ void bx_detector_monitor::begin () {
   nhits_pulser_sum = 0;
   
   n[crate] = constants::laben::ncrates; //14
-  n[hvb] = (int) n[crate] *  constants::laben::frontend::board_per_rack/2;
+  n[hvb] = (int32_t) n[crate] *  constants::laben::frontend::board_per_rack/2;
   n[feb] = n[crate] *  constants::laben::frontend::board_per_rack; // 14 * 14 = 196
   n[lbnb] = n[crate] * constants::laben::board_per_rack; // 14 * 20 = 280
   n[channel] =   constants::laben::channels; //2240
@@ -90,8 +90,8 @@ void bx_detector_monitor::begin () {
     h_lg_Nx_changed[1][1]->SetXTitle("Logical channel number ");
     h_lg_Nx_changed[1][1]->SetYTitle("How many times changed to on");
     
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++) barn_interface::get ()->store (barn_interface::file, h_lg_Nx_changed[i][j] , this);
+    for(int32_t i = 0; i < 2; i++) {
+      for(int32_t j = 0; j < 2; j++) barn_interface::get ()->store (barn_interface::file, h_lg_Nx_changed[i][j] , this);
     }
   }
 
@@ -204,10 +204,10 @@ void bx_detector_monitor::begin () {
     dec_occupancy[channel][3]->SetXTitle("channel number");
     
     //barn_interface + initialisation
-    for(int module_type = 0; module_type < 5; module_type ++) {
-      for(int trg = 0; trg < 4; trg ++){ 
+    for(int32_t module_type = 0; module_type < 5; module_type ++) {
+      for(int32_t trg = 0; trg < 4; trg ++){ 
 	barn_interface::get ()->store (barn_interface::file, dec_occupancy[module_type][trg], this);
-	for(int i = 0; i < n[module_type]; i++){
+	for(int32_t i = 0; i < n[module_type]; i++){
 	  times_found_noisy[module_type][trg].push_back (0); 
 	  times_found_empty[module_type][trg].push_back(0); 
 	}
@@ -216,7 +216,7 @@ void bx_detector_monitor::begin () {
   }//end of online mode
         
   total_triggers = 0;
-  for(int i = 0; i < 4; i++)  n_triggers[i] = 0; 
+  for(int32_t i = 0; i < 4; i++)  n_triggers[i] = 0; 
 
 
   if(calibration_mode){
@@ -263,9 +263,9 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
   
   total_triggers ++;
 
-  int evnum = ev->get_event_number ();
-  int first_time_hot  = get_parameter ("first_time_hot").get_int ();
-  int event_trg_type = -10;
+  int32_t evnum = ev->get_event_number ();
+  int32_t first_time_hot  = get_parameter ("first_time_hot").get_int ();
+  int32_t event_trg_type = -10;
 
   if (ev->get_trigger ().is_pulser   ()) {
     event_trg_type = 0;
@@ -292,13 +292,13 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
     
     //fill for decoded hits
      
-  std::vector<int> dec_lg_list;
-  int dec_nhits_one_event = 0;  //WE CONSIDER ONLY DECODED HITS FROM ORDINARY CHANNELS 
+  std::vector<int32_t> dec_lg_list;
+  int32_t dec_nhits_one_event = 0;  //WE CONSIDER ONLY DECODED HITS FROM ORDINARY CHANNELS 
     
   //loop on hits 
-  int nhits = ev->get_laben ().get_decoded_nhits ();
-  for(int i = 0; i < nhits; i ++) {
-    int lg = ev->get_laben ().get_decoded_hit (i).get_raw_hit ().get_logical_channel ();  
+  int32_t nhits = ev->get_laben ().get_decoded_nhits ();
+  for(int32_t i = 0; i < nhits; i ++) {
+    int32_t lg = ev->get_laben ().get_decoded_hit (i).get_raw_hit ().get_logical_channel ();  
       //charge for neutrino events and "not muons"
     if(event_trg_type == 2 && nhits < 1000) {
       double charge = ev->get_laben ().get_decoded_hit (i).get_charge_bin ();
@@ -320,21 +320,21 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 
     //laben_event_shape does not consider hits from ref channels, occupancy is divided by the number of nhits in ordinary channels allowed by decoder
   const std::vector<float>& dec_crate_occupancy = dec_ev_shape.get_crate_occupancy ();
-  if(!calibration_mode) for (int i = 0; i < n[crate]; i++)  dec_occupancy[crate][event_trg_type]->Fill (i + 1, dec_crate_occupancy[i]);
+  if(!calibration_mode) for (int32_t i = 0; i < n[crate]; i++)  dec_occupancy[crate][event_trg_type]->Fill (i + 1, dec_crate_occupancy[i]);
  
   const std::vector<float>& dec_hvb_occupancy = dec_ev_shape.get_hvb_occupancy ();
   const std::vector<float>& dec_hvb_nhits = dec_ev_shape.get_nhits_in_hvb ();
-  if(!calibration_mode) for (int i = 0; i < n[hvb]; i++)  dec_occupancy[hvb][event_trg_type]->Fill (i + 1, dec_hvb_occupancy[i]);
+  if(!calibration_mode) for (int32_t i = 0; i < n[hvb]; i++)  dec_occupancy[hvb][event_trg_type]->Fill (i + 1, dec_hvb_occupancy[i]);
   
   const std::vector<float>& dec_feb_occupancy = dec_ev_shape.get_feb_occupancy ();
-  if(!calibration_mode) for (int i = 0; i < n[feb] ; i++)  dec_occupancy[feb][event_trg_type]->Fill (i + 1, dec_feb_occupancy[i]);
+  if(!calibration_mode) for (int32_t i = 0; i < n[feb] ; i++)  dec_occupancy[feb][event_trg_type]->Fill (i + 1, dec_feb_occupancy[i]);
   
   const std::vector<float>& dec_lbnb_nhits = dec_ev_shape.get_nhits_in_lbnb ();
   const std::vector<float>& dec_lbnb_occupancy = dec_ev_shape.get_lbnb_occupancy ();
-  if(!calibration_mode) for (int i = 0; i < n[lbnb]; i++)  dec_occupancy[lbnb][event_trg_type]->Fill (i + 1, dec_lbnb_occupancy[i]);
+  if(!calibration_mode) for (int32_t i = 0; i < n[lbnb]; i++)  dec_occupancy[lbnb][event_trg_type]->Fill (i + 1, dec_lbnb_occupancy[i]);
 
   const std::vector<float>& dec_channel_occupancy = dec_ev_shape.get_channel_occupancy ();
-  if(!calibration_mode) for (int i = 0; i < n[channel]; i++)  dec_occupancy[channel][event_trg_type]->Fill (i + 1, dec_channel_occupancy[i]);
+  if(!calibration_mode) for (int32_t i = 0; i < n[channel]; i++)  dec_occupancy[channel][event_trg_type]->Fill (i + 1, dec_channel_occupancy[i]);
 
   const std::vector<float>& dec_nhits_in_channel = dec_ev_shape.get_nhits_in_channel ();
 
@@ -345,7 +345,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
       
       //channels not having precalibration hits
     if(event_trg_type == 0 && evnum <= 1000){
-      for (int i = 0; i < n[channel]; i++) {
+      for (int32_t i = 0; i < n[channel]; i++) {
 	if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){
 	  if (dec_nhits_in_channel[i] != 0) nhits_in_precalib[i] ++;
 	}
@@ -357,7 +357,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
       check_after_precalib_done = 1;
 
         //A check for dead channels
-      for (int i = 0; i < n[channel]; i++) {
+      for (int32_t i = 0; i < n[channel]; i++) {
 	if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){
 	  if (nhits_in_precalib[i] < 10){
 	    get_message(bx_message::log) << "Channel " << i+1 << " is off for the whole run, has only " << nhits_in_precalib[i] << " hits in precalib events" << dispatch;
@@ -370,9 +370,9 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 	}
       }
         //check if the off channels belong to a single lbnb
-      int N_off_already = 0;
-      int N_ordinary_in_lbnb = 0;
-      for (int i = 0; i < n[channel]; i++) {
+      int32_t N_off_already = 0;
+      int32_t N_ordinary_in_lbnb = 0;
+      for (int32_t i = 0; i < n[channel]; i++) {
 	  //when starting a new board, set to 0 the counter of off events in one lbnb
 	if(!(i%8)) {
 	  N_off_already = 0;
@@ -386,9 +386,9 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
       get_message(bx_message::log) << start_lg_on  << " ordinary channels ON after precalib " << dispatch;
       
         //B check for in-pulser-charge-dead channels (among all alive channels)
-      for (int i = 0; i < n[channel]; i++) {
+      for (int32_t i = 0; i < n[channel]; i++) {
 	if (bx_dbi::get ()->get_channel (i+1).is_ordinary () && cummulative_charge_off_lg[i] == 0){
-	  int ch = i + 1;
+	  int32_t ch = i + 1;
 	  TH1D* pulser_charge_one_lg  = charge_pulser_vs_lg->ProjectionY ("pulser_charge_one_lg", ch, ch);
 	  //0-bin 257
 	  double n_ok_charge_hits = pulser_charge_one_lg->Integral (257+5, 257+100);
@@ -403,7 +403,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
         //check how many off and on ordinary channels in charge
       start_lg_off_charge = 0;
       start_lg_on_charge = 0;
-      for (int i = 0; i < n[channel]; i++) {
+      for (int32_t i = 0; i < n[channel]; i++) {
 	if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){
 	  if (cummulative_charge_off_lg[i]) {
 	    start_lg_off_charge ++;
@@ -418,9 +418,9 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
   
       //check for channels with bad charge in neutrino only
     if( n_triggers[2] == 10000) {
-      for (int i = 0; i < n[channel]; i++) {
+      for (int32_t i = 0; i < n[channel]; i++) {
 	if (bx_dbi::get ()->get_channel (i+1).is_ordinary () && cummulative_charge_off_lg[i] == 0){
-	  int ch = i + 1;
+	  int32_t ch = i + 1;
 	  TH1D* neutrino_charge_one_lg  = neutrino_charge_vs_lg->ProjectionY ("neutrino_charge_one_lg", ch, ch);
 	  //0-bin 257
 	  double n_ok_charge_hits = neutrino_charge_one_lg->Integral (257+5, 257+100);
@@ -435,7 +435,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
         //check how many off and on ordinary channels in charge
       start_lg_off_charge = 0;
       start_lg_on_charge = 0;
-      for (int i = 0; i < n[channel]; i++) {
+      for (int32_t i = 0; i < n[channel]; i++) {
 	if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){
 	  if (cummulative_charge_off_lg[i])  start_lg_off_charge ++;
 	  else  start_lg_on_charge ++;
@@ -454,26 +454,26 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 
         //search for laben boards off every 3 pulser events
           //accummulate channel occupnacy for Nevents
-      for(int i = 0; i < n[lbnb]; i++) {
+      for(int32_t i = 0; i < n[lbnb]; i++) {
 	  cummulative_lbnb_occupancy_p[i] += dec_lbnb_nhits[i];
       }
-      int Nevents_lbnb_p = 3;	
+      int32_t Nevents_lbnb_p = 3;	
       if(!(n_triggers[0] % Nevents_lbnb_p)) {
-	for (int i = 0; i < n[lbnb]; i++) {
+	for (int32_t i = 0; i < n[lbnb]; i++) {
 	  //lbnb is now off 
 	  if(cummulative_lbnb_occupancy_p[i] == 0){
-	    int lg_in_lbnb = i * constants::laben::channels_per_board + 1;
+	    int32_t lg_in_lbnb = i * constants::laben::channels_per_board + 1;
 	    //check if the lbnb is already off
-	    int N_is_off_already = 0;
-	    int N_is_ordinary_in_lbnb = 0;
-	    for (int j = 0; j < 8; j++) {
+	    int32_t N_is_off_already = 0;
+	    int32_t N_is_ordinary_in_lbnb = 0;
+	    for (int32_t j = 0; j < 8; j++) {
 	      if(cummulative_off_lg[lg_in_lbnb - 1 + j] && bx_dbi::get ()->get_channel (lg_in_lbnb + j).is_ordinary () ) N_is_off_already ++;
 	      if (bx_dbi::get ()->get_channel (lg_in_lbnb +j).is_ordinary ()) N_is_ordinary_in_lbnb ++;
 	    }
 	    //if the whole board is not yet off, disbale it
 	    if(N_is_off_already != N_is_ordinary_in_lbnb ){
 	      get_message(bx_message::warn) << "Laben board " << i + 1 << " (channels " << lg_in_lbnb << "-" << lg_in_lbnb + 7 << ") is off from event " << evnum << dispatch; 
-	      for (int j = 0; j < 8; j++) {
+	      for (int32_t j = 0; j < 8; j++) {
 		cummulative_off_lg[lg_in_lbnb - 1 + j] = 1;
 		cummulative_charge_off_lg[lg_in_lbnb - 1 + j] = 1;
 		if(disabling_lg) detector_interface::get ()->add_disabled_channel (lg_in_lbnb + j, evnum, db_run::timing, this);
@@ -487,9 +487,9 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 	 
         //search for single channels off in pulser every Nevents_p pulser events
         //sometimes a pulser hit does miss at a single channel         
-	 int Nevents_p = 10;	
+	 int32_t Nevents_p = 10;	
         //accummulate channel occupnacy for Nevents
-      for(int i = 0; i < n[channel]; i++) {
+      for(int32_t i = 0; i < n[channel]; i++) {
 	if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){
 	  cummulative_occupancy_p[i] += dec_nhits_in_channel[i];
 	}
@@ -497,7 +497,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
     
         //if I accummulated already Nevents from pulser triggers
       if(!(n_triggers[0] % Nevents_p)) {	
-	for (int i = 0; i < n[channel]; i++) {
+	for (int32_t i = 0; i < n[channel]; i++) {
 	  if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){
 	    
 	    //if lg is now off 
@@ -541,31 +541,31 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
     if (event_trg_type > 0 && evnum > 1000){
    
       //accummulate hvb occupancy for Nevents_HVB
-      for(int i = 0; i < n[hvb]; i++) {
+      for(int32_t i = 0; i < n[hvb]; i++) {
         cummulative_hvb_occupancy_HV[i] += dec_hvb_nhits[i];
       }
       
-      int Nevents_HVB = 100;  
+      int32_t Nevents_HVB = 100;  
         //if I accummulated already Nevents_HVB from HV triggers
       if(!((n_triggers[1] + n_triggers[2]+ n_triggers[3]) % Nevents_HVB)) {
           //search for HV boards off each  Nevents_HVB  events
-	for (int i = 0; i < n[hvb]; i++) {
+	for (int32_t i = 0; i < n[hvb]; i++) {
 	  //hvb is now off
 	  if(cummulative_hvb_occupancy_HV[i] == 0){
-	    int crate = i/7;
-	    int board_in_crate = i%7;
-	    int lg_in_hvb = crate*160 + board_in_crate*24  + 1;
+	    int32_t crate = i/7;
+	    int32_t board_in_crate = i%7;
+	    int32_t lg_in_hvb = crate*160 + board_in_crate*24  + 1;
 	    //check if the hvb is already off
-	    int N_off_already = 0;
-	    int N_ordinary_in_hvb = 0;
-	     for (int j = 0; j < (board_in_crate == 6 ? 16 : 24); j++) {
+	    int32_t N_off_already = 0;
+	    int32_t N_ordinary_in_hvb = 0;
+	     for (int32_t j = 0; j < (board_in_crate == 6 ? 16 : 24); j++) {
 	      if(cummulative_off_lg[lg_in_hvb - 1 + j] && bx_dbi::get ()->get_channel (lg_in_hvb + j).is_ordinary ()) N_off_already ++;
 	      if (bx_dbi::get ()->get_channel (lg_in_hvb + j).is_ordinary ()) N_ordinary_in_hvb ++;
 	    }
 	    //if the whole board is not yet off, disbale it
 	    if(N_off_already != N_ordinary_in_hvb){
 	      get_message(bx_message::warn) << "HVB board " << i + 1 << " (channels " << lg_in_hvb << "-" << lg_in_hvb + 23 << ") is off from event " << evnum << dispatch; 
-	      for (int j = 0; j < (board_in_crate == 6 ? 16 : 24); j++) {
+	      for (int32_t j = 0; j < (board_in_crate == 6 ? 16 : 24); j++) {
 		//FIX ?? 
 		cummulative_off_lg[lg_in_hvb - 1 + j] = 1;
 		cummulative_charge_off_lg[lg_in_hvb - 1 + j] = 1;
@@ -579,11 +579,11 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
       }
 
         //accummulate channel occupancy for Nevents
-      for(int i = 0; i < n[channel]; i++) {
+      for(int32_t i = 0; i < n[channel]; i++) {
 	if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()) cummulative_occupancy_HV[i] += dec_nhits_in_channel[i];
       }
       
-      int Nevents_HV = 12000; //with the rate of 30 Hz about 2000 events/minute
+      int32_t Nevents_HV = 12000; //with the rate of 30 Hz about 2000 events/minute
       double dead_fraction = 0.05;
 
          //if I accummulated already Nevents from HV triggers
@@ -591,8 +591,8 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 	
         //calculate mean for cummulative_occupancy HV
 	double mean_cummulative_occupancy_HV = 0;
-	int N_lg_on = 0;
-	for (int i = 0; i < n[channel]; i++) {
+	int32_t N_lg_on = 0;
+	for (int32_t i = 0; i < n[channel]; i++) {
 	  if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){	   
 	    if(cummulative_occupancy_HV[i]) {
 	      N_lg_on ++;
@@ -602,7 +602,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 	}
 	if(N_lg_on) mean_cummulative_occupancy_HV = mean_cummulative_occupancy_HV/ N_lg_on;
 	  
-	for (int i = 0; i < n[channel]; i++) {
+	for (int32_t i = 0; i < n[channel]; i++) {
 	  if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){
 	    //if lg is now off (less than dead_fraction of the mean
 	    if (cummulative_occupancy_HV[i] <= dead_fraction * mean_cummulative_occupancy_HV) {
@@ -648,34 +648,34 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
     //  crates, fe and laben boards occupancy check each n_events
     //  **************************************************************
      
-    int  n_events = get_parameter ("n_events").get_int ();;
+    int32_t  n_events = get_parameter ("n_events").get_int ();;
   
     //check if it is time to analyse occupancy for the trigger type of the actual event
     if ((evnum < 1050 && n_triggers[0] == 1000 && event_trg_type == 0) || (evnum > 1000 && n_triggers[event_trg_type] && !(n_triggers[event_trg_type] % n_events)))  {
       get_message(bx_message::log) << "Total triggers " << total_triggers <<  ", considered triggers " << n_triggers[event_trg_type] << " in trg type " << trigger_type_map[event_trg_type] << dispatch;
       
-      for(int module_type = 0; module_type < 5; module_type++) n_on[module_type] = 0; 
+      for(int32_t module_type = 0; module_type < 5; module_type++) n_on[module_type] = 0; 
       
       //loop crates = 0, hvb = 1, feb = 2, lbnb = 3, channel = 4)
-      for(int module_type = 0; module_type < 5; module_type ++){
+      for(int32_t module_type = 0; module_type < 5; module_type ++){
         
           //mean and rms of the occupancy distributon
-	int     n_cycles = get_parameter ("n_cycles").get_int ();
+	int32_t     n_cycles = get_parameter ("n_cycles").get_int ();
 	double  n_rms = get_parameter ("n_rms").get_float ();
 	double mean = 0;
 	double rms = 0;
 	double S = 0;
 	double this_modules_on = 0; 	
           // loop on individual crates etc.
-	for(int i_module = 1; i_module <= n[module_type]; i_module++){
+	for(int32_t i_module = 1; i_module <= n[module_type]; i_module++){
 	  double bin_content =  dec_occupancy[module_type][event_trg_type]->GetBinContent (i_module);
 	  if(bin_content) n_on[module_type] ++;
 	}
 	
-	if (n_on[module_type] < (int) 0.5 *  n[module_type]) 
+	if (n_on[module_type] < (int32_t) 0.5 *  n[module_type]) 
 	  get_message(bx_message::error) << "Only " << n_on[module_type] << " modules on for module_type " << module_type_map[module_type] << dispatch;
 	else { //if more than 1/2 of modules on
-	  for(int i_module = 1; i_module <= n[module_type]; i_module++){
+	  for(int32_t i_module = 1; i_module <= n[module_type]; i_module++){
 	    double bin_content =  dec_occupancy[module_type][event_trg_type]->GetBinContent (i_module);
 	    if(bin_content) {
 	      this_modules_on ++; 	
@@ -695,7 +695,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 	  S = 0;
 	  this_modules_on = 0; 	
 	  // loop on individual crates etc.
-	  for(int i_module = 1; i_module <= n[module_type]; i_module++){
+	  for(int32_t i_module = 1; i_module <= n[module_type]; i_module++){
 	    double bin_content =  dec_occupancy[module_type][event_trg_type]->GetBinContent (i_module);
 	    if(bin_content && bin_content < (mean + 4 * rms)) {
 	      this_modules_on ++; 	
@@ -713,7 +713,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 	  
 	  // check for noisy individual feb and lbnb
 	  if(module_type == 2 || module_type == 3){
-	    for(int i_module = 1; i_module <= n[module_type]; i_module ++){
+	    for(int32_t i_module = 1; i_module <= n[module_type]; i_module ++){
 	      double bin_content = dec_occupancy[module_type][event_trg_type]->GetBinContent (i_module);
 	      if(bin_content > (mean + n_rms * rms)) {//is noisy
 		(times_found_noisy[module_type][event_trg_type])[i_module - 1] ++;
@@ -729,7 +729,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
 	  
 	  // check for off crates and hvb 
 	  if(module_type == 0 || module_type == 1){
-	    for(int i_module = 1; i_module <= n[module_type]; i_module ++){
+	    for(int32_t i_module = 1; i_module <= n[module_type]; i_module ++){
 	      double bin_content = dec_occupancy[module_type][event_trg_type]->GetBinContent (i_module);
 	      if(bin_content < 0.001 * mean ) {//is empty
 		(times_found_empty[module_type][event_trg_type])[i_module - 1] ++;
@@ -757,7 +757,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
     double mean_neutrino_nhits = -10;
  
     if (event_trg_type == 2 && n_triggers[2] == 1) { //first neutrino event
-      unsigned long bo;
+      uint32_t bo;
       ev->get_trigger().get_gps_time ( n_very_first_event_tsec, bo);
       n_events_in_this_cycle = 1;
       n_nhits_in_cycle = dec_nhits_one_event;
@@ -766,7 +766,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
       
       n_events_in_this_cycle ++;
       
-      unsigned long tsec, tnsec;
+      uint32_t tsec, tnsec;
       ev->get_trigger().get_gps_time (tsec, tnsec);
       tsec -=  n_very_first_event_tsec;
       double time_this_event =  tsec + (double) tnsec * 1E-9 ; //event time in sec with respect to to the first enutrino event
@@ -821,7 +821,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
     
     //random nhits rate
     if (event_trg_type == 1 && n_triggers[1] == 1) { //first random event
-      unsigned long bo;
+      uint32_t bo;
       ev->get_trigger().get_gps_time ( r_very_first_event_tsec, bo);
       r_events_in_this_cycle = 1;
       r_nhits_in_cycle = dec_nhits_one_event;
@@ -829,7 +829,7 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
     } else if  (event_trg_type == 1 && n_triggers[1] > 1){
       
       r_events_in_this_cycle ++;
-      unsigned long tsec, tnsec;
+      uint32_t tsec, tnsec;
       ev->get_trigger().get_gps_time (tsec, tnsec);
       tsec -=  r_very_first_event_tsec;
       double time_this_event =  tsec + (double) tnsec * 1E-9 ; //event time in sec with respect to to the first random event
@@ -880,14 +880,14 @@ bx_echidna_event* bx_detector_monitor::doit (bx_echidna_event *ev) {
     //pulser nhits rate
     
     if (event_trg_type == 0 ) { 
-      //int bin = evnum/(max_events/pulser_bins);
+      //int32_t bin = evnum/(max_events/pulser_bins);
       nhits_pulser_sum += dec_nhits_one_event;
-      int pulser_events_in_cycle = 1;
+      int32_t pulser_events_in_cycle = 1;
       if(!(n_triggers[0] %  pulser_events_in_cycle)) {
 	pulser_nhits->SetAxisRange (0,evnum+100);
 	pulser_nhits->SetMinimum (0.95 * nhits_pulser_sum/ pulser_events_in_cycle);
 	pulser_nhits->Fill(evnum, nhits_pulser_sum/ pulser_events_in_cycle);
-	for(int i = 1; i < pulser_bins; i ++) pulser_nhits->SetBinError(i,1);
+	for(int32_t i = 1; i < pulser_bins; i ++) pulser_nhits->SetBinError(i,1);
 	(barn_interface::get ()->network_send (pulser_nhits, this));
 	nhits_pulser_sum = 0;
       }
@@ -907,7 +907,7 @@ void bx_detector_monitor::end () {
   end_lg_off = 0;
   end_lg_on_charge = 0;
   end_lg_off_charge = 0;
-  for (int i = 0; i < n[channel]; i++) {
+  for (int32_t i = 0; i < n[channel]; i++) {
     if (bx_dbi::get ()->get_channel (i+1).is_ordinary ()){
       if (cummulative_off_lg[i] == 1) end_lg_off ++;
       else if (cummulative_off_lg[i] == 0) end_lg_on ++;
@@ -930,8 +930,8 @@ void bx_detector_monitor::end () {
   /*  if(calibration_mode){   
     
       //to print off lg 
-    for (int i = 0; i < n[channel]; i++){
-      int indx = 0;
+    for (int32_t i = 0; i < n[channel]; i++){
+      int32_t indx = 0;
       
       //lg with missing precalibration hits
       

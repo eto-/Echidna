@@ -57,12 +57,12 @@ public:
   virtual ~mapper_time_file() {}
   
   unsigned get_number_of_files() const {return struct_map_ft.size();}
-  unsigned get_key_if_found(unsigned long u4_gpstime_sec) const;
+  unsigned get_key_if_found(uint32_t u4_gpstime_sec) const;
 
   const std::string& get_Nfile_name(unsigned u4_key) const {return struct_map_ft.at(u4_key).s_Nfile_name;}
   const std::string& get_Tfile_name(unsigned u4_key) const {return struct_map_ft.at(u4_key).s_Tfile_name;}
-  unsigned long get_time_start(unsigned u4_key) const {return struct_map_ft.at(u4_key).u4_time_start;}
-  unsigned long get_time_stop (unsigned u4_key) const {return struct_map_ft.at(u4_key).u4_time_stop;}
+  uint32_t get_time_start(unsigned u4_key) const {return struct_map_ft.at(u4_key).u4_time_start;}
+  uint32_t get_time_stop (unsigned u4_key) const {return struct_map_ft.at(u4_key).u4_time_stop;}
   bool get_has_auxfile(unsigned u4_key) const {return struct_map_ft.at(u4_key).b_has_auxfile;}
   void show(unsigned u4_key);
 
@@ -70,13 +70,13 @@ private:
   struct struct_file_time{
     std::string s_Nfile_name;
     std::string s_Tfile_name;
-    unsigned long u4_time_start;
-    unsigned long u4_time_stop;
+    uint32_t u4_time_start;
+    uint32_t u4_time_stop;
     bool b_has_auxfile;
   };
   std::vector<struct_file_time> struct_map_ft;
 
-  unsigned long u4_date_to_sec(const std::string& s_in_date);
+  uint32_t u4_date_to_sec(const std::string& s_in_date);
   tm tm_ref_2000;  // time ref (Jan 01, 2000, 00:00:00)
   time_t tt_ref_2000;
 };
@@ -89,8 +89,8 @@ class v1731_event_correlator::v1731event_indexer: public bx_named{
     long  i4_position;   // row of T_*.dat file (and event position in N_*.dat.gz file)
   };
   struct file_borders{
-    unsigned long u4_start;
-    unsigned long u4_stop;
+    uint32_t u4_start;
+    uint32_t u4_stop;
   };
 
 public:
@@ -100,14 +100,14 @@ public:
   void set_transfer_param(const transfer& tr_par) {transfer_param = tr_par;}
   const transfer& get_transfer_param() const {return transfer_param;} 
 
-  void new_event(const mapper_time_file& map_tf, unsigned long u4_gpstime);
-  bool daq_active(unsigned long u4_gpstime) const;
-  void get_event_info(unsigned long u4_gpstime, std::vector<std::string>& s_filenames, std::vector<long>& i4_poss) const;
-  void show(unsigned long u4_gpstime);
+  void new_event(const mapper_time_file& map_tf, uint32_t u4_gpstime);
+  bool daq_active(uint32_t u4_gpstime) const;
+  void get_event_info(uint32_t u4_gpstime, std::vector<std::string>& s_filenames, std::vector<long>& i4_poss) const;
+  void show(uint32_t u4_gpstime);
 
 private:
   transfer transfer_param;
-  std::multimap<unsigned long, event_info> event_index;
+  std::multimap<uint32_t, event_info> event_index;
   std::vector<file_borders> index_borders;
   void add_to_index(const mapper_time_file&, unsigned u4_key);
 };
@@ -117,7 +117,7 @@ private:
 
 class v1731_event_correlator::event_finder: public bx_named{
  public:
-  event_finder(const v1731event_indexer&, const unsigned long u4_sec);
+  event_finder(const v1731event_indexer&, const uint32_t u4_sec);
   virtual ~event_finder() {}
   bool     get_found()    const {return (events_found.size()>0);}
   unsigned get_n_founds() const {return events_found.size();}
@@ -127,7 +127,7 @@ class v1731_event_correlator::event_finder: public bx_named{
   e_transfer get_load_mode() const {return transfer_param.transfer_mode;}
 
   std::string get_file_name(unsigned u4) const {return ((u4<events_found.size()) ? events_found[u4].s_file_name: "");}  
-  unsigned long get_v1731_timer(unsigned u4) const {return ((u4<events_found.size()) ? events_found[u4].u4_v1731_timer : 0);}
+  uint32_t get_v1731_timer(unsigned u4) const {return ((u4<events_found.size()) ? events_found[u4].u4_v1731_timer : 0);}
   long get_position(unsigned u4) const {return ((u4<events_found.size()) ? events_found[u4].i4_position : 0);}     
   short get_difference(unsigned u4) const {return ((u4<events_found.size()) ? events_found[u4].i2_difference : 10);}  
 
@@ -136,7 +136,7 @@ class v1731_event_correlator::event_finder: public bx_named{
  private: 
   struct struct_event{
     std::string s_file_name;
-    unsigned long u4_v1731_timer;
+    uint32_t u4_v1731_timer;
     long  i4_position;   // row of T_*.dat file
     short i2_difference; // time difference between searched and found event
   };
@@ -144,7 +144,7 @@ class v1731_event_correlator::event_finder: public bx_named{
   std::vector <struct_event> event_found_old;
   transfer transfer_param;
 
-  void fill_found_events(unsigned long u4_gpstime, int i4_difftime, const v1731event_indexer&);
+  void fill_found_events(uint32_t u4_gpstime, int32_t i4_difftime, const v1731event_indexer&);
 };
 
     

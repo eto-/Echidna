@@ -85,7 +85,7 @@ bx_echidna_event* bx_global_tracker::doit (bx_echidna_event *ev) {
 
 
 
-  Int_t all_pts = int(m1)+int(m2)+int(l1)+int(l2);  // number of reconstructed points
+  Int_t all_pts = int32_t(m1)+int32_t(m2)+int32_t(l1)+int32_t(l2);  // number of reconstructed points
     
   //get_message (bx_message::log) << "available points: m1=" << m1 << " m2=" << m2 << " l1=" << l1 << " l2=" << l2 << " -> " << all_pts << dispatch; 
   if (all_pts<2) {
@@ -97,7 +97,7 @@ bx_echidna_event* bx_global_tracker::doit (bx_echidna_event *ev) {
   float x[total_pts], y[total_pts], z[total_pts];
   float ex[total_pts], ey[total_pts], ez[total_pts];
     
-  int ip=0;  
+  int32_t ip=0;  
   if (m1) {					// if present, write OD entry point
     x[ip] = t_m.get_x1();
     y[ip] = t_m.get_y1();
@@ -137,7 +137,7 @@ bx_echidna_event* bx_global_tracker::doit (bx_echidna_event *ev) {
     ez[ip] = .5;//t_m.get_dz2();     
   }
 
-  //for (int ip=0; ip<all_pts; ip++) {
+  //for (int32_t ip=0; ip<all_pts; ip++) {
     //get_message (bx_message::log) << "P" << ip << ": x=" << x[ip] << "(" << ex[ip] << "), y=" << y[ip] << "(" << ey[ip] << "), z=" << z[ip] << "(" << ez[ip] << ")" << dispatch; //hu? 
   //}
 
@@ -153,7 +153,7 @@ bx_echidna_event* bx_global_tracker::doit (bx_echidna_event *ev) {
   float ebeta  = par[6];
   float egamma = par[7];
   float edelta = par[8];
-  int   ndf    = (all_pts-1)*2;
+  int32_t   ndf    = (all_pts-1)*2;
   float rchi2  = chi2/ndf;
 
   /*get_message(bx_message::log) << "FIT OF " << all_pts << " POINTS:" << dispatch;
@@ -183,7 +183,7 @@ if(all_pts < 4){
   float fit_nr = all_pts;
   if (all_pts==total_pts && rchi2>f4_chi2max44) {
     float chi2_min = rchi2;
-     for (int i=0; i<all_pts; i++) {
+     for (int32_t i=0; i<all_pts; i++) {
        par = m_fit_track(x, y, z, ex, ey, ez, all_pts, i);
        if (par[0]/(all_pts-2)/2 < chi2_min) {
          chi2_min = par[0];
@@ -225,7 +225,7 @@ if(all_pts < 4){
 
 // Finally used reconstructed points for the fit
 
-  Char_t points = 0x00;
+  int8_t points = 0x00;
   if(m1)  {points = points | 0x01;} //0001
   if(l1)  {points = points | 0x02;} //0010
   if(l2)  {points = points | 0x04;} //0100
@@ -244,7 +244,7 @@ if(all_pts < 4){
 // Define the direction of the muon: upward or downward
 // use the two most remote track points
   bool muon_downward = false;
-  int entry_nr = 0, exit_nr = 3;
+  int32_t entry_nr = 0, exit_nr = 3;
   if (!m2) {
     exit_nr--;
     if (!l2) exit_nr--;
@@ -361,7 +361,7 @@ void bx_global_tracker::end () {
 
 
 
-float* bx_global_tracker::m_fit_track(float *px, float *py, float *pz, float *pdx, float *pdy, float *pdz, int npts, int bpt) {
+float* bx_global_tracker::m_fit_track(float *px, float *py, float *pz, float *pdx, float *pdy, float *pdz, int32_t npts, int32_t bpt) {
 
   //get_message(bx_message::debug) << "fitting " << npts << " points, omitting point " << bpt << dispatch;
 
@@ -373,10 +373,10 @@ float* bx_global_tracker::m_fit_track(float *px, float *py, float *pz, float *pd
   double dx_arr[npts];
   double dy_arr[npts];
   double dz_arr[npts];
-  int jp = 0;
-  int gpts = npts;
+  int32_t jp = 0;
+  int32_t gpts = npts;
   if (bpt<npts) gpts--;
-  for (int ip=0; ip<npts; ip++) {
+  for (int32_t ip=0; ip<npts; ip++) {
     if (bpt==ip) continue;
     x_arr[jp]  = px[ip];
     y_arr[jp]  = py[ip];
@@ -387,7 +387,7 @@ float* bx_global_tracker::m_fit_track(float *px, float *py, float *pz, float *pd
     jp++;
   }
 
-  //for (int i=0; i<npts; i++) get_message(bx_message::debug) << i << "th point: "<< x_arr[i] << " : " << y_arr[i] << " : " << z_arr[i] << dispatch;
+  //for (int32_t i=0; i<npts; i++) get_message(bx_message::debug) << i << "th point: "<< x_arr[i] << " : " << y_arr[i] << " : " << z_arr[i] << dispatch;
 
   bool rotate_y=false, rotate_z=false;
   double c = cos(omega);
@@ -397,7 +397,7 @@ float* bx_global_tracker::m_fit_track(float *px, float *py, float *pz, float *pd
   if (fabs((z_arr[gpts-1]-z_arr[0])/(x_arr[gpts-1]-x_arr[0]))>f4_max_dev) {
     rotate_y = true;
     //get_message(bx_message::debug) << "rotating around y-axis ..." << dispatch;
-    for (int i=0; i<gpts; i++) {
+    for (int32_t i=0; i<gpts; i++) {
       float x_temp = x_arr[i], dx_temp = dx_arr[i];
       x_arr[i] = c*x_temp + s*z_arr[i];
       z_arr[i] = -s*x_temp + c*z_arr[i];
@@ -411,7 +411,7 @@ float* bx_global_tracker::m_fit_track(float *px, float *py, float *pz, float *pd
   if (fabs((y_arr[gpts-1]-y_arr[1])/(x_arr[gpts-1]-x_arr[0]))>f4_max_dev) {
     rotate_z = true;
     //get_message(bx_message::debug) << "rotating around z-axis ..." << dispatch;
-    for (int i=0; i<gpts; i++) {
+    for (int32_t i=0; i<gpts; i++) {
       float x_temp = x_arr[i], dx_temp = dx_arr[i];
       x_arr[i] = c*x_temp + s*y_arr[i];
       y_arr[i] = -s*x_temp + c*y_arr[i];

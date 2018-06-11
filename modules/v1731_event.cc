@@ -29,7 +29,7 @@ v1731_event::v1731event_decoder::v1731event_decoder(const event_finder& ef_find_
   set_time_reference(v1731ev, ef_find_event.get_v1731_timer(u4));
 
   b_error_occurred = false;
-  int i2_deco_err  = 0;
+  int32_t i2_deco_err  = 0;
 
   const bool b_seq_rd = ((s_file_name==s_curr_file_name) && (i4_ev_position>=i4_curr_file_position) && (currNfile));
 
@@ -148,7 +148,7 @@ v1731_event::v1731event_decoder::v1731event_decoder(gzFile & gzfileN, v1731event
     get_message(bx_message::error)<<"Error occurred in v1731event_decoder::v1731event_decoder(gzFile&, v1731event&)"<<dispatch;
   }
   else{
-    const int i2_read_err = read_event(gzfileN, v1731ev);
+    const int32_t i2_read_err = read_event(gzfileN, v1731ev);
     if ((b_error_occurred = i2_read_err)) {
       get_message(bx_message::error)<<"in v1731event_decoder::read_event"<<dispatch;
     }
@@ -156,10 +156,10 @@ v1731_event::v1731event_decoder::v1731event_decoder(gzFile & gzfileN, v1731event
 }
 
 
-int v1731_event::v1731event_decoder::load_event(gzFile & Nfile, long i4_start_position, long i4_event_position){ 
+int32_t v1731_event::v1731event_decoder::load_event(gzFile & Nfile, long i4_start_position, long i4_event_position){ 
   for (long i4_i=i4_start_position; i4_i<i4_event_position-1; ++i4_i){// start_position starts from 0; event_position starts from 1 (see class constructor); 
     char c_buff [20];  // char buffer
-    int i2_chk;        // first and last word
+    int32_t i2_chk;        // first and last word
     gzgets(Nfile, c_buff, 20);
     i2_chk=atoi(c_buff);
     if (i2_chk!=3333){ 
@@ -180,7 +180,7 @@ int v1731_event::v1731event_decoder::load_event(gzFile & Nfile, long i4_start_po
 }
 
 
-int v1731_event::v1731event_decoder::check_zle(short i1_zle){
+int32_t v1731_event::v1731event_decoder::check_zle(short i1_zle){
   switch (i1_zle){
   case (1):{
     b_zle_enabled = true;
@@ -197,7 +197,7 @@ int v1731_event::v1731event_decoder::check_zle(short i1_zle){
   }
 }
 
-short v1731_event::v1731event_decoder::check_mask(short i1_num, int i2_mask, bool* b_active){
+short v1731_event::v1731event_decoder::check_mask(short i1_num, int32_t i2_mask, bool* b_active){
   short i1_num_active=0;
   for (short i1_i=0; i1_i<i1_num; ++i1_i){
     b_active[i1_i]=i2_mask%2;
@@ -207,8 +207,8 @@ short v1731_event::v1731event_decoder::check_mask(short i1_num, int i2_mask, boo
   return i1_num_active;
 }
 
-v1731_event::v1731event_decoder::zle_action v1731_event::v1731event_decoder::check_zle_control_word(unsigned long u4_control_word, unsigned long& u4_num_of_data_to){
-  const unsigned long u4_2pow31=0x80000000;
+v1731_event::v1731event_decoder::zle_action v1731_event::v1731event_decoder::check_zle_control_word(uint32_t u4_control_word, uint32_t& u4_num_of_data_to){
+  const uint32_t u4_2pow31=0x80000000;
   if (u4_control_word>u4_2pow31) {
     u4_num_of_data_to=(u4_control_word-u4_2pow31)*4; //control word contains the number of L32 to be written; 1L32=4byte -> 4datum (v1731 is 8bit digitizer)
     return (good);
@@ -219,30 +219,30 @@ v1731_event::v1731event_decoder::zle_action v1731_event::v1731event_decoder::che
   }
 } 
 
-int v1731_event::v1731event_decoder::read_event(gzFile& Nfile, v1731event & v1731ev){
+int32_t v1731_event::v1731event_decoder::read_event(gzFile& Nfile, v1731event & v1731ev){
   #define NBUFF 20
   char c_buff [NBUFF]; // char buffer
   
   gzgets(Nfile, c_buff, NBUFF);
-  int i2_tmp=atoi(c_buff);// first word:3333
+  int32_t i2_tmp=atoi(c_buff);// first word:3333
   if (i2_tmp!=3333) return (-330); //error has occurred in reading 
   gzgets(Nfile, c_buff, NBUFF);
   //const long i4_event_len=atol(c_buff); //length (number of lines) of event
   gzgets(Nfile, c_buff, NBUFF);
   const unsigned u4_trgid=atol(c_buff); //TRGID; 
   gzgets(Nfile, c_buff, NBUFF);
-  const unsigned long u4_LV_time=atol(c_buff); //event time reference (seconds) provided by Neutron DAQ (PC & LabView clock time)
+  const uint32_t u4_LV_time=atol(c_buff); //event time reference (seconds) provided by Neutron DAQ (PC & LabView clock time)
   gzgets(Nfile, c_buff, NBUFF);
-  //const int i2_ev_num=atoi(c_buff); //event number; not in use now
+  //const int32_t i2_ev_num=atoi(c_buff); //event number; not in use now
   //get_message(bx_message::info)<<"Event Number read: "<<i2_ev_num<<dispatch;
   gzgets(Nfile, c_buff, NBUFF);
   const short i1_zle=atoi(c_buff); // 0 if not zle, 1 if zle
   gzgets(Nfile, c_buff, NBUFF);
-  const int i2_board_mask=atoi(c_buff); // board mask (read it in binary repr.)
+  const int32_t i2_board_mask=atoi(c_buff); // board mask (read it in binary repr.)
   gzgets(Nfile, c_buff, NBUFF);
   //const long i4_data_sum=atol(c_buff); // number of data (all board, all channel); useless?
 
-  const int i2_zle_err = check_zle(i1_zle);  //v1731::check_zle changes private bool b_zle_enabled; returns (-400) if error occurred
+  const int32_t i2_zle_err = check_zle(i1_zle);  //v1731::check_zle changes private bool b_zle_enabled; returns (-400) if error occurred
   if (i2_zle_err) return (i2_zle_err);
   if (b_zle_enabled) set_zle_enabled(v1731ev,true);
   else set_zle_enabled(v1731ev,false);
@@ -258,10 +258,10 @@ int v1731_event::v1731event_decoder::read_event(gzFile& Nfile, v1731event & v173
       gzgets(Nfile, c_buff, NBUFF);
       //const long i4_ev_counter=atol(c_buff); // event counter; useless?
       gzgets(Nfile, c_buff, NBUFF);
-      const int i2_channel_mask=atoi(c_buff);  // channel mask
+      const int32_t i2_channel_mask=atoi(c_buff);  // channel mask
       gzgets(Nfile, c_buff, NBUFF);
       //const double f8_trigger_time_tag=atof(c_buff); //trigger time tag
-      //const unsigned long u4_trigger_time_tag= static_cast<unsigned long> (f8_trigger_time_tag);
+      //const uint32_t u4_trigger_time_tag= static_cast<uint32_t> (f8_trigger_time_tag);
       gzgets(Nfile, c_buff, NBUFF);
       const long i4_ev_size=atol(c_buff); //event size
       
@@ -284,11 +284,11 @@ int v1731_event::v1731event_decoder::read_event(gzFile& Nfile, v1731event & v173
 	    while (i4_s<i4_ch_size){
 
 	      gzgets(Nfile, c_buff, NBUFF);
-	      const double f8_control_word=atof(c_buff);   //WARNING: unsigned long
-	      const unsigned long u4_control_word= static_cast<unsigned long> (f8_control_word);
+	      const double f8_control_word=atof(c_buff);   //WARNING: uint32_t
+	      const uint32_t u4_control_word= static_cast<uint32_t> (f8_control_word);
 	      ++i4_s;
 
-	      unsigned long u4_num_of_data; // number of data to read (or number of data skipped)
+	      uint32_t u4_num_of_data; // number of data to read (or number of data skipped)
 	      const zle_action action_to_do=check_zle_control_word(u4_control_word,u4_num_of_data);
 	      
 	      switch (action_to_do){
@@ -297,8 +297,8 @@ int v1731_event::v1731event_decoder::read_event(gzFile& Nfile, v1731event & v173
 	      }
 		break;
 	      case (good): {
-		const unsigned long u4_final_rel_pos= u4_current_rel_pos + u4_num_of_data;
-		for (unsigned long u4_g=u4_current_rel_pos; u4_g<u4_final_rel_pos; ++u4_g ){
+		const uint32_t u4_final_rel_pos= u4_current_rel_pos + u4_num_of_data;
+		for (uint32_t u4_g=u4_current_rel_pos; u4_g<u4_final_rel_pos; ++u4_g ){
 		  gzgets(Nfile, c_buff, NBUFF);
 		  float f_data=atof(c_buff); //data (i.e. v1731 samples)
 		  ++i4_s;
@@ -357,7 +357,7 @@ int v1731_event::v1731event_decoder::read_event(gzFile& Nfile, v1731event & v173
 
 
 
-void v1731_event::v1731event_decoder::set_time_reference(v1731event& v1731ev, unsigned long u4_time_ref){
+void v1731_event::v1731event_decoder::set_time_reference(v1731event& v1731ev, uint32_t u4_time_ref){
   v1731ev.u4_time_reference = u4_time_ref;
 }
 
@@ -385,7 +385,7 @@ void v1731_event::v1731event_decoder::increase_num_of_good_zones(v1731event& v17
   ++v1731ev.i2_num_of_good_zones[i1_b][i1_ch];
 }
 
-void v1731_event::v1731event_decoder::set_good_zones(v1731event& v1731ev, short i1_b, short i1_ch, unsigned long u4_in_begin, unsigned long u4_in_length){
+void v1731_event::v1731event_decoder::set_good_zones(v1731event& v1731ev, short i1_b, short i1_ch, uint32_t u4_in_begin, uint32_t u4_in_length){
   v1731ev.i4_begin_of_good[i1_b][i1_ch].push_back(u4_in_begin);
   v1731ev.i4_length_of_good[i1_b][i1_ch].push_back(u4_in_length);
   v1731ev.i4_end_of_good[i1_b][i1_ch].push_back(u4_in_begin+ u4_in_length);
@@ -436,7 +436,7 @@ v1731_event::v1731event::v1731event(): bx_named("v1731event"){
 }
 
 
-void v1731_event::v1731event::clusterize(int i4_base, int i4_thr, int i4_bck, int i4_fwd){
+void v1731_event::v1731event::clusterize(int32_t i4_base, int32_t i4_thr, int32_t i4_bck, int32_t i4_fwd){
 	// CAEN v1731 board include a zero suppression algorithm
 	// however, this algorithm works only if the numer of transitions good/zero
 	// is <14 : all samples belonging over the 14th transitions are acquired
@@ -447,7 +447,7 @@ void v1731_event::v1731event::clusterize(int i4_base, int i4_thr, int i4_bck, in
 	if (b_clusterized)
 		return;
 
-	const int nshortMAX = 7;
+	const int32_t nshortMAX = 7;
 	// max number of "short" good zone; note that .at(nshortMAX) refers to the "long last zone"
 	// remind for future: arrays start from 0: 1 zone => .size =1, .at(0) [not .at(1)]
 
@@ -476,7 +476,7 @@ void v1731_event::v1731event::clusterize(int i4_base, int i4_thr, int i4_bck, in
 	long i4_tmp_begin = i4_lbegin, i4_tmp_end =i4_lend;
 
 	for (long i4t=i4_lbegin; i4t<=i4_lend-2; i4t+=2){
-		const int fcurr_sample = int(get_sample_at_time(0, 0, float(i4t)));
+		const int32_t fcurr_sample = int32_t(get_sample_at_time(0, 0, float(i4t)));
 		if (fcurr_sample> i4_thr){
 			i4_tmp_begin = std::min(i4_tmp_begin, i4t - i4_bck);
 			i4_tmp_end   = i4t + i4_fwd;

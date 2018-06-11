@@ -22,12 +22,12 @@
 // ****** raw *************/
 // bitfield to parse tdc word (32 bits)
 struct bx_muon_edge {
-  unsigned short time : 16;
-  unsigned char slope : 1;
+  uint16_t time : 16;
+  uint8_t slope : 1;
   bool is_overflow : 1;
-  unsigned char tdc_channel : 5; 
+  uint8_t tdc_channel : 5; 
   bool is_event_number : 1;
-  unsigned char tdc_chip : 2;
+  uint8_t tdc_chip : 2;
   int : 4; // this bits are reserved by CAEN in the tdc word
   bool is_last : 1;
   bool is_invalid : 1;
@@ -36,19 +36,19 @@ struct bx_muon_edge {
 class bx_muon_raw_hit {
   public:
 
-    bx_muon_raw_hit (unsigned short muon_channel, const bx_muon_edge& lead, const bx_muon_edge& trail);
-    bx_muon_raw_hit (unsigned short muon_channel, unsigned short lead_time, unsigned short trail_time);
+    bx_muon_raw_hit (uint16_t muon_channel, const bx_muon_edge& lead, const bx_muon_edge& trail);
+    bx_muon_raw_hit (uint16_t muon_channel, uint16_t lead_time, uint16_t trail_time);
 
-    unsigned short get_muon_channel    () const { return u2_muon_channel; } // 0 based
-    unsigned short get_logical_channel () const { return get_muon_channel () + constants::muon::channel_offset + 1; } // 1 based
-    unsigned short get_lead_time       () const { return u2_lead_time; }
-    unsigned short get_trail_time      () const { return u2_trail_time; }
+    uint16_t get_muon_channel    () const { return u2_muon_channel; } // 0 based
+    uint16_t get_logical_channel () const { return get_muon_channel () + constants::muon::channel_offset + 1; } // 1 based
+    uint16_t get_lead_time       () const { return u2_lead_time; }
+    uint16_t get_trail_time      () const { return u2_trail_time; }
     int            get_time_diff       () const { return abs(u2_lead_time - u2_trail_time); }
 
   private:
-    unsigned short u2_muon_channel;
-    unsigned short u2_lead_time;
-    unsigned short u2_trail_time;
+    uint16_t u2_muon_channel;
+    uint16_t u2_lead_time;
+    uint16_t u2_trail_time;
 };
    
 
@@ -61,17 +61,17 @@ class bx_muon_raw_event {
     const bx_muon_raw_hit& get_raw_hit (int i) const { return raw_hits[i]; }
     int get_raw_nhits              ()      const {return raw_hits.size();}
     const bx_muon_raw_hit_vector&  get_raw_hits    ()      const {return raw_hits;}
-    unsigned long get_nedges       ()      const {return u4_nedges;}
-    unsigned long get_trgid        ()      const {return u4_trgid;}
-    unsigned long get_error_flag   ()      const {return u4_error_flag;}
+    uint32_t get_nedges       ()      const {return u4_nedges;}
+    uint32_t get_trgid        ()      const {return u4_trgid;}
+    uint32_t get_error_flag   ()      const {return u4_error_flag;}
 
   private:
     enum check_t {fine, missing_edge, inverted};
     check_t m_check_validity  (const bx_muon_edge&, const bx_muon_edge&) const;
 
-    unsigned long u4_nedges;
-    unsigned long u4_trgid;
-    unsigned long u4_error_flag;
+    uint32_t u4_nedges;
+    uint32_t u4_trgid;
+    uint32_t u4_error_flag;
     bx_muon_raw_hit_vector raw_hits;
 };
 

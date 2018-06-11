@@ -26,7 +26,7 @@ bx_calib_laben_time_align::bx_calib_laben_time_align (): bx_base_module("bx_cali
 void bx_calib_laben_time_align::begin () {
   get_message(bx_message::debug) << "begin" << dispatch;
   // creation of the 2-dim histogram 
-  int nch = constants::laben::channels;
+  int32_t nch = constants::laben::channels;
   bx_time_calib = new TH2S ("bx_time_calib", "Time Calibration Histogram",nch, 1, nch + 1, 1000, 500., 1000.);
   barn_interface::get ()->store (barn_interface::file, bx_time_calib, this);
   // creation of the result vectors
@@ -45,11 +45,11 @@ bx_echidna_event* bx_calib_laben_time_align::doit (bx_echidna_event *ev) {
   const bx_laben_event& el = ev->get_laben();
   // Update has data field
   if (el.get_raw_nhits ()) b_has_data = true;
-  int nhits = el.get_decoded_nhits();
-  for(int i = 0; i < nhits; i++){
+  int32_t nhits = el.get_decoded_nhits();
+  for(int32_t i = 0; i < nhits; i++){
     const bx_laben_decoded_hit& hit = el.get_decoded_hit(i);
     const bx_laben_raw_hit& rawhit = hit.get_raw_hit();
-    unsigned short ch = rawhit.get_logical_channel();
+    uint16_t ch = rawhit.get_logical_channel();
     double rawt = hit.get_raw_time();
     rawt -= el.get_laser_rawt();
     bx_time_calib->Fill (ch, rawt);
@@ -69,13 +69,13 @@ void bx_calib_laben_time_align::end () {
 
   // mean value of the laser peak
   TH1D *mean_proj = bx_time_calib->ProjectionY("mean_proj");
-  int max_bin = mean_proj->GetMaximumBin();
+  int32_t max_bin = mean_proj->GetMaximumBin();
   float offset = mean_proj->GetBinCenter(max_bin);
-  int entries_run = (int) mean_proj->Integral();
+  int32_t entries_run = (int32_t) mean_proj->Integral();
   float mean_entries = (float) entries_run / (constants::laben::channels);
 
   //number of events in the main and reflected peak
-  int peak_entries_run = (int) mean_proj->Integral(max_bin - 20, max_bin + 20);
+  int32_t peak_entries_run = (int32_t) mean_proj->Integral(max_bin - 20, max_bin + 20);
 
   mean_proj->Delete();
   get_message(bx_message::log) << "Mean value of the Laser Peak: " << offset << " ns" << dispatch;
@@ -85,13 +85,13 @@ void bx_calib_laben_time_align::end () {
   // fit of the single channel histos
   TF1* g0 = new TF1("g0","gaus",500.,1000.);
   Double_t tpar[3];
-  int not_connected = 0;
-  int no_light = 0;
-  int not_conv = 0;
-  int large_drift = 0;
+  int32_t not_connected = 0;
+  int32_t no_light = 0;
+  int32_t not_conv = 0;
+  int32_t large_drift = 0;
 
   // main loop
-  for (int i=0; i<constants::laben::channels; i++) {
+  for (int32_t i=0; i<constants::laben::channels; i++) {
    
     // discard non Pmt channels and disconnected PMTs
     const db_channel_laben &ch_info = dynamic_cast <const db_channel_laben&> (bx_dbi::get ()->get_channel (i + 1));
@@ -102,11 +102,11 @@ void bx_calib_laben_time_align::end () {
     }
 
     TH1D *proj = bx_time_calib->ProjectionY("proj", i+1, i+1);
-    int entries_channel = (int) proj->Integral();
-    int max_bin_channel = proj->GetMaximumBin();
-    int max_used = max_bin_channel;
+    int32_t entries_channel = (int32_t) proj->Integral();
+    int32_t max_bin_channel = proj->GetMaximumBin();
+    int32_t max_used = max_bin_channel;
     if (max_bin_channel < 240 || max_bin_channel > 340) max_used = max_bin;
-    int peak_entries_channel = (int) proj->Integral(max_used - 20, max_used + 20);
+    int32_t peak_entries_channel = (int32_t) proj->Integral(max_used - 20, max_used + 20);
 
     // discard channels with no light 
     if (entries_channel == 0 ){
@@ -142,14 +142,14 @@ void bx_calib_laben_time_align::end () {
     tpar[2] = 3.;
     g0->SetParameters(&tpar[0]);
     g0->SetRange(tpar[1] - 12., tpar[1] + 12.);
-    int FitResult = proj->Fit("g0","QRL0");
+    int32_t FitResult = proj->Fit("g0","QRL0");
     g0->GetParameters(tpar);
     proj->Delete();
     
     // discard channels with bad fit
     if (FitResult != 0 || fabs (tpar[1] - offset) > 20 || tpar[2] <= 0 || tpar[2] > 5 ){
       get_message(bx_message::log) << "Pmt " << i+1 << ": bad fit; entries = " 
-	<< entries_channel << "; peak = " << (int) (tpar[1] - offset) << "; sigma = " << (int) tpar[2] << dispatch;
+	<< entries_channel << "; peak = " << (int32_t) (tpar[1] - offset) << "; sigma = " << (int32_t) tpar[2] << dispatch;
       not_conv++;  
       //check if the previous values were ok and if yes set the current vector top these values 
       if(fabs(run_info.get_laben_time_offset (i+1)) > 0 && run_info.get_laben_time_sigma(i+1) > 0){
@@ -173,11 +173,11 @@ void bx_calib_laben_time_align::end () {
     f_time_offset[i] = (float) tpar[1] - offset;
     f_time_sigma[i]  = (float) tpar[2];
     get_message(bx_message::log) << "Pmt " << i+1 << ": well calibrated; entries = " << entries_channel
-      << " ; peak = " << (int) (tpar[1] - offset) << " ; sigma = " << (int) tpar[2] << dispatch;
+      << " ; peak = " << (int32_t) (tpar[1] - offset) << " ; sigma = " << (int32_t) tpar[2] << dispatch;
   }
   g0->Delete();
 
-  int good_ch = constants::laben::channels - not_connected - no_light - not_conv;
+  int32_t good_ch = constants::laben::channels - not_connected - no_light - not_conv;
   
   get_message(bx_message::info) << not_connected << " channels not connected to any Pmt" << dispatch;
   get_message(bx_message::info) << no_light << " channels with no direct light" << dispatch;
@@ -190,7 +190,7 @@ void bx_calib_laben_time_align::end () {
     get_message(bx_message::warn) << "Too may channels have bad time calibration: DB tables will not be updated!" << dispatch;
   }
   else if (get_parameter ("write_calib").get_bool ()){//set visitors
-    for (int i=0; i<constants::laben::channels; i++) {
+    for (int32_t i=0; i<constants::laben::channels; i++) {
       run_info.set_laben_time_offset (i + 1, f_time_offset[i], this);
       run_info.set_laben_time_sigma (i + 1, f_time_sigma[i], this);
       get_message(bx_message::log) << "Values in DB: lG: "<< i + 1 << " peak " <<  f_time_offset[i] << " rms " <<  f_time_sigma[i]  << dispatch;

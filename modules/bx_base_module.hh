@@ -29,10 +29,12 @@
 #include "bx_named.hh"
 #include "bx_detector.hh"
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 #include <iostream>
 #include <iomanip>
+#include <RVersion.h>
 
 class bx_echidna_event;
 
@@ -54,7 +56,7 @@ class bx_base_module: public bx_named {
       // Get the module role, status, priority
     module_role get_role () const { return i_role; }
     bool is_enabled () 	const { return b_enabled; }
-    int get_priority () const { return get_parameter ("priority").get_int (); } 
+    int32_t get_priority () const { return get_parameter ("priority").get_int (); } 
 
       // Override bx_named::set_parameter to keep track of b_enabled
     virtual void set_parameter (const std::string& name, const vdt& value);
@@ -96,7 +98,7 @@ class bx_base_module: public bx_named {
   private:
     module_role i_role;
     bool b_enabled;
-    long int i4_priority;
+    int32_t i4_priority;
 
     std::vector<bx_base_event::event_stage> trigger_requirements, laben_requirements, muon_requirements;
     std::vector<bx_trigger_event::trigger_type> trg_type_requirements;

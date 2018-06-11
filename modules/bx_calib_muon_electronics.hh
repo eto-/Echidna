@@ -41,8 +41,8 @@ class bx_calib_muon_electronics : public bx_base_module {
     virtual void end ();
 
   private:
-    int  nevents_per_tt[4];
-    int* nhits_per_tt_mch[4];
+    int32_t  nevents_per_tt[4];
+    int32_t* nhits_per_tt_mch[4];
       
     float f_dead;
     float f_low_eff[4];
@@ -80,7 +80,7 @@ class bx_calib_muon_electronics : public bx_base_module {
     muon     = 3,
   };
 
-  std::cmap <int, std::string> trg_names;
+  std::cmap <int32_t, std::string> trg_names;
 };
 
 #endif

@@ -41,8 +41,8 @@ class bx_calib_laben_decoding: public bx_base_module {
     virtual void end ();
   private:
   // this section is free; add here members, methods, histo pointers
-    int check_reference_lg;
-    int  limit_nlg_precalib_not_ok;
+    int32_t check_reference_lg;
+    int32_t  limit_nlg_precalib_not_ok;
     double trigger_sum;
     double peak_mean,peak_rms;
     double mean_limit_single,rms_limit_single;
@@ -65,16 +65,16 @@ class bx_calib_laben_decoding: public bx_base_module {
     TH2F* time_vs_channel_good;
     TH1D* time_vs_channel_good_central;
 
-  //std::vector<int> new_bad_channels_list;
-  // std::vector<int> new_off_channels_list;   
-  // std::vector<int> prev_bad_channels_list;
-  // std::vector<int> prev_off_channels_list;   
-    std::vector<int> bad_channels_list;
-    std::vector<int> off_channels_list;   
+  //std::vector<int32_t> new_bad_channels_list;
+  // std::vector<int32_t> new_off_channels_list;   
+  // std::vector<int32_t> prev_bad_channels_list;
+  // std::vector<int32_t> prev_off_channels_list;   
+    std::vector<int32_t> bad_channels_list;
+    std::vector<int32_t> off_channels_list;   
     double rms_old,rms_clean;  
     double mean_old,mean_clean;
 
-    void end_1000ev(int indx);
+    void end_1000ev(int32_t indx);
   
 };
 

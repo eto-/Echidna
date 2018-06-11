@@ -21,13 +21,13 @@
 
 class bx_mctruth_hit {
 public:
-  bx_mctruth_hit ( unsigned short lg, float time);
+  bx_mctruth_hit ( uint16_t lg, float time);
 
-  unsigned short get_lg () const { return u2_lg; }
+  uint16_t get_lg () const { return u2_lg; }
   float        get_time () const { return f4_time; } 
 
 private:
-  unsigned short u2_lg;
+  uint16_t u2_lg;
   float          f4_time;
 };
 
@@ -94,7 +94,7 @@ public:
 
   bx_mctruth_frame ( const char* disk_event);
 
-  unsigned short get_file_id () const { return u2_file_id;         }
+  uint16_t get_file_id () const { return u2_file_id;         }
   double get_elec_event_time () const { return f8_elec_event_time; }
   int    get_event_id        () const { return i4_event_id;        }
   int    get_n_sequence      () const { return i4_n_sequence;      }
@@ -121,7 +121,7 @@ public:
   const bx_mctruth_user&     get_user     (int i) const { return users_v[i];     }
 
 private:
-  unsigned short u2_file_id;
+  uint16_t u2_file_id;
   double         f8_elec_event_time;    // relative to trg time
   int            i4_event_id;           // Event ID
   int            i4_n_sequence;         // Sequence number of isotope in the chain
@@ -154,13 +154,13 @@ class bx_mctruth_event:
     virtual ~bx_mctruth_event () {}
 
     bool is_data() const { return b_is_data; }
-    signed short get_trigger_jitter   () const { return i2_trigger_jitter; }
-    unsigned short get_nframes () const { return frame_v.size(); }
+    int16_t get_trigger_jitter   () const { return i2_trigger_jitter; }
+    uint16_t get_nframes () const { return frame_v.size(); }
     const bx_mctruth_frame& get_frame (int i) const { return frame_v[i]; }
 
   private:
     bool b_is_data;    
-    signed short i2_trigger_jitter;
+    int16_t i2_trigger_jitter;
     std::vector<bx_mctruth_frame> frame_v;
 };
 

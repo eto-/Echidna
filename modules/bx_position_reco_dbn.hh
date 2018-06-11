@@ -25,9 +25,9 @@ class bx_position_reco_dbn: public bx_base_module {
     virtual void begin ();
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
-    double my_fcn (int npar, double *x, double *grad, int iflag);
+    double my_fcn (int32_t npar, double *x, double *grad, int32_t iflag);
 
-    static const unsigned short n_shell = 5;
+    static const uint16_t n_shell = 5;
     static const float shell_external_radius[n_shell];
   private:
     double f8_first_hits_gate;
@@ -41,12 +41,12 @@ class bx_position_reco_dbn: public bx_base_module {
     TH2F *p_iconv;
     flight_path path;
 
-    int i4_minuit_error_count;
+    int32_t i4_minuit_error_count;
 
       // to be used in my_fcn (see minuit root workaround)
     bx_echidna_event *p_fit_ev;
-    int i4_fit_cluster;
-    int i4_n_iterations;
+    int32_t i4_fit_cluster;
+    int32_t i4_n_iterations;
 };
 
 #endif

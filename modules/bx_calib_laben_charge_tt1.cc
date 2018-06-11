@@ -20,7 +20,7 @@ bx_calib_laben_charge_tt1::bx_calib_laben_charge_tt1 (): bx_base_module("bx_cali
 void bx_calib_laben_charge_tt1::begin () {
   get_message(bx_message::debug) << "begin" << dispatch;
   // creation of the 2-dim histogram 
-  int nch = constants::laben::channels;
+  int32_t nch = constants::laben::channels;
   bx_adc_charge_tt1 = new TH2S ("bx_adc_charge_tt1", "ADC Charge Calibration Histogram", nch, 1, nch + 1, 511, -255.5, 255.5);
   barn_interface::get ()->store (barn_interface::file, bx_adc_charge_tt1, this);
    
@@ -82,13 +82,13 @@ void bx_calib_laben_charge_tt1::begin () {
    //select 1 cluster events and btb inputs
    if (ev->get_laben ().get_nclusters () == 1 && ev->get_trigger().get_btb_inputs() == 0) {
      //select low energy events an dposition R < 4.2
-     int nhits =  ev->get_laben ().get_cluster (0).get_clustered_nhits (); 
+     int32_t nhits =  ev->get_laben ().get_cluster (0).get_clustered_nhits (); 
      if(nhits < 100) {
        double radius = ev->get_laben().get_cluster(0).get_baricenter().get_r ();
        if (radius < 4.2){
 	   nTriggers++;
-	 for(int i = 0; i < nhits; i++){
-	   int lg = ev->get_laben ().get_cluster (0).get_clustered_hit(i).get_decoded_hit ().get_raw_hit ().get_logical_channel ();
+	 for(int32_t i = 0; i < nhits; i++){
+	   int32_t lg = ev->get_laben ().get_cluster (0).get_clustered_hit(i).get_decoded_hit ().get_raw_hit ().get_logical_channel ();
 	   float adc = ev->get_laben ().get_cluster (0).get_clustered_hit(i).get_decoded_hit ().get_charge_bin();
 	   bx_adc_charge_tt1->Fill (lg, adc);
 	}
@@ -123,7 +123,7 @@ void bx_calib_laben_charge_tt1::end () {
    db_run& run_info = bx_dbi::get()->get_run ();
   
   //initialize vectors which will set the visitors at the end to the values from the previous run
-  for (int i = 0; i < constants::laben::channels; i++) {
+  for (int32_t i = 0; i < constants::laben::channels; i++) {
     f_charge_peak[i] = run_info.get_laben_charge_tt1_peak (i + 1);
     f_charge_sigma[i]  = run_info.get_laben_charge_tt1_sigma (i + 1);
     f_charge_mean[i]  = run_info.get_laben_charge_tt1_mean (i + 1);
@@ -137,7 +137,7 @@ void bx_calib_laben_charge_tt1::end () {
   mean_proj->SetAxisRange(5,220);
   float peak_run = mean_proj->GetBinCenter(mean_proj->GetMaximumBin());
   float mean_run = mean_proj->GetMean ();
-  int entries = (Int_t) mean_proj->Integral();
+  int32_t entries = (Int_t) mean_proj->Integral();
   float mean_entries = (float) entries/(constants::laben::channels);
   mean_proj->Delete();
   get_message(bx_message::log) << "Laser Peak (projection for all lg) in this run: " << peak_run << " ADC bin" << dispatch;
@@ -146,14 +146,14 @@ void bx_calib_laben_charge_tt1::end () {
   
   // fit function for the single channel histos
 
-  int not_connected = 0;
-  int no_light = 0;
-  int too_low = 0;
-  int not_conv = 0;
-  int large_drift = 0;
+  int32_t not_connected = 0;
+  int32_t no_light = 0;
+  int32_t too_low = 0;
+  int32_t not_conv = 0;
+  int32_t large_drift = 0;
 
     //some parameters for the fit 
-  int MaxBin;
+  int32_t MaxBin;
   double maxBinCont; 
   double mean;
   double rms;
@@ -162,10 +162,10 @@ void bx_calib_laben_charge_tt1::end () {
 
     //fit paramteres
   double full_thresh = 15;
-  int maxFullBin = 0; //
+  int32_t maxFullBin = 0; //
 
     //number of bins with negative charge
-  int ofs = 255; 
+  int32_t ofs = 255; 
 
   double Amp1, erAmp1;
   double C1, erC1;    
@@ -177,7 +177,7 @@ void bx_calib_laben_charge_tt1::end () {
   double Chi2_NDF = -1 ;
 
     //looop on single channels
-  for (int i = 0; i < constants::laben::channels; i++) {
+  for (int32_t i = 0; i < constants::laben::channels; i++) {
 
       // discard non Pmt channels (empty)  and PMTs which are disconnected
     const db_channel_laben &ch_info = dynamic_cast <const db_channel_laben&> (bx_dbi::get ()->get_channel (i + 1));
@@ -203,7 +203,7 @@ void bx_calib_laben_charge_tt1::end () {
      //single channel mean and rms
     mean = proj->GetMean();
     rms = proj->GetRMS();
-    entries = (int) proj->Integral();
+    entries = (int32_t) proj->Integral();
     P0 = 1. - ((double) entries / (double) nTriggers);
     if (P0 < 1.) Mu = -log(P0);
     
@@ -212,7 +212,7 @@ void bx_calib_laben_charge_tt1::end () {
 
 
     // discard channels with no direct light
-    if (entries < (int) mean_entries/100 || entries < 100) {
+    if (entries < (int32_t) mean_entries/100 || entries < 100) {
       get_message(bx_message::log) << "Connected Pmt in ordinary lg " << i+1 << ": low statistics; entries = " << entries << dispatch;
       proj->Delete();
       no_light++;  
@@ -233,13 +233,13 @@ void bx_calib_laben_charge_tt1::end () {
     //fitting 3 Gaussians
     
     //search for maximum full bin
-    int minFullBin = -255;
-    for(int ibin = 1 + ofs; ibin < (255 +ofs); ibin++) {
+    int32_t minFullBin = -255;
+    for(int32_t ibin = 1 + ofs; ibin < (255 +ofs); ibin++) {
       if(proj->GetBinContent(ibin) > full_thresh && minFullBin == -255)  minFullBin = ibin -ofs;
       if(proj->GetBinContent(ibin) > full_thresh)  maxFullBin = ibin -ofs;
     }
 
-    int FitResult;
+    int32_t FitResult;
 
     if (maxFullBin < 10) {    //if only low energy below 10 adc bins are filled, not fitting
       f_charge_peak[i] = proj->GetMaximumBin () - ofs;
@@ -262,8 +262,8 @@ void bx_calib_laben_charge_tt1::end () {
 	maxBinCont = proj->GetBinContent (MaxBin); 
       }
       else {   //maximum is below 10
-	maxBinCont = proj->GetBinContent(int(mean)+ofs);
-	MaxBin = int(mean)+ofs;
+	maxBinCont = proj->GetBinContent(int32_t(mean)+ofs);
+	MaxBin = int32_t(mean)+ofs;
       }
     
       // set and limit fit paramteres
@@ -402,7 +402,7 @@ void bx_calib_laben_charge_tt1::end () {
   }//end of loop in channels	 
   
   
-  int good_ch = constants::laben::channels - not_connected - no_light - too_low - not_conv;
+  int32_t good_ch = constants::laben::channels - not_connected - no_light - too_low - not_conv;
       
   get_message(bx_message::info) << not_connected << " channels not connected to any Pmt" << dispatch;
   get_message(bx_message::info) << no_light << " channels with no direct light" << dispatch;
@@ -414,18 +414,18 @@ void bx_calib_laben_charge_tt1::end () {
   //find last laser and neutrino calib run
   //  std::ostringstream where_str;
   //bx_dbi *dbi = bx_dbi::get ();
-  //int last_laser_pmt_calib_run = dbi->query (bx_dbi::bx_calib, "\"LaserPmtCalibration\"", where_str.str (), "MAX(\"RunNumber\")", "", -1)["max"][0].get_int ();
-  //int last_neutrino_pmt_calib_run = dbi->query (bx_dbi::bx_calib, "\"NeutrinoPmtCalibration\"", where_str.str (), "MAX(\"RunNumber\")", "", -1)["max"][0].get_int ();
+  //int32_t last_laser_pmt_calib_run = dbi->query (bx_dbi::bx_calib, "\"LaserPmtCalibration\"", where_str.str (), "MAX(\"RunNumber\")", "", -1)["max"][0].get_int ();
+  //int32_t last_neutrino_pmt_calib_run = dbi->query (bx_dbi::bx_calib, "\"NeutrinoPmtCalibration\"", where_str.str (), "MAX(\"RunNumber\")", "", -1)["max"][0].get_int ();
   //std::cout << "Laser calib is " << last_laser_pmt_calib_run << " and neutrino run " << last_neutrino_pmt_calib_run << " and current run " << current_run << std::endl;
 
     //fill the visitors to db_run
-  int final_db_write = 0;
+  int32_t final_db_write = 0;
   if (get_parameter ("db_write").get_bool () == 2) final_db_write = 1;
   if (nTriggers > get_parameter ("min_trig").get_int () && get_parameter ("db_write").get_bool () && (float)good_ch/(constants::laben::channels - not_connected) > 0.8) final_db_write = 1;
 
   if (final_db_write) {
     //set the visitors
-    for (int i=0; i<constants::laben::channels; i++) {
+    for (int32_t i=0; i<constants::laben::channels; i++) {
       run_info.set_laben_charge_tt1_peak (i + 1, f_charge_peak[i], this);
       run_info.set_laben_charge_tt1_sigma (i + 1, f_charge_sigma[i], this);
       run_info.set_laben_charge_tt1_mean (i + 1, f_charge_mean[i], this);

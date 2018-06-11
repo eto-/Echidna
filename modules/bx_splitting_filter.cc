@@ -60,8 +60,13 @@ void bx_splitting_filter::begin () {
   barn_interface::get ()->store (barn_interface::file, h_shape_out, this);
   barn_interface::get ()->store (barn_interface::file, peak_time_vs_energy, this);
   S = new TSpectrum (max_npeaks);
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  tmp_in = new double [i4_window_width];
+  spectrum = new double [i4_window_width];
+#else
   tmp_in = new float [i4_window_width];
   spectrum = new float [i4_window_width];
+#endif
 
     // Internal buffer for FFT operations
   double *sample = (double *)fftw_malloc (sizeof(double) * i4_window_width);
@@ -79,7 +84,7 @@ void bx_splitting_filter::begin () {
     // Fill the sample; time invert and translate the sample to the end of the histogram to use time aliasing
     // Calculate the integrals
   f8_sample_area = f8_sample_square_area = 0;
-  for (int i = 0; i < i4_window_width; i++) {
+  for (int32_t i = 0; i < i4_window_width; i++) {
     if (i < i4_sample_ramp_lenght) sample[i4_window_width - 1 - i] = double(i + 1) / i4_sample_ramp_lenght; // Have maximun at 1
     else if (i < i4_sample_width) sample[i4_window_width - 1 - i] = ::expf ((i4_sample_ramp_lenght - i - 1) / f4_sample_exp_tao);
     else sample[i4_window_width - 1 - i] = 0;
@@ -96,7 +101,7 @@ void bx_splitting_filter::begin () {
 
 bx_echidna_event* bx_splitting_filter::doit (bx_echidna_event *ev) {
     // Loop on every cluster
-  for (int i = 0; i < ev->get_laben ().get_nclusters (); i++) {
+  for (int32_t i = 0; i < ev->get_laben ().get_nclusters (); i++) {
       // Get cluster reference
     bx_laben_cluster& cluster = ev->get_laben ().get_cluster (i);
     
@@ -104,9 +109,9 @@ bx_echidna_event* bx_splitting_filter::doit (bx_echidna_event *ev) {
 
       // Fill the SHAPE_IN histogram
     std::fill_n (shape_in, i4_window_width, 0);
-    for (int j = 0; j < cluster.get_clustered_nhits (); j++) {
+    for (int32_t j = 0; j < cluster.get_clustered_nhits (); j++) {
       const bx_laben_clustered_hit& hit = cluster.get_clustered_hit (j);
-      int bin = int (::roundf (hit.get_time ()) + i4_zero_bin);
+      int32_t bin = int32_t (::roundf (hit.get_time ()) + i4_zero_bin);
       if (bin >= i4_window_width) continue;
       shape_in[bin] ++;
     }
@@ -117,7 +122,7 @@ bx_echidna_event* bx_splitting_filter::doit (bx_echidna_event *ev) {
       // Multiply the 2 complex vector (see fftw reference for explanation of the math)
     shape_out_F[0] = sample_F[0] * shape_in_F[0];
     shape_out_F[i4_window_width / 2] *= sample_F[i4_window_width / 2];
-    for (int j = 1; j < i4_window_width / 2; j++) {
+    for (int32_t j = 1; j < i4_window_width / 2; j++) {
       double re = shape_in_F[j] * sample_F[j] - shape_in_F[i4_window_width - j] * sample_F[i4_window_width - j];
       double im = shape_in_F[j] * sample_F[i4_window_width - j] + shape_in_F[i4_window_width - j] * sample_F[j];
       shape_out_F[j] = re;
@@ -129,14 +134,14 @@ bx_echidna_event* bx_splitting_filter::doit (bx_echidna_event *ev) {
     fftw_execute (plan_out);
 
       // Normalize (since fftw does not) and strip ripple + undershoots
-    for (int i = 0; i < i4_window_width; i++) {
+    for (int32_t i = 0; i < i4_window_width; i++) {
       shape_out[i] /= i4_window_width;
       if (shape_out[i] < 0.1) shape_out[i] = 0;
     }
 
       // 2) Search for peaks
     reset_histograms (ev->get_event_number ());
-    int npeaks = 0;
+    int32_t npeaks = 0;
     float peaks[max_npeaks];
     if (peak_mode == tspectrum_simple) {
       h_shape_out->SetAxisRange (-i4_zero_bin, 500);
@@ -146,8 +151,8 @@ bx_echidna_event* bx_splitting_filter::doit (bx_echidna_event *ev) {
     } else if (peak_mode == tspectrum_highres) {
       std::copy (shape_out, shape_out + i4_window_width, tmp_in);
       npeaks = S->SearchHighRes (tmp_in, spectrum, i4_window_width, 8., 2, false, 3, false, 3);
-      for (int i = 0; i < npeaks; i++) {
-        int t = int(S->GetPositionX ()[i]);
+      for (int32_t i = 0; i < npeaks; i++) {
+        int32_t t = int32_t(S->GetPositionX ()[i]);
         if (t >= i4_window_width) t = i4_window_width - 1;
         peaks[i] = t - i4_zero_bin;
       }
@@ -155,11 +160,11 @@ bx_echidna_event* bx_splitting_filter::doit (bx_echidna_event *ev) {
     std::sort (peaks, peaks + npeaks);
 
       // 3) Validate peaks
-    int end_prev_peak = 0;
-    for (int i = 0; i < npeaks; i++) {
+    int32_t end_prev_peak = 0;
+    for (int32_t i = 0; i < npeaks; i++) {
       if (peaks[i] < i4_sample_width / -2) continue; // ignore fluctuation at the beginning of the shape
-      int peak_bin = int(peaks[i]) + i4_zero_bin;
-      int start_peak = 0;
+      int32_t peak_bin = int32_t(peaks[i]) + i4_zero_bin;
+      int32_t start_peak = 0;
       switch (peak_mode) {
         case tspectrum_simple:
           start_peak = search_peak_base (shape_out, peak_bin, end_prev_peak);
@@ -169,8 +174,8 @@ bx_echidna_event* bx_splitting_filter::doit (bx_echidna_event *ev) {
           break;
       };
       float charge = shape_out[peak_bin] - shape_out[start_peak];
-      int duration = peak_bin - start_peak;
-      int t = peak_bin - i4_zero_bin;
+      int32_t duration = peak_bin - start_peak;
+      int32_t t = peak_bin - i4_zero_bin;
       if (duration < i4_time_threshold) ignore_peak ("short peak", i, t, charge, duration);
       else if (charge < i4_charge_threshold) ignore_peak ("under-threshold", i, t, charge, duration);
       else if (charge < ::sqrtf (shape_out[peak_bin])) ignore_peak ("poissoninan", i, t, charge, duration);
@@ -196,10 +201,10 @@ void bx_splitting_filter::end () {
   fftw_destroy_plan (plan_out);
 }
 
-template<typename FLOAT> int bx_splitting_filter::search_peak_base (FLOAT *v, int& peak, int low_limit) {
+template<typename FLOAT> int32_t bx_splitting_filter::search_peak_base (FLOAT *v, int32_t& peak, int32_t low_limit) {
   if (peak - low_limit < 4) return low_limit;
-  int new_peak = peak;
-  for (int i = peak; i > low_limit + 4; i--) {
+  int32_t new_peak = peak;
+  for (int32_t i = peak; i > low_limit + 4; i--) {
     float d = ::sqrtf (v[i]) * -0.03;
     if ((v[i - 1] - v[i]) < d || v[i] < 0.2) break;
     new_peak = i - 1;
@@ -207,15 +212,15 @@ template<typename FLOAT> int bx_splitting_filter::search_peak_base (FLOAT *v, in
   //if (new_peak != peak) std::cout << "peak moved from " << peak << " to " << new_peak << std::endl;
   peak = new_peak;
 
-  for (int i = peak; i > low_limit + 4; i--) {
+  for (int32_t i = peak; i > low_limit + 4; i--) {
     bool negative_derivate = true;
     bool zero = true;
-    for (int j = 0; j < 4; j++) {
+    for (int32_t j = 0; j < 4; j++) {
       float d = v[i - j] - v[i - j - 1];
       if (d > -0.2 || v[i] < 0.2) negative_derivate = false;
       if (v[i] > 0.2) zero = false;
     }
-    //cout << "t " << i - i4_zero_bin << "ns " << negative_derivate; for (int j = 0; j < 4; j++) cout << " " << v[i - j]; cout << endl;
+    //cout << "t " << i - i4_zero_bin << "ns " << negative_derivate; for (int32_t j = 0; j < 4; j++) cout << " " << v[i - j]; cout << endl;
     if (zero) return i;
 
     if (negative_derivate) return i;
@@ -223,15 +228,15 @@ template<typename FLOAT> int bx_splitting_filter::search_peak_base (FLOAT *v, in
   return low_limit;
 }
 
-void bx_splitting_filter::ignore_peak (const std::string& msg, int current_peak, float t, float charge, float duration) {
+void bx_splitting_filter::ignore_peak (const std::string& msg, int32_t current_peak, float t, float charge, float duration) {
   bx_message::message_level level = bx_message::debug;
   if (current_peak == 0) level = bx_message::log;
   //get_message (level) << "ignoring " << msg << " peak " << current_peak << " at time " << t << "ns with charge " << charge << "hits and duration " << duration << "ns"<< dispatch;
 }
 
-void bx_splitting_filter::reset_histograms (int evnum) {
+void bx_splitting_filter::reset_histograms (int32_t evnum) {
   h_shape_out->Reset ();
-  for (int i = 0; i < i4_window_width; i++) {
+  for (int32_t i = 0; i < i4_window_width; i++) {
     if (isnan (shape_out[i])) get_message (bx_message::critic) << "NaN found in shape_out for event " << evnum << " for bin " << i << dispatch;
     if (isnan (shape_out_F[i])) get_message (bx_message::critic) << "NaN found in shape_out_F for event " << evnum << " for bin " << i << dispatch;
     h_shape_out->Fill (i - i4_zero_bin, shape_out[i]);

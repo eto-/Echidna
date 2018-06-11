@@ -17,7 +17,7 @@
 namespace { 
   // MINUIT ROOT workaround
   bx_position_reco_lngs *current_module;
-  void fcn (int &npar, double *gin, double &f, double *x, int iflag) { f = current_module->my_fcn (x); }
+  void fcn (int32_t &npar, double *gin, double &f, double *x, int32_t iflag) { f = current_module->my_fcn (x); }
 };
 
 // ctor
@@ -61,7 +61,7 @@ void bx_position_reco_lngs::begin () {
   f4_t_0 = 35. + (f4_ref_index*radius/speed_of_light_m_ns);
 //  get_message(bx_message::log) << "T0 starting point" << f4_t_0 << dispatch;
   
-  for ( int i=0; i<constants::laben::channels; i++ ) {
+  for ( int32_t i=0; i<constants::laben::channels; i++ ) {
     const db_channel_laben& channel_info = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(i+1));
     ((*f4_pmt_positions)[i])(0) = channel_info.pmt_x();
     ((*f4_pmt_positions)[i])(1) = channel_info.pmt_y();
@@ -91,7 +91,7 @@ void bx_position_reco_lngs::begin () {
   double pdf_data8[pdf_time_v.size()],pdf_data9[pdf_time_v.size()];
   double pdf_data10[pdf_time_v.size()];
 
-  for ( int i=0; i<(int)pdf_time_v.size(); i++ ) {
+  for ( int32_t i=0; i<(int32_t)pdf_time_v.size(); i++ ) {
     pdf_time[i] = pdf_time_v[i];
     pdf_data[i] = pdf_data_v[i];
 
@@ -126,7 +126,7 @@ bx_echidna_event* bx_position_reco_lngs::doit (bx_echidna_event *ev) {
   // Loop on every cluster
   Int_t size_clusters = ev->get_laben ().get_nclusters ();
   Int_t size_mclusters = ev->get_laben ().get_nclusters_muons (); 
-  for (int i = 0; i < size_clusters + size_mclusters; i++) {
+  for (int32_t i = 0; i < size_clusters + size_mclusters; i++) {
     bx_laben_cluster& cluster = (i < size_clusters ) ? ev->get_laben().get_cluster(i) : ev->get_laben().get_cluster_muon(i-size_clusters);
     const bx_baricenter& b = cluster.get_baricenter();
     bx_position_lngs& pos = cluster.get_position_lngs();
@@ -156,17 +156,17 @@ bx_echidna_event* bx_position_reco_lngs::doit (bx_echidna_event *ev) {
 //  ierr=0 ok; ierr=1 command blank; ierr=2 command line unreadable; ierr=3 unknown command; ierr=4 abnormal termination;
 //    
     double position[4], er[4], position_min[3];
-    int ierr = 999;
-    for (int k=0; k<10;k++){
+    int32_t ierr = 999;
+    for (int32_t k=0; k<10;k++){
       ierr= p_minuit->Command("MIN");
       if(ierr==0) {
-	for ( int j=0; j<4; j++ ) p_minuit->GetParameter(j, position[j], er[j]);
+	for ( int32_t j=0; j<4; j++ ) p_minuit->GetParameter(j, position[j], er[j]);
 	position_min[0]=position[0];
 	position_min[1]=position[1];
 	position_min[2]=position[2];
 
 	p_minuit->Command("IMP");
-	for ( int j=0; j<4; j++ ) p_minuit->GetParameter(j, position[j], er[j]);
+	for ( int32_t j=0; j<4; j++ ) p_minuit->GetParameter(j, position[j], er[j]);
 	double dist_min=sqrt((position[0]-position_min[0])*(position[0]-position_min[0])+(position[1]-position_min[1])*(position[1]-position_min[1])+(position[2]-position_min[2])*(position[2]-position_min[2]));
 	if(dist_min < 0.1) break;
       }
@@ -174,7 +174,7 @@ bx_echidna_event* bx_position_reco_lngs::doit (bx_echidna_event *ev) {
     p_minuit->Command ("HESSE");
 //
 
-    int nvpar,nparx,iconv;
+    int32_t nvpar,nparx,iconv;
 //  nvpar=number of variable parameters
 //  nparx=highest parameter number defined by user
 //  iconv indicator of goodness of covariance 
@@ -190,7 +190,7 @@ bx_echidna_event* bx_position_reco_lngs::doit (bx_echidna_event *ev) {
 //
     p_minuit->mnstat(amin,edm,errdef,nvpar,nparx,iconv);
 //    
-    for ( int j=0; j<4; j++ ) {
+    for ( int32_t j=0; j<4; j++ ) {
       p_minuit->GetParameter(j, position[j], er[j]);
 //      p_minuit->mnerrs(j,eplus[j],eminus[j],eparab,globcc);
 //      error[j] = ( fabs(eplus[j]) + fabs(eminus[j]) )/2.;
@@ -300,7 +300,7 @@ void bx_position_reco_lngs::end () {
 double bx_position_reco_lngs::my_fcn (double *x) {
 
 //  const bx_laben_cluster& cluster = p_fit_ev->get_laben().get_cluster(i4_fit_cluster);
-//  int n_evento = p_fit_ev->get_event_number();
+//  int32_t n_evento = p_fit_ev->get_event_number();
   TVector3 ev_position(x);
   TVector3 distance,distance_normal_vector;
   double ev_time = -x[3];
@@ -312,7 +312,7 @@ double bx_position_reco_lngs::my_fcn (double *x) {
 
       
   // Loop on every hit
-  for (int i = 0; i < p_fit_clu->get_clustered_nhits (); i++) {
+  for (int32_t i = 0; i < p_fit_clu->get_clustered_nhits (); i++) {
     // Get clustered hit reference and db_channel pointer
     const bx_laben_clustered_hit& hit = p_fit_clu->get_clustered_hit(i);
     const bx_laben_decoded_hit& dhit = hit.get_decoded_hit();
@@ -320,7 +320,7 @@ double bx_position_reco_lngs::my_fcn (double *x) {
     if (!ch_info->is_ordinary ()) continue;
     if (hit.get_time() > f8_tmax) continue;
     
-    int index = ch_info->get_lg()-1;
+    int32_t index = ch_info->get_lg()-1;
     distance = (*f4_pmt_positions)[index] - ev_position;
     double path = distance.Mag(); 
       

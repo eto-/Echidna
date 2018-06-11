@@ -4,7 +4,7 @@ DIRS := event modules framework interface particleid mach4
 # Include path defined here
 INCLUDEFLAGS := $(patsubst %, -I%, $(DIRS)) -I. $(LOCAL_BOREX_INCLUDE)
 #CXXFLAGS := $(INCLUDEFLAGS) -Wall -Wno-non-virtual-dtor -m32
-CXXFLAGS := $(INCLUDEFLAGS) -Wall -Wno-non-virtual-dtor 
+CXXFLAGS := $(INCLUDEFLAGS) -Wall -Wno-non-virtual-dtor -Wno-deprecated -Wno-reorder
 
 # Add first libz
 #LDFLAGS := -lz -lfftw3 -lm $(LOCAL_BOREX_LIBS) -m32

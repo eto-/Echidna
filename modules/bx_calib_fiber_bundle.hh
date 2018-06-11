@@ -26,12 +26,12 @@ class bx_calib_fiber_bundle: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    int i4_times;
+    int32_t i4_times;
     float f_laser_low;
     float f_laser_high;
     float f_dark_low;
     float f_dark_high;
-    int n_bundles;
+    int32_t n_bundles;
     TH1F *p_timetot;
     TH2F *p_laser;
     TH2F *p_dark_noise;

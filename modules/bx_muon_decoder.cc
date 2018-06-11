@@ -54,7 +54,7 @@ void bx_muon_decoder::begin () {
 }
 
 bx_echidna_event* bx_muon_decoder::doit (bx_echidna_event *ev) {
-  const std::vector<int>& v = detector_interface::get ()->get_disabled_channels ();
+  const std::vector<int32_t>& v = detector_interface::get ()->get_disabled_channels ();
   if (v.size () != u4_n_disabled_channels) {
     for (unsigned i = 0; i < v.size (); i++) {
       if (v[i] > constants::muon::channel_offset && v[i] <= constants::muon::channel_offset + constants::laben::channels)
@@ -80,20 +80,20 @@ bx_echidna_event* bx_muon_decoder::doit (bx_echidna_event *ev) {
 
   // find integrity times for the 2 tdc boards (used for NEW tdcs only)
   double integrity_time      [constants::muon::tdc::max_boards]; // will stay 0 if not a laser event
-  int    n_integrity_channels[constants::muon::tdc::max_boards];
-  for (int i=0; i < constants::muon::tdc::max_boards; i++) {
+  int32_t    n_integrity_channels[constants::muon::tdc::max_boards];
+  for (int32_t i=0; i < constants::muon::tdc::max_boards; i++) {
     integrity_time[i] = 0.;
     n_integrity_channels[i] = 0;
   }
   if (is_new_tdc) {
-    for (int iHit=0 ; iHit<er.get_raw_nhits(); iHit++) {    
+    for (int32_t iHit=0 ; iHit<er.get_raw_nhits(); iHit++) {    
       const bx_muon_raw_hit& h = er.get_raw_hit(iHit);
       if (!is_integrity_channel(h)) continue;
 
       integrity_time[h.get_muon_channel() < constants::muon::tdc::channels_per_board] += h.get_lead_time();
       n_integrity_channels[h.get_muon_channel() < constants::muon::tdc::channels_per_board]++;
     }
-    for (int i=0; i < constants::muon::tdc::max_boards; i++) {
+    for (int32_t i=0; i < constants::muon::tdc::max_boards; i++) {
       if (n_integrity_channels[i] != 7)
         get_message(bx_message::warn) << "Strange number of integrity channels (" << n_integrity_channels[i] << ") on board " << i << dispatch;
       if (n_integrity_channels[i]) integrity_time[i] /= n_integrity_channels[i];
@@ -126,7 +126,7 @@ bx_echidna_event* bx_muon_decoder::doit (bx_echidna_event *ev) {
   }*/
 
   double time, charge;
-  for (int i=0 ; i<er.get_raw_nhits(); i++) {    
+  for (int32_t i=0 ; i<er.get_raw_nhits(); i++) {    
     const bx_muon_raw_hit& h = er.get_raw_hit(i);
 
     if (profile_info.logical_channel_description(h.get_logical_channel()) != db_profile::ordinary) continue;
@@ -174,7 +174,7 @@ bx_echidna_event* bx_muon_decoder::doit (bx_echidna_event *ev) {
     ew.nhits_per_channel_dec[h.get_muon_channel()]++;
   }  //end of loop over raw hits
 
-  for (int i=0 ; i< constants::muon::channels; i++) { if (ew.nhits_per_channel_dec[i]>0) ew.i4_decoded_npmts++; }
+  for (int32_t i=0 ; i< constants::muon::channels; i++) { if (ew.nhits_per_channel_dec[i]>0) ew.i4_decoded_npmts++; }
 
   er.mark_stage (bx_base_event::decoded);
 

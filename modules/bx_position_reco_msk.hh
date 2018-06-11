@@ -38,12 +38,12 @@ class bx_position_reco_msk : public bx_base_module {
 
      std::vector<TVector3> *f4_pmt_positions;
      std::vector<bool> *b_pmt_cone;
-     std::vector<int> i4_disabled_channels;
+     std::vector<int32_t> i4_disabled_channels;
 
      TMinuit *p_minuit;
      bx_echidna_event *p_fit_ev;
-     int i4_fit_cluster;
-     int i4_n_minuit_warns;
+     int32_t i4_fit_cluster;
+     int32_t i4_n_minuit_warns;
 
      TH1F *msk_x, *msk_y, *msk_z, *msk_t;
      TH1F *msk_r;

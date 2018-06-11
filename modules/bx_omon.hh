@@ -35,17 +35,17 @@ class bx_omon: public bx_base_module {
     virtual void end ();
   private:
   // this section is free; add here members, methods, histo pointers
-  //  int i4_times;
+  //  int32_t i4_times;
   //  std::vector<double> *my_vector;
   //  bool m_check_this_and_that(const bx_laben_event& er);
   //  TH1F* my_histo_check;
   //  TH2F* my_histo_compute;
-    int law, after_e, after_t, count;
+    int32_t law, after_e, after_t, count;
     time_t last_condition_time;
     std::string path;
     void update_histos(bx_echidna_event *ev); // update histograms with current event
-    int condition();      // calculate export condition
-    int reset_condition(); //
+    int32_t condition();      // calculate export condition
+    int32_t reset_condition(); //
     void export_ascii();  // if condition then export
     void MyDump1DHisto(TH1F*, FILE* );  //
     void ResetHistos(); // reset all histograms
@@ -89,12 +89,12 @@ class bx_omon: public bx_base_module {
       RawBaseLCh,
       TimeLCh,
       HistoryLCh;
-    int HisPmtCounts[MAXCHID];
+    int32_t HisPmtCounts[MAXCHID];
     float HisPmtOccupancy[MAXCHID];
-    int events;
-    int events_mu;
-    int run_number;
-    int trigger_type;
+    int32_t events;
+    int32_t events_mu;
+    int32_t run_number;
+    int32_t trigger_type;
     time_t last_update;
 
 // FWFD histograms
@@ -123,7 +123,7 @@ class bx_omon: public bx_base_module {
     TH1F* muHitsTotalHistory;
     TH1F* muHitsTotalDistribution;
     TH1F* ODQuasyEnergy;
-    int MuonPmtCounts[MAXOD];
+    int32_t MuonPmtCounts[MAXOD];
     float MuonPmtOccupancy[MAXOD];
 
 };

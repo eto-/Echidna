@@ -29,7 +29,7 @@ bx_pid_alphabeta::bx_pid_alphabeta (): bx_base_module("bx_pid_alphabeta", bx_bas
 void bx_pid_alphabeta::begin () {
 	
   const std::string path = get_parameter("alphabeta_file_path").get_string();
-  int run = bx_dbi::get()->get_run().get_number();
+  int32_t run = bx_dbi::get()->get_run().get_number();
 	
   std::string fName="";
   if ( search_for_right_file(path, run, fName) ) {
@@ -49,9 +49,9 @@ void bx_pid_alphabeta::begin () {
 	  fscanf(fp2,"%d",&fNBins);
 	  fscanf(fp2,"%d",&fBinSizeNs);
 		
-	  int dummy; 
+	  int32_t dummy; 
 
-	  for(int i=1; i<=fNBins; i++) {
+	  for(int32_t i=1; i<=fNBins; i++) {
 		  fscanf(fp2,"%d %f",&dummy, &(fGattiWeights[i]));
 		  if ( dummy != i ) {
 			  get_message(bx_message::warn) << "1 Error reading file i=" << dummy << " != " << i << dispatch;
@@ -59,7 +59,7 @@ void bx_pid_alphabeta::begin () {
 		  }
 	  }
 
-	  for(int i=1; i<=fNBins; i++) {
+	  for(int32_t i=1; i<=fNBins; i++) {
 		  fscanf(fp2,"%d %f",&dummy, &(fGattiWeightsC[i]));
 		  if ( dummy != i ) {
 			  get_message(bx_message::warn) << "2 Error reading file i=" << dummy << " != " << i << dispatch;
@@ -67,7 +67,7 @@ void bx_pid_alphabeta::begin () {
 	  	}
 	  }
 
-	  for(int i=1; i<=fNBins; i++) {
+	  for(int32_t i=1; i<=fNBins; i++) {
 		  fscanf(fp2,"%d %f",&dummy, &(fLkl[i]));
 		  if ( dummy != i ) {
 			  get_message(bx_message::warn) << "3 Error reading file i=" << dummy << " != " << i << dispatch;
@@ -75,7 +75,7 @@ void bx_pid_alphabeta::begin () {
 		  }
 	  }
 
-  	for(int i=1; i<=fNBins; i++) {
+  	for(int32_t i=1; i<=fNBins; i++) {
 	  	fscanf(fp2,"%d %f",&dummy, &(fLklC[i]));
 		  if ( dummy != i ) {
 			  get_message(bx_message::warn) << "4 Error reading file i=" << dummy << " != " << i << dispatch;
@@ -102,17 +102,17 @@ void bx_pid_alphabeta::begin () {
 bx_echidna_event* bx_pid_alphabeta::doit (bx_echidna_event *ev) {
 
         // get number of clusters
-	int nc = ev->get_laben().get_nclusters();
+	int32_t nc = ev->get_laben().get_nclusters();
 	if (nc <= 0) return ev;
 
 	// loop on clusters and compute alpha-beta variables
-	for(int iclus=0; iclus<nc; iclus++) {
+	for(int32_t iclus=0; iclus<nc; iclus++) {
 
 		// get echidna ab_cluster
 		bx_laben_ab_cluster& ab = ev->get_laben().get_ab_cluster(iclus);
 
 		// set variables to invalid values
-		for(int i=0; i<10; i++) ab.v_tailtot[i] = 2.;
+		for(int32_t i=0; i<10; i++) ab.v_tailtot[i] = 2.;
 		ab.f4_lkl       = -100.;
 		ab.f4_gatti     = -100.;
 		ab.f4_lklc      = -100.;
@@ -122,7 +122,7 @@ bx_echidna_event* bx_pid_alphabeta::doit (bx_echidna_event *ev) {
 		hSampleC->Reset();
 
 		// check that the cluster has some hits
-		int nhits = ev->get_laben().get_cluster(iclus).get_clustered_nhits();
+		int32_t nhits = ev->get_laben().get_cluster(iclus).get_clustered_nhits();
 		if ( nhits < fMinClusterSize )
 			continue;
 
@@ -130,7 +130,7 @@ bx_echidna_event* bx_pid_alphabeta::doit (bx_echidna_event *ev) {
 		fAB.set(*ev, iclus);
 
 		// compute alpha/beta variables: tailtot with tail between 40 and 130, step 10
-		for(int index=0; index<10; index++) {
+		for(int32_t index=0; index<10; index++) {
 			float tail = 40. + index*10.;
 			float aa = fAB.tailtot( tail );
 			if (aa > 0. && aa <= 1. )
@@ -139,7 +139,7 @@ bx_echidna_event* bx_pid_alphabeta::doit (bx_echidna_event *ev) {
 
 		// Fill histo of times (skip the first 2 and shift to avoid noise hit effects)
 		float shift_time = ab.get_rec_hit(2).get_time();
-		for (int  i=2; i < nhits; i++) hSample->Fill( ab.get_rec_hit(i).get_time()-shift_time );
+		for (int32_t  i=2; i < nhits; i++) hSample->Fill( ab.get_rec_hit(i).get_time()-shift_time );
 
 		// Normalize histo
 		float aa = hSample->Integral();
@@ -150,7 +150,7 @@ bx_echidna_event* bx_pid_alphabeta::doit (bx_echidna_event *ev) {
 
 
 		// Fill Cumulative histo
-		for(int i=1; i<=hSample->GetNbinsX(); i++) hSampleC->SetBinContent(i, hSample->Integral(1,i));
+		for(int32_t i=1; i<=hSample->GetNbinsX(); i++) hSampleC->SetBinContent(i, hSample->Integral(1,i));
 
 		// Normalize cumulative histo
 		aa = hSampleC->Integral();
@@ -163,7 +163,7 @@ bx_echidna_event* bx_pid_alphabeta::doit (bx_echidna_event *ev) {
 		float gattic    = 0.;
 		float lkl       = 0.;
 		float lklc      = 0.;
-		for(int i=1; i<=hSample->GetNbinsX(); i++) {
+		for(int32_t i=1; i<=hSample->GetNbinsX(); i++) {
 			gatti  +=  hSample ->GetBinContent(i) * fGattiWeights [i];
 			gattic +=  hSampleC->GetBinContent(i) * fGattiWeightsC[i];
 			lkl    +=  hSample ->GetBinContent(i) * fLkl          [i];
@@ -171,7 +171,7 @@ bx_echidna_event* bx_pid_alphabeta::doit (bx_echidna_event *ev) {
 		}
 
 		// Compute rise time of the integrated curve
-		int bin = 0;
+		int32_t bin = 0;
 		while (hSampleC->GetBinContent(++bin) < 0.9) ;
 		float rise_time = (bin-1);
 
@@ -188,14 +188,14 @@ bx_echidna_event* bx_pid_alphabeta::doit (bx_echidna_event *ev) {
  		//fill sample of rec_hit times
     		std::vector<double> sample;
     		std::vector<double> sample_c11;
-		for (int  i=2; i < nhits; i++) {
+		for (int32_t  i=2; i < nhits; i++) {
                   double time = ab.get_rec_hit(i).get_time()-shift_time;
                   if( time > 800 ) continue;
  		  if( time < 0.1 ) continue;
                   sample.push_back( time );
     		}
 
-		for (int  i=0; i < nhits; i++) {
+		for (int32_t  i=0; i < nhits; i++) {
                   double time = ab.get_rec_hit(i).get_time();
                   if( time > 110 ) continue;
                   sample_c11.push_back( time );
@@ -255,8 +255,8 @@ void bx_pid_alphabeta::end () {
 // search right learning file
 // returns true if found
 // store file name into variable fname
-bool bx_pid_alphabeta::search_for_right_file(const std::string& path, int run, std::string& fname) {
-	int tmp = run;
+bool bx_pid_alphabeta::search_for_right_file(const std::string& path, int32_t run, std::string& fname) {
+	int32_t tmp = run;
 	while( tmp > 2000 ) {
 		char fs[1000];
 		sprintf(fs,"%s/Run%06d.w",path.c_str(),tmp);
@@ -276,9 +276,9 @@ float bx_pid_alphabeta::tailtot_ab_mlp(float timecut, std::vector<double> &curre
         if (current_sample.size() == 0) {
                 return 0.;
         }
-        int tail=0;
-        int size = current_sample.size();
-        for(int i=0; i<size; i++) {
+        int32_t tail=0;
+        int32_t size = current_sample.size();
+        for(int32_t i=0; i<size; i++) {
                 float t = current_sample[i];
                 if ((t)>=timecut)
                         tail++;
@@ -292,17 +292,17 @@ float bx_pid_alphabeta::rec_rms(std::vector<double> &current_sample, float& kurt
                 return 0.;
         }
         float sum = 0.;
-        int size = current_sample.size();
-        for(int i=0; i<size; i++) {
+        int32_t size = current_sample.size();
+        for(int32_t i=0; i<size; i++) {
                 sum += current_sample[i];
         }
         float mean = ((float)sum)/((float)size);
         float m2 = 0.;
-        for(int i=0; i<size; i++) {
+        for(int32_t i=0; i<size; i++) {
                 m2 += pow(mean - current_sample[i], 2);
         }
         float m4 = 0.;
-        for(int i=0; i<size; i++) {
+        for(int32_t i=0; i<size; i++) {
                 m4 += pow(mean - current_sample[i], 4);
         }
         m2 =  m2 / ((float) size);

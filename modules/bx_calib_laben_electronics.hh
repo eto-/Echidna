@@ -53,9 +53,9 @@ class bx_calib_laben_electronics : public bx_base_module {
     virtual void end ();
 
   private:
-    int  Nevents_type[3];
-    int* hits[3];
-    int* raw_hits[3];
+    int32_t  Nevents_type[3];
+    int32_t* hits[3];
+    int32_t* raw_hits[3];
       
     float f_dead;
     float f_low_eff[3];
@@ -153,10 +153,10 @@ class bx_calib_laben_electronics : public bx_base_module {
   };
 
 
-  std::cmap <int, std::string> trg_names;
+  std::cmap <int32_t, std::string> trg_names;
 
 
-  float fit_line(TH1F* h, int level_guess);
+  float fit_line(TH1F* h, int32_t level_guess);
 
 };
 

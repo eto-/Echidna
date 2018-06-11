@@ -37,11 +37,11 @@ class bx_splitting_filter: public bx_base_module {
     double f8_sample_area, f8_sample_square_area;
 
       // Parameters
-    static const int max_npeaks = 50;
-    int i4_window_width, i4_zero_bin;
-    int i4_sample_ramp_lenght, i4_sample_width;
+    static const int32_t max_npeaks = 50;
+    int32_t i4_window_width, i4_zero_bin;
+    int32_t i4_sample_ramp_lenght, i4_sample_width;
     float f4_sample_exp_tao;
-    int i4_charge_threshold, i4_time_threshold;
+    int32_t i4_charge_threshold, i4_time_threshold;
     enum peak_mode_t {
       tspectrum_simple,
       tspectrum_highres,
@@ -54,11 +54,15 @@ class bx_splitting_filter: public bx_base_module {
       // TSpectrum stuff
     TSpectrum *S;
     TH1F *h_shape_out;
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+    double *tmp_in, *spectrum;
+#else
     float *tmp_in, *spectrum;
+#endif
 
-    template<typename FLOAT> int search_peak_base (FLOAT *v, int& peak, int low_limit);
-    void ignore_peak (const std::string& msg, int current_peak, float t, float charge, float duration);
-    void reset_histograms (int evnum);
+    template<typename FLOAT> int32_t search_peak_base (FLOAT *v, int32_t& peak, int32_t low_limit);
+    void ignore_peak (const std::string& msg, int32_t current_peak, float t, float charge, float duration);
+    void reset_histograms (int32_t evnum);
 };
 
 #endif

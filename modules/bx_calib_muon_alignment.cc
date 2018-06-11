@@ -95,7 +95,7 @@ void bx_calib_muon_alignment::end () {
 
         db_run& run_info = bx_dbi::get()->get_run ();
         time_t		time_tot     = time;
-        unsigned long 	u4_evnum_tot = u4_evnum;
+        uint32_t 	u4_evnum_tot = u4_evnum;
 
 	if(b_check_last && b_check_mcr){
 		u4_evnum_up = u4_evnum_tot;

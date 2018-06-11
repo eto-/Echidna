@@ -51,12 +51,12 @@ void bx_calib_fiber_bundle::begin() {
 bx_echidna_event* bx_calib_fiber_bundle::doit (bx_echidna_event *ev) {
   const bx_laben_event& er = ev->get_laben();
   i4_times = i4_times+1;  
-  int nhits = er.get_decoded_nhits();
-  for(int i = 0; i < nhits; i++){
+  int32_t nhits = er.get_decoded_nhits();
+  for(int32_t i = 0; i < nhits; i++){
     const bx_laben_decoded_hit& hit = er.get_decoded_hit(i);
     const bx_laben_raw_hit& rawhit = hit.get_raw_hit();
-    unsigned short ch = rawhit.get_logical_channel();
-    int ibundle = hit.get_db_channel()->pmt_fiber_bundle();
+    uint16_t ch = rawhit.get_logical_channel();
+    int32_t ibundle = hit.get_db_channel()->pmt_fiber_bundle();
     double t = hit.get_raw_time();
     t = t-er.get_laser_rawt();
     p_timetot->Fill(t);
@@ -78,8 +78,8 @@ void bx_calib_fiber_bundle::end () {
   TH1D* channels_dark = p_dark_noise->ProjectionY("channels_dark");
   TH1D* bundle_v[n_bundles+1];
   TH1D* bundle_dark_v[n_bundles+1];
-  for(int i = 1; i < n_bundles+1; i++){
-    const int n_fibers = constants::fiber::number_of_fibers_in_bundle[i];
+  for(int32_t i = 1; i < n_bundles+1; i++){
+    const int32_t n_fibers = constants::fiber::number_of_fibers_in_bundle[i];
     std::ostringstream name;
     std::ostringstream name_dark;
     name <<"bundle_"<<i;
@@ -92,18 +92,18 @@ void bx_calib_fiber_bundle::end () {
     barn_interface::get()->store(barn_interface::file,bundle_dark_i,this);
     float Integral = bundle_i->Integral();
     float Integral_dark = bundle_dark_i->Integral();
-    int n_broken = 0;
-    int n_broken_dark = 0;
+    int32_t n_broken = 0;
+    int32_t n_broken_dark = 0;
     float rms = 0.;
     float rms_dark = 0.;
     float Mean = Integral / n_fibers;
     float Mean_dark = Integral_dark / n_fibers;
-    int fiber[81] = {0,};
-    int pmt[81] = {0,};
-    for(int j = 1; j < 2241; j++){
+    int32_t fiber[81] = {0,};
+    int32_t pmt[81] = {0,};
+    for(int32_t j = 1; j < 2241; j++){
       double binc = p_laser->GetBinContent(i,j);
       double binc_dark = p_dark_noise->GetBinContent(i,j);
-      int ib = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(j)).pmt_fiber_bundle();
+      int32_t ib = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(j)).pmt_fiber_bundle();
       if(ib == i){
         if( binc != 0.) rms = rms + (binc-Mean)*(binc-Mean);
 	else if( binc == 0.){
@@ -129,12 +129,12 @@ void bx_calib_fiber_bundle::end () {
     msg << "BUNDLE =  "<<i <<std::endl;
     msg <<"Mean (%)= " <<Mean/i4_times<<" rms=  "<<rms/i4_times <<"     Dark rate= "<<Mean_dark/i4_times<< " rms (dark rate)= " <<rms_dark/i4_times <<std::endl;
     msg <<"Total number of fibers in bundle: " << n_fibers <<"  Non working fibers: " << n_broken <<"  Corresponding to logical channels: "<< std::endl;
-    for (int i = 1; i < n_broken + 1; i++){
+    for (int32_t i = 1; i < n_broken + 1; i++){
       msg << fiber[i]<<", " ;
     }
     msg <<std::endl;
     msg <<"Non working PMT: " << n_broken_dark <<"  Corresponding to logical channels: "<< std::endl;
-    for (int i = 1; i < n_broken_dark + 1; i++){
+    for (int32_t i = 1; i < n_broken_dark + 1; i++){
       msg << pmt[i]<< ", ";
     }
       msg <<""<<std::endl;

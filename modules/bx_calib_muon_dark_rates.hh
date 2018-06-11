@@ -46,8 +46,8 @@ class bx_calib_muon_dark_rates : public bx_base_module {
 
   private:  
     // internal ev/hit ctrs
-    int i4_trg_ctr; 
-    std::vector<int> v_nhits;
+    int32_t i4_trg_ctr; 
+    std::vector<int32_t> v_nhits;
 
     //to be read from echidna.cfg
     float f4_dark_rate_thresh_high, f4_dark_rate_thresh_low;        

@@ -48,7 +48,7 @@ void v1731_event_correlator::make_filename_vector(str_vec& s_filename_vector, co
     while (!gzeof(gzfile)) {
       gzgets(gzfile, c_tmp_filename, 50);   // reads gzfile string
       s_current_filename = c_tmp_filename;  // char* -> std::string
-      const int i2_name_len= s_current_filename.length();
+      const int32_t i2_name_len= s_current_filename.length();
       if (i2_name_len>5){                   // avoids eof or other
 	const std::string::iterator last_char = -- s_current_filename.end();
 	const std::string::value_type c = *last_char;
@@ -110,7 +110,7 @@ v1731_event_correlator::mapper_time_file::mapper_time_file(const str_vec& s_in_f
   /* read input string vector in order to create the map */
   const std::string s_Nfile_name = "N_yyMMddhhmm_yyMMddhhmm.dat.gz";
   const std::string s_Tfile_name = "T_yyMMddhhmm_yyMMddhhmm.dat";
-  const int i2_Ngood_length = s_Nfile_name.length();
+  const int32_t i2_Ngood_length = s_Nfile_name.length();
 
   for (str_vec::const_iterator ci= s_in_file_names.begin(); ci!=s_in_file_names.end(); ++ci){
     str_vec::value_type s_current_name = *ci;
@@ -119,14 +119,14 @@ v1731_event_correlator::mapper_time_file::mapper_time_file(const str_vec& s_in_f
     if (isspace(c)) s_current_name.erase(last_char);
     
     struct_file_time current;
-    const int i2_Nname_len = s_current_name.length();
+    const int32_t i2_Nname_len = s_current_name.length();
     if (i2_Nname_len == i2_Ngood_length){  // length control validates the name;
       current.s_Nfile_name = s_current_name; 
       
       const std::string s_sub_date_begin=s_current_name.substr(2,10); //start chars
       const std::string s_sub_date_end=s_current_name.substr(13,10); //stop chars
-      const unsigned long u4_current_time_start=u4_date_to_sec(s_sub_date_begin);
-      const unsigned long u4_current_time_stop=u4_date_to_sec(s_sub_date_end);
+      const uint32_t u4_current_time_start=u4_date_to_sec(s_sub_date_begin);
+      const uint32_t u4_current_time_stop=u4_date_to_sec(s_sub_date_end);
       current.u4_time_start = u4_current_time_start;
       current.u4_time_stop  = u4_current_time_stop;
       
@@ -144,15 +144,15 @@ v1731_event_correlator::mapper_time_file::mapper_time_file(const str_vec& s_in_f
 }
 
 
-unsigned long v1731_event_correlator::mapper_time_file::u4_date_to_sec(const std::string& s_in_date){
+uint32_t v1731_event_correlator::mapper_time_file::u4_date_to_sec(const std::string& s_in_date){
   tm tm_current;      //date and time of current begin/end file
   time_t tt_current;  //1 jan 2000 00:00:00
 
-  const int i2_current_year=atoi(s_in_date.substr(0,2).c_str());
-  const int i2_current_mon =atoi(s_in_date.substr(2,2).c_str());
-  const int i2_current_day =atoi(s_in_date.substr(4,2).c_str());
-  const int i2_current_hour=atoi(s_in_date.substr(6,2).c_str());
-  const int i2_current_min =atoi(s_in_date.substr(8,2).c_str());
+  const int32_t i2_current_year=atoi(s_in_date.substr(0,2).c_str());
+  const int32_t i2_current_mon =atoi(s_in_date.substr(2,2).c_str());
+  const int32_t i2_current_day =atoi(s_in_date.substr(4,2).c_str());
+  const int32_t i2_current_hour=atoi(s_in_date.substr(6,2).c_str());
+  const int32_t i2_current_min =atoi(s_in_date.substr(8,2).c_str());
   
   tm_current.tm_year= 100 + i2_current_year;
   tm_current.tm_mon = i2_current_mon-1;
@@ -163,12 +163,12 @@ unsigned long v1731_event_correlator::mapper_time_file::u4_date_to_sec(const std
   tm_current.tm_isdst=-1;  //save daylight enabled (it: ora legale/solare attiva)
   tt_current=mktime(&tm_current);
 
-  const unsigned long u4_sec_since_2000 = static_cast<unsigned long> (difftime(tt_current,tt_ref_2000));
+  const uint32_t u4_sec_since_2000 = static_cast<uint32_t> (difftime(tt_current,tt_ref_2000));
   return u4_sec_since_2000;
 }
 
 
-unsigned v1731_event_correlator::mapper_time_file::get_key_if_found(unsigned long u4_gpstime) const{
+unsigned v1731_event_correlator::mapper_time_file::get_key_if_found(uint32_t u4_gpstime) const{
   for (unsigned u4=0; u4<struct_map_ft.size(); u4++){
     if ((u4_gpstime>=struct_map_ft[u4].u4_time_start) && (u4_gpstime<=struct_map_ft[u4].u4_time_stop)){
       return u4;
@@ -195,7 +195,7 @@ void v1731_event_correlator::mapper_time_file::show(unsigned u4_key){
 
 /******************** v1731event_indexer ****************/
 
-void v1731_event_correlator::v1731event_indexer::new_event(const mapper_time_file& map_tf, unsigned long u4_gpstime){
+void v1731_event_correlator::v1731event_indexer::new_event(const mapper_time_file& map_tf, uint32_t u4_gpstime){
   
   const bool b_event_already_indexed = ((daq_active(u4_gpstime)) && (!event_index.empty()));
   const unsigned u4_margin = 60; // margin: look for new file to index
@@ -205,7 +205,7 @@ void v1731_event_correlator::v1731event_indexer::new_event(const mapper_time_fil
     add_to_index(map_tf, u4_map_key);
     
     /* indexing "next" file if we are close to the edge of next file */
-    const unsigned long u4_next_gpstimes    = u4_gpstime + u4_margin;
+    const uint32_t u4_next_gpstimes    = u4_gpstime + u4_margin;
     const bool b_nextevents_already_indexed = ((daq_active(u4_next_gpstimes)));
     if (!b_nextevents_already_indexed){
       const unsigned u4_map_nextkey = map_tf.get_key_if_found(u4_next_gpstimes);
@@ -262,11 +262,11 @@ void v1731_event_correlator::v1731event_indexer::add_to_index(const mapper_time_
       event_info curr_event;
       char c_curr_daqtime[15]; // char buffer (-> timeref in T_*.dat)
       gzgets(Tfile, c_curr_daqtime, 15);
-      const unsigned long u4_curr_daqtime = atol(c_curr_daqtime);
+      const uint32_t u4_curr_daqtime = atol(c_curr_daqtime);
       curr_event.s_filename  = map_tf.get_Nfile_name(u4_key);
       curr_event.i4_position = i4_curr_position;
       if (u4_curr_daqtime){    /* prevents eof lines or other bad stuffs*/
-	event_index.insert(std::pair<unsigned long, event_info> (u4_curr_daqtime, curr_event));
+	event_index.insert(std::pair<uint32_t, event_info> (u4_curr_daqtime, curr_event));
 	if (i4_curr_position == 1) curr_borders.u4_start = u4_curr_daqtime;
 	curr_borders.u4_stop = u4_curr_daqtime;
       }
@@ -287,20 +287,20 @@ void v1731_event_correlator::v1731event_indexer::add_to_index(const mapper_time_
 }
 
 
-bool v1731_event_correlator::v1731event_indexer::daq_active(unsigned long u4_gpstime) const{
+bool v1731_event_correlator::v1731event_indexer::daq_active(uint32_t u4_gpstime) const{
   for (std::vector<file_borders>::const_iterator cit = index_borders.begin();  cit != index_borders.end(); ++cit){
     if ((u4_gpstime>=(*cit).u4_start) && (u4_gpstime<=(*cit).u4_stop)) return true;
   }
   return false;
 }
 
-void v1731_event_correlator::v1731event_indexer::get_event_info(unsigned long u4_gpstime, std::vector<std::string>& s_filenames, std::vector<long>& i4_poss) const{
+void v1731_event_correlator::v1731event_indexer::get_event_info(uint32_t u4_gpstime, std::vector<std::string>& s_filenames, std::vector<long>& i4_poss) const{
 
   s_filenames.clear();
   i4_poss.clear();
 
-  std::multimap<unsigned long, event_info>::const_iterator cit;
-  std::pair<std::multimap<unsigned long, event_info>::const_iterator, std::multimap<unsigned long, event_info>::const_iterator> ret;
+  std::multimap<uint32_t, event_info>::const_iterator cit;
+  std::pair<std::multimap<uint32_t, event_info>::const_iterator, std::multimap<uint32_t, event_info>::const_iterator> ret;
 
   ret = event_index.equal_range(u4_gpstime);
   for (cit=ret.first; cit!=ret.second; ++cit){
@@ -309,9 +309,9 @@ void v1731_event_correlator::v1731event_indexer::get_event_info(unsigned long u4
   }
 }
 
-void v1731_event_correlator::v1731event_indexer::show(unsigned long u4_gpstime){
-  std::multimap<unsigned long, event_info>::const_iterator cit;
-  std::pair<std::multimap<unsigned long, event_info>::const_iterator, std::multimap<unsigned long, event_info>::const_iterator> ret;
+void v1731_event_correlator::v1731event_indexer::show(uint32_t u4_gpstime){
+  std::multimap<uint32_t, event_info>::const_iterator cit;
+  std::pair<std::multimap<uint32_t, event_info>::const_iterator, std::multimap<uint32_t, event_info>::const_iterator> ret;
 
   ret = event_index.equal_range(u4_gpstime);
   get_message(bx_message::info)<<"List of indexed event with gpstime_sec "<<u4_gpstime<<" : "<<dispatch;
@@ -323,7 +323,7 @@ void v1731_event_correlator::v1731event_indexer::show(unsigned long u4_gpstime){
 
 /************ event_finder ****************************/
 
-v1731_event_correlator::event_finder::event_finder(const v1731event_indexer& v1731event_index, const unsigned long u4_sec):bx_named("v1731_event_correlator::event_finder"){
+v1731_event_correlator::event_finder::event_finder(const v1731event_indexer& v1731event_index, const uint32_t u4_sec):bx_named("v1731_event_correlator::event_finder"){
   
   transfer_param =  v1731event_index.get_transfer_param();
   
@@ -338,12 +338,12 @@ v1731_event_correlator::event_finder::event_finder(const v1731event_indexer& v17
 
 }
 
-void v1731_event_correlator::event_finder::fill_found_events(unsigned long u4_gpstime, int i4_difftime, const v1731event_indexer& v1731event_index){
+void v1731_event_correlator::event_finder::fill_found_events(uint32_t u4_gpstime, int32_t i4_difftime, const v1731event_indexer& v1731event_index){
   
   std::vector <std::string> s_curr_filenames;
   std::vector <long> i4_curr_poss;
   struct_event curr_struct_event;
-  const unsigned long u4_curr_gpstime = u4_gpstime + i4_difftime;
+  const uint32_t u4_curr_gpstime = u4_gpstime + i4_difftime;
   
   v1731event_index.get_event_info(u4_curr_gpstime, s_curr_filenames, i4_curr_poss);
   for (unsigned u4=0; u4<i4_curr_poss.size(); ++u4){

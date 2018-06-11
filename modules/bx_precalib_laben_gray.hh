@@ -29,11 +29,11 @@ class bx_precalib_laben_gray: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    int i_channel_skip;
+    int32_t i_channel_skip;
     float f_mean_bound;
     float f_rms_bound;
-    int i_nreferences;
-    int *gray_map;
+    int32_t i_nreferences;
+    int32_t *gray_map;
 
     TH2F **gray_diffs;
     TH1S *gray_shifts;

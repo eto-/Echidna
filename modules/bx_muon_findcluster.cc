@@ -32,7 +32,7 @@ void bx_muon_findcluster::begin () {
   i4_clustered_events = 0; // just a statistics counter
   i4_start_threshold  = get_parameter ("start_threshold").get_int ();
   i4_bin_width        = get_parameter ("bin_width")      .get_int ();
-  i4_n_bins           = int(time_buffer_ns/i4_bin_width);
+  i4_n_bins           = int32_t(time_buffer_ns/i4_bin_width);
   i4_count_threshold  = get_parameter ("count_threshold").get_int ();
   i4_ripple_count     = get_parameter ("ripple_count")   .get_int ();
   i4_enable_histos    = get_parameter ("enable_histos")  .get_int(); 
@@ -78,7 +78,7 @@ void bx_muon_findcluster::begin () {
     double p0 = ::exp (-1 * mu); 
     double pi = p0;
     p_higher = 1 - p0;
-    for (int i = 1; i <= i4_ripple_count; i++) { 
+    for (int32_t i = 1; i <= i4_ripple_count; i++) { 
       pi = pi * mu / i; 
       p_higher -= pi; 
     }
@@ -115,12 +115,12 @@ bx_echidna_event* bx_muon_findcluster::doit (bx_echidna_event *ev) {
   binned_times_floor.clear ();
   std::fill_n (binned_times_sss  .begin (), i4_n_bins, 0);
   std::fill_n (binned_times_floor.begin (), i4_n_bins, 0);
-  for (int i = 0; i < er.get_decoded_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_decoded_nhits (); i++) {
     const bx_muon_decoded_hit &decoded_hit = er.get_decoded_hit (i);
     const db_channel_muon *dbch = decoded_hit.get_db_channel ();
     if (!dbch->is_ordinary ()) continue;
     float hit_time = er.get_decoded_hit (i).get_time () + time_buffer_ns;
-    int bin = int(hit_time / i4_bin_width);
+    int32_t bin = int32_t(hit_time / i4_bin_width);
     if (bin < 0 && bin > i4_n_bins) { 
       get_message (bx_message::warn) << "hit outside boundaries of binned distribution " << hit_time << std::endl; 
       continue;
@@ -131,15 +131,15 @@ bx_echidna_event* bx_muon_findcluster::doit (bx_echidna_event *ev) {
 
   // Start looping on bins (sss)
   bool has_cluster_sss = false;
-  int start_bin_sss=0, end_bin_sss=0; 
-  int n_hits_sss=0;
-  for (int bin = 0; bin < i4_n_bins-3; bin++) {
+  int32_t start_bin_sss=0, end_bin_sss=0; 
+  int32_t n_hits_sss=0;
+  for (int32_t bin = 0; bin < i4_n_bins-3; bin++) {
 
     if (!binned_times_sss[bin]) continue; // skip empty bins
 
     // Sum 3 consecutive bins 
-    int sum_of_3_bins = 0;
-    for (int j = 0; j < 3; j++) 
+    int32_t sum_of_3_bins = 0;
+    for (int32_t j = 0; j < 3; j++) 
       sum_of_3_bins += binned_times_sss[bin + j]; // bin + j > i4_time_bins is fine since there is 20 spare bins
 
     // Compare the sum with low threshold
@@ -150,8 +150,8 @@ bx_echidna_event* bx_muon_findcluster::doit (bx_echidna_event *ev) {
  
     // Search the end of cluster
     for (; bin < i4_n_bins-i4_ripple_bins; bin ++) {
-      int number_hits = 0;
-      for (int j = 0; j < i4_ripple_bins; j++) 
+      int32_t number_hits = 0;
+      for (int32_t j = 0; j < i4_ripple_bins; j++) 
 	number_hits += binned_times_sss[bin + j];  // bin + j > i4_time_bins is fine since there is 20 spare bins
       if (number_hits <= i4_ripple_count) {  // END of cluster found (ripple reagion)
 	n_hits_sss += number_hits;
@@ -171,15 +171,15 @@ bx_echidna_event* bx_muon_findcluster::doit (bx_echidna_event *ev) {
 
   // Start looping on bins
   bool has_cluster_floor = false;
-  int start_bin_floor=0, end_bin_floor=0; 
-  int n_hits_floor=0;
-  for (int bin = 0; bin < i4_n_bins-3; bin++) {
+  int32_t start_bin_floor=0, end_bin_floor=0; 
+  int32_t n_hits_floor=0;
+  for (int32_t bin = 0; bin < i4_n_bins-3; bin++) {
 
     if (!binned_times_floor[bin]) continue; // skip empty bins
 
     // Sum 3 consecutive bins 
-    int sum_of_3_bins = 0;
-    for (int j = 0; j < 3; j++) 
+    int32_t sum_of_3_bins = 0;
+    for (int32_t j = 0; j < 3; j++) 
       sum_of_3_bins += binned_times_floor[bin + j]; // bin + j > i4_time_bins is fine since there is 20 spare bins
 
     // Compare the sum with low threshold
@@ -190,8 +190,8 @@ bx_echidna_event* bx_muon_findcluster::doit (bx_echidna_event *ev) {
  
     // Search the end of cluster
     for (; bin < i4_n_bins-i4_ripple_bins; bin ++) {
-      int number_hits = 0;
-      for (int j = 0; j < i4_ripple_bins; j++) 
+      int32_t number_hits = 0;
+      for (int32_t j = 0; j < i4_ripple_bins; j++) 
 	number_hits += binned_times_floor[bin + j];  // bin + j > i4_time_bins is fine since there is 20 spare bins
       if (number_hits <= i4_ripple_count) {  // END of cluster found (ripple reagion)
 	n_hits_floor += number_hits;
@@ -220,7 +220,7 @@ bx_echidna_event* bx_muon_findcluster::doit (bx_echidna_event *ev) {
   if (  end_bin_sss >   end_bin_floor)   end_bin_floor =   end_bin_sss;
 
 
-int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
+int32_t nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
   float start_time_sss   = time_buffer_ns;
   float start_time_floor = time_buffer_ns;
   float charge_sss = 0., charge_floor = 0.;
@@ -229,13 +229,13 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
   //get_message (bx_message::debug) << "sss_bin " << start_bin_sss << ", floor_bin " << start_bin_floor << dispatch;
 
   // loop to find start time of the sphere and of the floor
-  for (int hit=0; hit < er.get_decoded_nhits (); hit++) {
+  for (int32_t hit=0; hit < er.get_decoded_nhits (); hit++) {
     const bx_muon_decoded_hit &decoded_hit = er.get_decoded_hit (hit);
     if (decoded_hit.get_db_channel ()->is_ordinary ()) {
       float hit_time   = er.get_decoded_hit (hit).get_time ()  + time_buffer_ns;
       float hit_charge = er.get_decoded_hit (hit).get_charge ();
       if (hit_charge < f4_hit_charge_threshold) continue;
-      int bin = int(hit_time / i4_bin_width);
+      int32_t bin = int32_t(hit_time / i4_bin_width);
       if (decoded_hit.get_db_channel ()->is_sss () && bin >= start_bin_sss && bin < end_bin_sss) {
 	if (hit_time < start_time_sss) start_time_sss = hit_time; 	
       }
@@ -251,13 +251,13 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
   if (start_time_floor == time_buffer_ns) start_time_floor = start_time_sss;
   
   // loop over hits: fill charges, nhits and internal hit vectors
-  for (int hit = 0; hit < er.get_decoded_nhits (); hit++) {
+  for (int32_t hit = 0; hit < er.get_decoded_nhits (); hit++) {
     const bx_muon_decoded_hit &decoded_hit = er.get_decoded_hit (hit);
     if (decoded_hit.get_db_channel ()->is_ordinary ()) {
       float hit_time   = er.get_decoded_hit (hit).get_time ()  + time_buffer_ns;
       float hit_charge = er.get_decoded_hit (hit).get_charge ();
 			if (hit_charge < f4_hit_charge_threshold) continue;
-      int bin = int(hit_time / i4_bin_width);
+      int32_t bin = int32_t(hit_time / i4_bin_width);
       if (decoded_hit.get_db_channel ()->is_sss () && bin >= start_bin_sss && bin < end_bin_sss) {
         charge_sss += hit_charge;
         nhits_sss++;
@@ -273,7 +273,7 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
     }
   }
 
-//  for (unsigned int i=0; i<chits_floor.size(); i++) {
+//  for (uint32_t i=0; i<chits_floor.size(); i++) {
 //    get_message (bx_message::debug) << "event " << ev->get_event_number () << ": floor hit #" << i << " t " <<  chits_floor[i].get_time() << dispatch;
 //  }
 
@@ -297,35 +297,35 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
   std::sort(chits_floor.begin(), chits_floor.end(), HitSortPredicate);
 
   // First clustering, affiliate each hit to a a cluster id.
-  int n_clusters_sss   = m_affiliate(0             , chits_sss,   f4_maxdt, f4_maxdr_sss  );
-  int n_clusters_floor = m_affiliate(n_clusters_sss, chits_floor, f4_maxdt, f4_maxdr_floor);
-  int n_clusters = n_clusters_sss + n_clusters_floor;
+  int32_t n_clusters_sss   = m_affiliate(0             , chits_sss,   f4_maxdt, f4_maxdr_sss  );
+  int32_t n_clusters_floor = m_affiliate(n_clusters_sss, chits_floor, f4_maxdt, f4_maxdr_floor);
+  int32_t n_clusters = n_clusters_sss + n_clusters_floor;
   
   //get_message (bx_message::debug) << "event " << ev->get_event_number () << " affiliation done, found " << n_clusters_sss << "+" << n_clusters_floor << " clusters" << dispatch;
 
   // Pre-compute charge of clusters
   std::vector<float> charge_v(n_clusters);
-  for (unsigned int i = 0; i < chits_sss.size(); i++) {
+  for (uint32_t i = 0; i < chits_sss.size(); i++) {
     if (chits_sss[i].get_affiliation() > 0) 
       charge_v[chits_sss[i].get_affiliation()-1] += chits_sss[i].get_charge();
   }
-  for (unsigned int i=0; i<chits_floor.size(); i++) {
+  for (uint32_t i=0; i<chits_floor.size(); i++) {
     if (chits_floor[i].get_affiliation() > 0) 
       charge_v[chits_floor[i].get_affiliation()-1] += chits_floor[i].get_charge();
   }
 
-  //for (int i = 0; i < n_clusters; i++) get_message (bx_message::debug) << "#" << i << " : Q " << charge_v[i] << dispatch;
+  //for (int32_t i = 0; i < n_clusters; i++) get_message (bx_message::debug) << "#" << i << " : Q " << charge_v[i] << dispatch;
 
   // identify the one on which to attempt plitting.
-  int id_to_be_split = 0;
+  int32_t id_to_be_split = 0;
   float max_charge = 0;
-  for (int i = 0; i < n_clusters; i++) {
+  for (int32_t i = 0; i < n_clusters; i++) {
     if (charge_v[i] < f4_mincharge) { // cluster too small, removing....
-      for ( unsigned int hit = 0 ; hit < chits_sss.size(); hit++) {	
+      for ( uint32_t hit = 0 ; hit < chits_sss.size(); hit++) {	
         if (chits_sss[hit].get_affiliation() == i+1) chits_sss[hit].i4_affiliation = 0;
         if (chits_sss[hit].get_affiliation() > i+1) chits_sss[hit].i4_affiliation --;
       }
-      for ( unsigned int hit = 0; hit < chits_floor.size(); hit++) {
+      for ( uint32_t hit = 0; hit < chits_floor.size(); hit++) {
         if (chits_floor[hit].get_affiliation() == i+1) chits_floor[hit].i4_affiliation = 0;
         if (chits_floor[hit].get_affiliation() > i+1) chits_floor[hit].i4_affiliation --;
       }
@@ -341,8 +341,8 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
     }
   }
 
-  //for (int i = 0; i < n_clusters_sss; i++) get_message (bx_message::debug) << "sss#" << i << " : Q " << charge_v[i] << dispatch;
-  //for (int i = n_clusters_sss; i < n_clusters; i++) get_message (bx_message::debug) << "flo#" << i << " : Q " << charge_v[i] << dispatch;
+  //for (int32_t i = 0; i < n_clusters_sss; i++) get_message (bx_message::debug) << "sss#" << i << " : Q " << charge_v[i] << dispatch;
+  //for (int32_t i = n_clusters_sss; i < n_clusters; i++) get_message (bx_message::debug) << "flo#" << i << " : Q " << charge_v[i] << dispatch;
 
   // try to split, can do it or not
   bool split = false;
@@ -355,30 +355,30 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
 //    get_message (bx_message::debug) << "n_clusters_sss " << n_clusters_sss << dispatch;
     n_clusters++;
 //     get_message (bx_message::debug) << "n_clusters " << n_clusters << dispatch;
-    for (unsigned int i = 0; i < chits_floor.size(); i++) {
+    for (uint32_t i = 0; i < chits_floor.size(); i++) {
 //      get_message (bx_message::debug) << i << "th hit on floor: affiliation is " << chits_floor[i].get_affiliation() << dispatch;
       if (chits_floor[i].get_affiliation()!=0) chits_floor[i].i4_affiliation++;
     }
   }
-  //for (int i = 0; i < n_clusters_sss; i++) get_message (bx_message::debug) << "after splitting: sss#" << i << " : Q " << charge_v[i] << dispatch;
-  //for (int i = n_clusters_sss; i < n_clusters; i++) get_message (bx_message::debug) << "flo#" << i << " : Q " << charge_v[i] << dispatch;
+  //for (int32_t i = 0; i < n_clusters_sss; i++) get_message (bx_message::debug) << "after splitting: sss#" << i << " : Q " << charge_v[i] << dispatch;
+  //for (int32_t i = n_clusters_sss; i < n_clusters; i++) get_message (bx_message::debug) << "flo#" << i << " : Q " << charge_v[i] << dispatch;
 
  //get_message (bx_message::debug) << "sss hits:" << dispatch;
- //for ( unsigned int hit = 0 ; hit < chits_sss.size(); hit++)
+ //for ( uint32_t hit = 0 ; hit < chits_sss.size(); hit++)
    //get_message (bx_message::debug) << "hit " << hit << " aff " << chits_sss[hit].get_affiliation() << dispatch;
  //get_message (bx_message::debug) << "floor hits:" << dispatch;
- //for ( unsigned int hit = 0 ; hit < chits_floor.size(); hit++)
+ //for ( uint32_t hit = 0 ; hit < chits_floor.size(); hit++)
    //get_message (bx_message::debug) << "hit " << hit << " aff " << chits_floor[hit].get_affiliation() << dispatch;
 
 
   // SSS clusters creation
-  for ( int clu = 0; clu < n_clusters_sss; clu++) {  
+  for ( int32_t clu = 0; clu < n_clusters_sss; clu++) {  
     float charge = 0.;
     double x = 0., y = 0., z = 0.;
     float radius_sss = chits_sss[0].get_decoded_hit().get_db_channel()->get_radius();
     float start_time = 1e6;
-    int hit_ctr = 0;
-    for ( unsigned int hit = 0 ; hit < chits_sss.size(); hit++) {
+    int32_t hit_ctr = 0;
+    for ( uint32_t hit = 0 ; hit < chits_sss.size(); hit++) {
       const db_channel_muon* dbc = chits_sss[hit].get_decoded_hit().get_db_channel();
       if (chits_sss[hit].get_affiliation() == clu+1) {
         if (start_time == 1e6) start_time = chits_sss[hit].get_time();
@@ -402,12 +402,12 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
    //get_message (bx_message::debug) << n_clusters_sss << " sss cluster(s) done ..." << dispatch;
 
   // Floor clusters creation
-  for (int clu = n_clusters_sss; clu < n_clusters; clu++) {  
+  for (int32_t clu = n_clusters_sss; clu < n_clusters; clu++) {  
     float charge = 0., weight = 0.;
     double x = 0., y = 0., z = 0.;
     float start_time = 1e6; 
-    int hit_ctr = 0;
-    for ( unsigned int hit = 0 ; hit < chits_floor.size(); hit++) {
+    int32_t hit_ctr = 0;
+    for ( uint32_t hit = 0 ; hit < chits_floor.size(); hit++) {
       const db_channel_muon* dbc = chits_floor[hit].get_decoded_hit().get_db_channel();
       if (chits_floor[hit].get_affiliation() == clu+1) {
         //get_message (bx_message::debug) << "hit " << hit << " aff " << chits_floor[hit].get_affiliation() << " Q " << chits_floor[hit].get_charge() << " x " << dbc->get_x() << " t " << chits_floor[hit].get_time() << dispatch;
@@ -435,7 +435,7 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
 
   // Fill event level variables
   nhits = nhits_sss + nhits_floor;
-  for (int i = 0; i < constants::muon::channels; i++) { if (ew.nhits_per_channel[i]>0) npmts++; }
+  for (int32_t i = 0; i < constants::muon::channels; i++) { if (ew.nhits_per_channel[i]>0) npmts++; }
   ew.i4_npmts            = npmts;
   ew.f4_start_time_sss   = start_time_sss   - time_buffer_ns;
   ew.f4_start_time_floor = start_time_floor - time_buffer_ns;
@@ -463,14 +463,14 @@ int nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
 
 // assign an affiliation number to hits in the vector. This actually defines clusters.
 // Space and time correlation is used.
-int bx_muon_findcluster::m_affiliate (int offset, std::vector<bx_muon_clustered_hit>& v, float maxdt, float maxdr) {
-  int noclusters = offset;
-  for (unsigned int i = 0; i < v.size(); i++) {
-    for (unsigned int j = i+1; j < v.size(); j++) {
+int32_t bx_muon_findcluster::m_affiliate (int32_t offset, std::vector<bx_muon_clustered_hit>& v, float maxdt, float maxdr) {
+  int32_t noclusters = offset;
+  for (uint32_t i = 0; i < v.size(); i++) {
+    for (uint32_t j = i+1; j < v.size(); j++) {
       const db_channel_muon* dbc_i = v[i].get_decoded_hit().get_db_channel();
       const db_channel_muon* dbc_j = v[j].get_decoded_hit().get_db_channel();
-      int *aff_i = &(v[i].i4_affiliation);
-      int *aff_j = &(v[j].i4_affiliation);
+      int32_t *aff_i = &(v[i].i4_affiliation);
+      int32_t *aff_j = &(v[j].i4_affiliation);
       if (*aff_i !=0 && *aff_i==*aff_j) continue;
       float dt = v[i].get_time() - v[j].get_time();
       if (dt < 0) dt *= -1;
@@ -489,9 +489,9 @@ int bx_muon_findcluster::m_affiliate (int offset, std::vector<bx_muon_clustered_
       if (*aff_i==0 && *aff_j!=0) *aff_i=*aff_j; // affiliate i-th hit to j-th cluster
       if (*aff_i!=0 && *aff_j==0) *aff_j=*aff_i; // affiliate j-th hit to i-th cluster
       if (*aff_i!=0 && *aff_j!=0 && *aff_i!=*aff_j) { // hit were both affiliated to different clusters, j-th cluster to be removed.
-        int needless_aff = *aff_j; // the one to be removed
+        int32_t needless_aff = *aff_j; // the one to be removed
         //get_message (bx_message::debug) << " m_affiliate: size " << v.size() << " ;extra cluster found, removing " << needless_aff << dispatch;
-	for (unsigned int h=0; h<v.size(); h++) {
+	for (uint32_t h=0; h<v.size(); h++) {
           if (v[h].get_affiliation() == needless_aff) v[h].i4_affiliation = *aff_i;
 	  if (v[h].get_affiliation() >  needless_aff) v[h].i4_affiliation--; // shift down affiliation for following clusters.
 	} // end of loop on h
@@ -504,19 +504,19 @@ int bx_muon_findcluster::m_affiliate (int offset, std::vector<bx_muon_clustered_
 
 // tries to split the clusters recieved (the highest-charge cluster on sss which is not the first).
 // If maxima are too close in time or space it fails.
-/*bool bx_muon_findcluster::m_split(int id_to_be_split) {
-  int noofhits = 0;
-  for (unsigned int i=0; i<chits_sss.size(); i++) {
+/*bool bx_muon_findcluster::m_split(int32_t id_to_be_split) {
+  int32_t noofhits = 0;
+  for (uint32_t i=0; i<chits_sss.size(); i++) {
     if (chits_sss[i].get_affiliation() == id_to_be_split) noofhits++;
   }
   if (!noofhits) return false;
 
   // hits with low charge are neglected (wimps) for f4_wimp_fraction.
-  int wimps = 0;
-  for (int i=0; i<noofhits*f4_wimp_fraction; i++) {
+  int32_t wimps = 0;
+  for (int32_t i=0; i<noofhits*f4_wimp_fraction; i++) {
     float mincharge = 1e4;
-    int minhit = 0;
-    for (unsigned int j=0; j<chits_sss.size(); j++) { 
+    int32_t minhit = 0;
+    for (uint32_t j=0; j<chits_sss.size(); j++) { 
       if ((chits_sss[j].get_affiliation() == id_to_be_split) && chits_sss[j].get_charge() < mincharge) {
 	mincharge = chits_sss[j].get_charge();
 	minhit = j;
@@ -529,22 +529,22 @@ int bx_muon_findcluster::m_affiliate (int offset, std::vector<bx_muon_clustered_
 
   // identify start & stop time for search for maxima
   float starttime=1e4, stoptime=0;
-  for (unsigned int ihit=0; ihit<chits_sss.size(); ihit++) {
+  for (uint32_t ihit=0; ihit<chits_sss.size(); ihit++) {
     if (chits_sss[ihit].get_affiliation() != id_to_be_split) continue;
     starttime=chits_sss[ihit].get_time();
     break;
   }
-  for (unsigned int ihit=chits_sss.size()-1; ihit>0; ihit--) {
+  for (uint32_t ihit=chits_sss.size()-1; ihit>0; ihit--) {
     if (chits_sss[ihit].get_affiliation() != id_to_be_split) continue;
     stoptime=chits_sss[ihit].get_time();
     break;
   }
 
   //look for maxima
-  int   mh_1 = -1 , mh_2 = -1;
+  int32_t   mh_1 = -1 , mh_2 = -1;
   float max1 = 0., max2 = 0.;
-  int goodhits = 0;
-  for (unsigned int i=0; i<chits_sss.size(); i++) {
+  int32_t goodhits = 0;
+  for (uint32_t i=0; i<chits_sss.size(); i++) {
     if (chits_sss[i].get_affiliation() != id_to_be_split) continue;
     goodhits ++;
     if (goodhits<(noofhits-wimps)*f4_split_separation && chits_sss[i].get_time()-starttime<f4_split_window && chits_sss[i].get_charge()>max1) {
@@ -557,7 +557,7 @@ int bx_muon_findcluster::m_affiliate (int offset, std::vector<bx_muon_clustered_
     }
   }
   if (mh_1==-1 || mh_2==-1) {
-    for (unsigned int ihit=0; ihit<chits_sss.size(); ihit++) {
+    for (uint32_t ihit=0; ihit<chits_sss.size(); ihit++) {
       if (chits_sss[ihit].get_affiliation() == -1) chits_sss[ihit].i4_affiliation = id_to_be_split;
     }
     return false;
@@ -565,20 +565,20 @@ int bx_muon_findcluster::m_affiliate (int offset, std::vector<bx_muon_clustered_
 }*/
 
 	// alternative splitting method
-bool bx_muon_findcluster::m_split(int id_to_be_split) {
+bool bx_muon_findcluster::m_split(int32_t id_to_be_split) {
 	//get_message (bx_message::debug) << " splitting started ..." << dispatch;
-  int noofhits = 0;
-  for (unsigned int i=0; i<chits_sss.size(); i++) {
+  int32_t noofhits = 0;
+  for (uint32_t i=0; i<chits_sss.size(); i++) {
     if (chits_sss[i].get_affiliation() == id_to_be_split) noofhits++;
   }
   if (noofhits<i4_split_minimum_hits) return false;
 
   // hits with low charge are neglected (wimps) for f4_wimp_fraction.
-  int wimps = 0;
-  for (int i=0; i<noofhits*f4_wimp_fraction; i++) {
+  int32_t wimps = 0;
+  for (int32_t i=0; i<noofhits*f4_wimp_fraction; i++) {
     float mincharge = 1e4;
-    int minhit = 0;
-    for (unsigned int j=0; j<chits_sss.size(); j++) { 
+    int32_t minhit = 0;
+    for (uint32_t j=0; j<chits_sss.size(); j++) { 
       if ((chits_sss[j].get_affiliation() == id_to_be_split) && chits_sss[j].get_charge() < mincharge) {
 	mincharge = chits_sss[j].get_charge();
 	minhit = j;
@@ -593,7 +593,7 @@ bool bx_muon_findcluster::m_split(int id_to_be_split) {
 
   float entry_t = 0, entry_x = 0, entry_y = 0, entry_z = 0;
 
-  for (unsigned int ihit=0; ihit<chits_sss.size(); ihit++) {
+  for (uint32_t ihit=0; ihit<chits_sss.size(); ihit++) {
     if (chits_sss[ihit].get_affiliation() != id_to_be_split) continue;
       entry_x = chits_sss[ihit].get_decoded_hit().get_db_channel()->get_x();
       entry_y = chits_sss[ihit].get_decoded_hit().get_db_channel()->get_y();
@@ -607,7 +607,7 @@ bool bx_muon_findcluster::m_split(int id_to_be_split) {
   float exit_x = 0, exit_y = 0, exit_z = 0, exit_q = 0, exit_t = 0;
   float sum_x = 0, sum_y = 0, sum_z = 0, sum_q = 0, distance = 0;
 
-  for (unsigned int ihit=0; ihit<chits_sss.size(); ihit++) {
+  for (uint32_t ihit=0; ihit<chits_sss.size(); ihit++) {
     if (chits_sss[ihit].get_affiliation() != id_to_be_split) continue;
     exit_x = chits_sss[ihit].get_decoded_hit().get_db_channel()->get_x();
     exit_y = chits_sss[ihit].get_decoded_hit().get_db_channel()->get_y();
@@ -626,7 +626,7 @@ bool bx_muon_findcluster::m_split(int id_to_be_split) {
   // if sum charge of the exit point is 0, return hits to original affiliation, stop splitting
 
   if (sum_q==0) {
-    for (unsigned int ihit=0; ihit<chits_sss.size(); ihit++) {
+    for (uint32_t ihit=0; ihit<chits_sss.size(); ihit++) {
     if (chits_sss[ihit].get_affiliation() == -1) chits_sss[ihit].i4_affiliation = id_to_be_split;
     }
     //get_message (bx_message::debug) << "nothing to be split" << dispatch;
@@ -639,10 +639,10 @@ bool bx_muon_findcluster::m_split(int id_to_be_split) {
 
   //get_message (bx_message::debug) << "entry t " << entry_t << " : exit_t " << exit_t << " : id_to_be_split " << id_to_be_split << dispatch;
 
-  int count_c1_hits=0, count_c2_hits=0;
+  int32_t count_c1_hits=0, count_c2_hits=0;
 
   // Splitting confirmed, reassign affiliation.
-  for (unsigned int i=0; i<chits_sss.size(); i++) {
+  for (uint32_t i=0; i<chits_sss.size(); i++) {
     if ((chits_sss[i].get_affiliation() < id_to_be_split) && (chits_sss[i].get_affiliation() >= 0)) continue;
     else if (chits_sss[i].get_affiliation() > id_to_be_split) chits_sss[i].i4_affiliation++;
     else {
@@ -665,20 +665,20 @@ bool bx_muon_findcluster::m_split(int id_to_be_split) {
   // if one of the clusters has less than two hits, restore the old clusters 
 
   if (count_c1_hits<2 || count_c2_hits<2) {
-    for (unsigned int i=0; i<chits_sss.size(); i++) {
+    for (uint32_t i=0; i<chits_sss.size(); i++) {
       if (chits_sss[i].get_affiliation() > id_to_be_split) chits_sss[i].i4_affiliation--;
       if (chits_sss[i].get_affiliation()==-1) chits_sss[i].i4_affiliation = id_to_be_split;
     }
     return false;
   }
   else {
-    for (unsigned int i=0; i<chits_sss.size(); i++) {
+    for (uint32_t i=0; i<chits_sss.size(); i++) {
       if (chits_sss[i].get_affiliation()==-1) chits_sss[i].i4_affiliation = 0;
     }
   }
    
 
-  //for (unsigned int i=0; i<chits_sss.size(); i++) get_message (bx_message::debug) << i << "th hit affiliation: " << chits_sss[i].get_affiliation() << dispatch;
+  //for (uint32_t i=0; i<chits_sss.size(); i++) get_message (bx_message::debug) << i << "th hit affiliation: " << chits_sss[i].get_affiliation() << dispatch;
   //get_message (bx_message::debug) << "splitting converged!" << dispatch;
   return true;
 }

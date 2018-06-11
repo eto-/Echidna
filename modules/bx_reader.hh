@@ -29,25 +29,25 @@ class bx_reader: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev) { return get_event (); }
     virtual void end ();
     
-    bx_echidna_event *get_event (long int event_number = -1, unsigned int trg_type = 0);
+    bx_echidna_event *get_event (int32_t event_number = -1, uint32_t trg_type = 0);
     void rewind () { current_event = disk_pool.begin (); }
 
   private:
-    unsigned long u4_run_number;
+    uint32_t u4_run_number;
     gzFile gzfile;
     void m_open_gzfile (const std::string &filename);
     FILE *p_popen_connection;
     bool first_event;
 
-    unsigned long u4_pool_size, u4_max_pool_size, u4_pool_max_event_count;
-    unsigned short u2_pool_readhaed_step;
-    long int i4_last_read_evnum;
+    uint32_t u4_pool_size, u4_max_pool_size, u4_pool_max_event_count;
+    uint16_t u2_pool_readhaed_step;
+    int32_t i4_last_read_evnum;
     
-    typedef std::map<int, char*> disk_event_pool;
+    typedef std::map<int32_t, char*> disk_event_pool;
     disk_event_pool disk_pool;
 
     disk_event_pool::const_iterator current_event;
-    char *m_feed_event (long int event_number);
+    char *m_feed_event (int32_t event_number);
     char *m_gzfile_exception ();
 };
 

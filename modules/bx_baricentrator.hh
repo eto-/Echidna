@@ -47,7 +47,7 @@ class bx_baricentrator: public bx_base_module {
     bool b_use_charge;
     std::cmap<std::string, mean_algorithm> mean_algorithm_name_map;
     
-    int get_hit_charge (const bx_laben_clustered_hit& hit);
+    int32_t get_hit_charge (const bx_laben_clustered_hit& hit);
     
     TH1F *baricenter_best_radius;
     

@@ -48,19 +48,19 @@ class interpolator2d: public bx_named {
 template <class T>
 class NRVec {
 private:
-        int nn; // size of array. upper index is nn-1
+        int32_t nn; // size of array. upper index is nn-1
         T *v;
 public:
         NRVec();
-        NRVec(int n) : nn(n), v(new T[n]) {};   // Zero-based array
-        NRVec(const T &a, int n);       //initialize to constant value
-        NRVec(const T *a, int n);       // Initialize to array
+        NRVec(int32_t n) : nn(n), v(new T[n]) {};   // Zero-based array
+        NRVec(const T &a, int32_t n);       //initialize to constant value
+        NRVec(const T *a, int32_t n);       // Initialize to array
         NRVec(const NRVec &rhs);        // Copy constructor
         NRVec & operator=(const NRVec &rhs);    //assignment
         NRVec & operator=(const T &a);  //assign a to every element
-        T & operator[](const int i) {return v[i]; }     //i'th element
-        const T & operator[](const int i) const;
-        int size() const;
+        T & operator[](const int32_t i) {return v[i]; }     //i'th element
+        const T & operator[](const int32_t i) const;
+        int32_t size() const;
         ~NRVec() { if (v != 0) delete[] (v); }
 };
 
@@ -68,26 +68,26 @@ public:
 template <class T>
 class NRMat {
 private:
-        int nn;
-        int mm;
+        int32_t nn;
+        int32_t mm;
         T **v;
 public:
         NRMat();
-        NRMat(int n, int m) : nn(n), mm(m), v(new T*[n]) {
+        NRMat(int32_t n, int32_t m) : nn(n), mm(m), v(new T*[n]) {
 							v[0] = new T[m*n];
-							for (int i=1; i< n; i++)
+							for (int32_t i=1; i< n; i++)
 							v[i] = v[i-1] + m;
 							};                    // Zero-based array
         
-	NRMat(const T &a, int n, int m);        //Initialize to constant
-        NRMat(const T *a, int n, int m);        // Initialize to array
+	NRMat(const T &a, int32_t n, int32_t m);        //Initialize to constant
+        NRMat(const T *a, int32_t n, int32_t m);        // Initialize to array
         NRMat(const NRMat &rhs);                // Copy constructor
         NRMat & operator=(const NRMat &rhs);    //assignment
         NRMat & operator=(const T &a);          //assign a to every element
-        T* operator[](const int i) {return v[i];}      //subscripting: pointer to row i
-        const T* operator[](const int i) const;
-        int nrows() const;
-        int ncols() const;
+        T* operator[](const int32_t i) {return v[i];}      //subscripting: pointer to row i
+        const T* operator[](const int32_t i) const;
+        int32_t nrows() const;
+        int32_t ncols() const;
         ~NRMat() { if (v != 0) { delete[] (v[0]); delete[] (v); }; }
 };
 

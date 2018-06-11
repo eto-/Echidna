@@ -28,15 +28,15 @@ class bx_laben_energy_tracker : public bx_base_module {
     virtual void end ();
 
   private:
-    int   i4_laben_events;		// counter for all ID laben events
-    int   i4_tracked_events;		// counter for reconstructed events
+    int32_t   i4_laben_events;		// counter for all ID laben events
+    int32_t   i4_tracked_events;		// counter for reconstructed events
 
-    int   i4_enable_histos;
+    int32_t   i4_enable_histos;
 
     float f4_tau;                       // weight
     float f4_time_limit;                // take only the first hits within this limit from the beginning of cluster
     float f4_long_limit;                // limit for the hits regarded for track orientation
-    int   i4_nsteps;
+    int32_t   i4_nsteps;
 };
 
 #endif

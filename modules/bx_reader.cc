@@ -28,9 +28,9 @@
 #include <sys/wait.h>
 #include <string.h>
 
-void sighandler (int sig) {
+void sighandler (int32_t sig) {
   bx_message msg (bx_message::critic, "bx_reader: ");
-  int pid, status;
+  int32_t pid, status;
   if ((pid = waitpid (-1, &status, WUNTRACED)) <0) {
     bx_message msg (bx_message::critic, "bx_reader: ");
     msg << "waitpid returned " << strerror (errno) << dispatch;
@@ -73,7 +73,7 @@ void bx_reader::m_open_gzfile (const std::string &file_url) {
     std::string repository_url = get_parameter ("repository_url").get_string ();
     
         // Calculate path in the repository
-    int run_number = vdt(name).get_int ();
+    int32_t run_number = vdt(name).get_int ();
     bx_dbi::get ()->set_current_run_number (u4_run_number = run_number);
     const db_run& run_info = bx_dbi::get ()->get_run ();
     time_t start_time = run_info.get_start_time ();
@@ -82,7 +82,7 @@ void bx_reader::m_open_gzfile (const std::string &file_url) {
     struct tm *week_date = ::localtime (&week_second);
     std::string full_url;
     if (!run_info.get_number_of_files ()) get_message (bx_message::critic) << "No files for run " << run_number << dispatch;
-    for (int slice = 1; slice <= run_info.get_number_of_files (); slice++) {
+    for (int32_t slice = 1; slice <= run_info.get_number_of_files (); slice++) {
       char tmp_str[100];
       ::strftime (tmp_str, 99, "/rawdata/%Y/%b_%d/", week_date);
       std::string file_path = tmp_str;
@@ -124,7 +124,7 @@ void bx_reader::begin () {
 
   u4_pool_size = 0;
   current_event = disk_pool.end ();
-  long int i = 0;
+  int32_t i = 0;
   for (;i < u2_pool_readhaed_step; i++) if (!m_feed_event (-1)) break; 
   if (!i) get_message (bx_message::critic) << "empty file" << dispatch; 
 
@@ -141,7 +141,7 @@ void bx_reader::begin () {
   detector_interface::post_init (e, *this); 
 }
 
-bx_echidna_event *bx_reader::get_event (long int event_number, unsigned int trg_type) {
+bx_echidna_event *bx_reader::get_event (int32_t event_number, uint32_t trg_type) {
   if (event_number < -1) get_message (bx_message::critic) << "required negative event " << event_number << dispatch;
   
     // If the required event is no more in the pool throw an exception
@@ -159,7 +159,7 @@ bx_echidna_event *bx_reader::get_event (long int event_number, unsigned int trg_
   if (current_event == disk_pool.end ()) {
      if (!m_feed_event (event_number)) return 0;
        // Some readhaed
-     for (unsigned short i = 0; i < u2_pool_readhaed_step; i++) if (!m_feed_event (-1)) break;
+     for (uint16_t i = 0; i < u2_pool_readhaed_step; i++) if (!m_feed_event (-1)) break;
 
       // Now the event should be in memory pool, look for it again
     if (event_number == -1) current_event = ++past_event;
@@ -191,7 +191,7 @@ char *bx_reader::m_gzfile_exception () {
   
   bx_message &message = get_message (bx_message::critic);
 
-  int error_code;
+  int32_t error_code;
   const char *msg = ::gzerror (gzfile, &error_code);
   
   if (error_code != Z_ERRNO) message << "gzlib: " << msg;
@@ -203,7 +203,7 @@ char *bx_reader::m_gzfile_exception () {
 }
 
 
-char *bx_reader::m_feed_event (long int event_number) {
+char *bx_reader::m_feed_event (int32_t event_number) {
     // A dedicated filed i4_last_read_evnum is necessary since in case events are skiped 
     // (spool.end() - 1)->first is not always the last read event.
   //if (event_number != -1 && event_number < i4_last_read_evnum) get_message (bx_message::debug) <<  "back seek not supported " << event_number << " minor than last read event " << i4_last_read_evnum << dispatch;
@@ -214,10 +214,10 @@ char *bx_reader::m_feed_event (long int event_number) {
 
     // Seek forward looking for requested event if event_number != -1
   if (event_number != -1) {
-    if (head.event_number < (unsigned long)event_number) {
+    if (head.event_number < (uint32_t)event_number) {
       if (::gzseek (gzfile, head.event_size_bytes - sizeof (head), SEEK_CUR) < 0) return m_gzfile_exception ();
       return m_feed_event (event_number);
-    } else if (head.event_number > (unsigned long)event_number) {
+    } else if (head.event_number > (uint32_t)event_number) {
         // Seeked too much, requested event not present
       if (::gzseek (gzfile, head.event_size_bytes - sizeof (head), SEEK_CUR) < 0) return m_gzfile_exception ();
         // Update the last event info, this means the next event could be read is > i4_last_read_evnum
@@ -228,7 +228,7 @@ char *bx_reader::m_feed_event (long int event_number) {
   
     // This point is reached is the event on disk is the event to read
   char * ptr = new char[head.event_size_bytes];
-  if (::gzread (gzfile, ptr + sizeof (head), head.event_size_bytes - sizeof (head)) != int(head.event_size_bytes - sizeof (head))) {
+  if (::gzread (gzfile, ptr + sizeof (head), head.event_size_bytes - sizeof (head)) != int32_t(head.event_size_bytes - sizeof (head))) {
     delete [] ptr;
     return m_gzfile_exception ();
   }

@@ -30,40 +30,40 @@ class bx_trigger_raw_event {
       lcr_flag     = 64  // BTB input #7 common to laser394, calibration and random
     };
 
-    unsigned short get_length          () const { return u2_length; }
-    unsigned short get_error           () const { return u2_error; }    
-    unsigned short get_blocks          () const { return u2_blocks; }
-    unsigned short get_version         () const { return u2_version; } 
-    unsigned long  get_dsp_registers   () const { return u4_dsp_registers; }
-    unsigned short get_btb_threshold   () const { return u2_btb_threshold; }
-    unsigned short get_btb_firmware    () const { return u2_btb_firmware; }
-    unsigned long  get_trg_time        () const { return u4_trg_time; }
-    unsigned long  get_evid            () const { return u4_evid; }
-    unsigned short get_tab_sum         () const { return u2_tab_sum; }
-    unsigned char  get_btb_inputs      () const { return u1_btb_inputs; }
+    uint16_t get_length          () const { return u2_length; }
+    uint16_t get_error           () const { return u2_error; }    
+    uint16_t get_blocks          () const { return u2_blocks; }
+    uint16_t get_version         () const { return u2_version; } 
+    uint32_t  get_dsp_registers   () const { return u4_dsp_registers; }
+    uint16_t get_btb_threshold   () const { return u2_btb_threshold; }
+    uint16_t get_btb_firmware    () const { return u2_btb_firmware; }
+    uint32_t  get_trg_time        () const { return u4_trg_time; }
+    uint32_t  get_evid            () const { return u4_evid; }
+    uint16_t get_tab_sum         () const { return u2_tab_sum; }
+    uint8_t  get_btb_inputs      () const { return u1_btb_inputs; }
     bool           has_btb_flag        ( btb_flag flag ) const { return u1_btb_inputs & flag; }
-    unsigned char  get_trgtype         () const { return u1_trgtype; }
-    unsigned long  get_gps1            () const { return u4_gps1; }
-    unsigned long  get_gps2            () const { return u4_gps2; }
-    unsigned long  get_gps3            () const { return u4_gps3; }
+    uint8_t  get_trgtype         () const { return u1_trgtype; }
+    uint32_t  get_gps1            () const { return u4_gps1; }
+    uint32_t  get_gps2            () const { return u4_gps2; }
+    uint32_t  get_gps3            () const { return u4_gps3; }
 
   private:
-    unsigned short u2_length;
-    unsigned short u2_error;
-    unsigned short u2_blocks;
-    unsigned short u2_version;
-    unsigned long  u4_dsp_registers;
-    unsigned short u2_btb_firmware;
-    unsigned short u2_btb_threshold;
-    unsigned long  u4_trg_time;
-    unsigned long  u4_evid;
-    unsigned char  u1_trgtype;
-    unsigned char  u1_btb_inputs;
-    unsigned short u2_tab_sum;
-    unsigned long  u4_trgw;
-    unsigned long  u4_gps1;
-    unsigned long  u4_gps2;
-    unsigned long  u4_gps3;
+    uint16_t u2_length;
+    uint16_t u2_error;
+    uint16_t u2_blocks;
+    uint16_t u2_version;
+    uint32_t  u4_dsp_registers;
+    uint16_t u2_btb_firmware;
+    uint16_t u2_btb_threshold;
+    uint32_t  u4_trg_time;
+    uint32_t  u4_evid;
+    uint8_t  u1_trgtype;
+    uint8_t  u1_btb_inputs;
+    uint16_t u2_tab_sum;
+    uint32_t  u4_trgw;
+    uint32_t  u4_gps1;
+    uint32_t  u4_gps2;
+    uint32_t  u4_gps3;
 };
 
 class bx_trigger_decoded_event {
@@ -105,12 +105,12 @@ class bx_trigger_decoded_event {
     time_t get_time_t () const { return i4_time_t; }
 
     // return event time in seconds, and microseconds since Jan 01, 2000 0:0:0;
-    void get_gps_time    (unsigned long &secs, unsigned long &nano) const { secs=i4_time1; nano=i4_time2; }
+    void get_gps_time    (uint32_t &secs, uint32_t &nano) const { secs=i4_time1; nano=i4_time2; }
 
   private:
     int i4_day, i4_mon, i4_year;
     int i4_hour, i4_min, i4_sec, i4_millisec, i4_microsec;
-    unsigned long i4_time1, i4_time2;  // absolute secs and microsecs since 01/01/2000 UTC
+    uint32_t i4_time1, i4_time2;  // absolute secs and microsecs since 01/01/2000 UTC
     time_t i4_time_t;
 
     trigger_type i4_trigger_type;

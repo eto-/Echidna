@@ -21,12 +21,12 @@
 
 class interpolator: public bx_named {
   public:
-    interpolator (int n, const double* x, const double* y);
+    interpolator (int32_t n, const double* x, const double* y);
     virtual ~interpolator () { delete [] f8_deriv; delete [] f8_x_coord; delete [] f8_y_coord; }
 
     double get_value (double val);
   private:
-    const int i4_order;
+    const int32_t i4_order;
     double* f8_deriv;
     double* f8_x_coord;
     double* f8_y_coord;

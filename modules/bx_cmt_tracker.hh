@@ -34,7 +34,7 @@ class bx_cmt_tracker: public bx_base_module {
     virtual void end ();
   private:
   // this section is free; add here members, methods, histo pointers
-    int i4_times;
+    int32_t i4_times;
     std::vector<double> *my_vector;
     bool m_check_this_and_that(const bx_laben_event& er);
     TH1F* my_histo_check;

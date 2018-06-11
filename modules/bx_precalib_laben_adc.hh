@@ -27,8 +27,8 @@ class bx_precalib_laben_adc: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    int **adc_sample_map;
-    unsigned char u1_maxima_bin_add;
+    int32_t **adc_sample_map;
+    uint8_t u1_maxima_bin_add;
     TH1F *adc_limits, *adc_samples;
 };
 

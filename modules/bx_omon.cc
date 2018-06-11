@@ -20,12 +20,18 @@
 bx_omon::bx_omon (): bx_base_module("bx_omon", bx_base_module::main_loop) {
 }
 
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+#define SET_REBIN(h) h->SetCanExtend(TH1::kAllAxes);
+#else
+#define SET_REBIN(h) h->SetBit(TH1::kCanRebin);
+#endif
+
 //-----------------------------------------------------------------------------
 // module interface
 void bx_omon::begin () {
   get_message (bx_message::debug) << "OMON begin" << dispatch;
   // Get user parameters
-  law = (unsigned long)(get_parameter("law").get_int());
+  law = (uint32_t)(get_parameter("law").get_int());
   path = get_parameter("path").get_string();
   after_e = (get_parameter("after_e").get_int());
   after_t = (get_parameter("after_t").get_int());
@@ -51,7 +57,7 @@ void bx_omon::begin () {
   barn_interface::get ()->store (barn_interface::file, test, this);
   test->Fill(1);
 
-  for(int i=0; i<MAXCHID; i++) {
+  for(int32_t i=0; i<MAXCHID; i++) {
     HisPmtCounts[i] = 0;
     HisPmtOccupancy[i] = 0;
 
@@ -70,12 +76,12 @@ void bx_omon::begin () {
     sprintf(name1,"Time_LCh=%04d", i);
     sprintf(title,"Time_LCh=%04d", i);
     TimeLCh.push_back(new TH1F(name1, title, 256, 0., 500.));
-    TimeLCh[i]->SetBit(TH1::kCanRebin); //?correct?
+    SET_REBIN(TimeLCh[i]);
 
     sprintf(name1,"History_LCh=%04d", i);
     sprintf(title,"History_LCh=%04d", i);
     HistoryLCh.push_back(new TH1F(name1, title, 3, 0., 3.));
-    HistoryLCh[i]->SetBit(TH1::kCanRebin);
+    SET_REBIN(HistoryLCh[i]);
   };
 
   sprintf(name1,"DistribAverTime");
@@ -89,100 +95,100 @@ void bx_omon::begin () {
   sprintf(name1,"TriggerRateHistory");
   sprintf(title,"TriggerRateHistory");
   TriggerRateHistory = new TH1F(name1, title, 3, 0., 3.);
-  TriggerRateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(TriggerRateHistory);
 
 // --- trg types beg
   sprintf(name1,"Trigger1ateHistory");
   sprintf(title,"Trigger1ateHistory");
   Trigger1RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger1RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger1RateHistory);
 
   sprintf(name1,"Trigger2ateHistory");
   sprintf(title,"Trigger2ateHistory");
   Trigger2RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger2RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger2RateHistory);
 
   sprintf(name1,"Trigger3ateHistory");
   sprintf(title,"Trigger3ateHistory");
   Trigger3RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger3RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger3RateHistory);
 
   sprintf(name1,"Trigger4ateHistory");
   sprintf(title,"Trigger4ateHistory");
   Trigger4RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger4RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger4RateHistory);
 
   sprintf(name1,"Trigger5ateHistory");
   sprintf(title,"Trigger5ateHistory");
   Trigger5RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger5RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger5RateHistory);
 
   sprintf(name1,"Trigger6ateHistory");
   sprintf(title,"Trigger6ateHistory");
   Trigger6RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger6RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger6RateHistory);
 
   sprintf(name1,"Trigger7ateHistory");
   sprintf(title,"Trigger7ateHistory");
   Trigger7RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger7RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger7RateHistory);
 
   sprintf(name1,"Trigger8ateHistory");
   sprintf(title,"Trigger8ateHistory");
   Trigger8RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger8RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger8RateHistory);
 
   sprintf(name1,"Trigger9ateHistory");
   sprintf(title,"Trigger9ateHistory");
   Trigger9RateHistory = new TH1F(name1, title, 3, 0., 3.);
-  Trigger9RateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(Trigger9RateHistory);
 
 // --- trg types end
 
   sprintf(name1,"EventSizeHistory");
   sprintf(title,"EventSizeHistory");
   EventSizeHistory = new TH1F(name1, title, 3, 0., 3.);
-  EventSizeHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(EventSizeHistory);
 
   sprintf(name1,"EventSizeDistribution");
   sprintf(title,"EventSizeDistribution");
   EventSizeDistribution = new TH1F(name1, title, 100, 0., 3.);
-  EventSizeDistribution->SetBit(TH1::kCanRebin);
+  SET_REBIN(EventSizeDistribution);
 
   sprintf(name1,"HitsTotalHistory");
   sprintf(title,"HitsTotalHistory");
   HitsTotalHistory = new TH1F(name1, title, 3, 0., 3.);
-  HitsTotalHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(HitsTotalHistory);
 
   sprintf(name1,"HitsTotalDistribution");
   sprintf(title,"HitsTotalDistribution");
   HitsTotalDistribution = new TH1F(name1, title, 100, 0., 3.);
-  HitsTotalDistribution->SetBit(TH1::kCanRebin);
+  SET_REBIN(HitsTotalDistribution);
 
   sprintf(name1,"HitsWConeHistory");
   sprintf(title,"HitsWConeHistory");
   HitsWConeHistory = new TH1F(name1, title, 3, 0., 3.);
-  HitsWConeHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(HitsWConeHistory);
 
   sprintf(name1,"HitsWConeDistribution");
   sprintf(title,"HitsWConeDistribution");
   HitsWConeDistribution = new TH1F(name1, title, 100, 0., 3.);
-  HitsWConeDistribution->SetBit(TH1::kCanRebin);
+  SET_REBIN(HitsWConeDistribution);
 
   sprintf(name1,"HitsNConeHistory");
   sprintf(title,"HitsNConeHistory");
   HitsNConeHistory = new TH1F(name1, title, 3, 0., 3.);
-  HitsNConeHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(HitsNConeHistory);
 
   sprintf(name1,"HitsNConeDistribution");
   sprintf(title,"HitsNConeDistribution");
   HitsNConeDistribution = new TH1F(name1, title, 100, 0., 3.);
-  HitsNConeDistribution->SetBit(TH1::kCanRebin);
+  SET_REBIN(HitsNConeDistribution);
 
   sprintf(name1,"TriggerTypeDistribution");
   sprintf(title,"TriggerTypeDistribution");
   TriggerTypeDistribution = new TH1F(name1, title, 3, 0., 3.);
-  TriggerTypeDistribution->SetBit(TH1::kCanRebin);
+  SET_REBIN(TriggerTypeDistribution);
 
   sprintf(name1,"EventsTimeDistribution");
   sprintf(title,"EventsTimeDistribution");
@@ -197,7 +203,7 @@ void bx_omon::begin () {
   EventsTimeDistribution->GetXaxis()->SetBinLabel(64,"10_ms");
   EventsTimeDistribution->GetXaxis()->SetBinLabel(73,"100_ms");
   EventsTimeDistribution->GetXaxis()->SetBinLabel(82,"1_s");
-  for(int i=1; i<=82; i++) {
+  for(int32_t i=1; i<=82; i++) {
     EventsTimeDistribution->GetXaxis()->SetBinLabel(i,"-");
   }
 
@@ -212,59 +218,59 @@ void bx_omon::begin () {
   sprintf(name1,"QuasyEnergy");
   sprintf(title,"QuasyEnergy");
   QuasyEnergy = new TH1F(name1, title, 700, 0., 3.);
-  QuasyEnergy->SetBit(TH1::kCanRebin);
+  SET_REBIN(QuasyEnergy);
 
   sprintf(name1,"QuasyEnergyT01");
   sprintf(title,"QuasyEnergyT01");
   QuasyEnergyT01 = new TH1F(name1, title, 700, 0., 3.);
-  QuasyEnergyT01->SetBit(TH1::kCanRebin);
+  SET_REBIN(QuasyEnergyT01);
 
   sprintf(name1,"QuasyEnergyT08");
   sprintf(title,"QuasyEnergyT08");
   QuasyEnergyT08 = new TH1F(name1, title, 700, 0., 3.);
-  QuasyEnergyT08->SetBit(TH1::kCanRebin);
+  SET_REBIN(QuasyEnergyT08);
 
   sprintf(name1,"QuasyEnergyT32");
   sprintf(title,"QuasyEnergyT32");
   QuasyEnergyT32 = new TH1F(name1, title, 700, 0., 3.);
-  QuasyEnergyT32->SetBit(TH1::kCanRebin);
+  SET_REBIN(QuasyEnergyT32);
 
   sprintf(name1,"QuasyEnergyT64");
   sprintf(title,"QuasyEnergyT64");
   QuasyEnergyT64 = new TH1F(name1, title, 700, 0., 3.);
-  QuasyEnergyT64->SetBit(TH1::kCanRebin);
+  SET_REBIN(QuasyEnergyT64);
 
   sprintf(name1,"QuasyEnergyCutted");
   sprintf(title,"QuasyEnergyCutted");
   QuasyEnergyCutted = new TH1F(name1, title, 700, 0., 3.);
-  QuasyEnergyCutted->SetBit(TH1::kCanRebin);
+  SET_REBIN(QuasyEnergyCutted);
 
   sprintf(name1,"TriggerRateHistogram");
   sprintf(title,"TriggerRateHistogram");
   TriggerRateHistogram = new TH1F(name1, title, 3, 0., 3.); //!!!
-  TriggerRateHistogram->SetBit(TH1::kCanRebin);
+  SET_REBIN(TriggerRateHistogram);
 
-  for(int i=0; i<MAXOD; i++) {
+  for(int32_t i=0; i<MAXOD; i++) {
 
     sprintf(name1,"ODLeadTimeLCh=%03d", i);
     sprintf(title,"ODLeadTimeLCh=%03d", i);
     ODLeadTimeLCh.push_back(new TH1F(name1, title, 256, 0., 100.));
-    ODLeadTimeLCh[i]->SetBit(TH1::kCanRebin);
+    SET_REBIN(ODLeadTimeLCh[i]);
 
     sprintf(name1,"ODTrailTimeLCh=%03d", i);
     sprintf(title,"ODTrailTimeLCh=%03d", i);
     ODTrailTimeLCh.push_back(new TH1F(name1, title, 256, 0., 100.));
-    ODTrailTimeLCh[i]->SetBit(TH1::kCanRebin);
+    SET_REBIN(ODTrailTimeLCh[i]);
 
     sprintf(name1,"ODChargeLCh=%03d", i);
     sprintf(title,"ODChargeLCh=%03d", i);
     ODChargeLCh.push_back(new TH1F(name1, title, 256, 0., 100.));
-    ODChargeLCh[i]->SetBit(TH1::kCanRebin);
+    SET_REBIN(ODChargeLCh[i]);
 
     sprintf(name1,"ODHistoryLCh=%03d", i);
     sprintf(title,"ODHistoryLCh=%03d", i);
     ODHistoryLCh.push_back(new TH1F(name1, title, 3, 0., 3.));
-    ODHistoryLCh[i]->SetBit(TH1::kCanRebin);
+    SET_REBIN(ODHistoryLCh[i]);
 
     MuonPmtOccupancy[i] = 0;
     MuonPmtCounts[i] = 0;
@@ -273,27 +279,27 @@ void bx_omon::begin () {
   sprintf(name1,"ODQuasyEnergy");
   sprintf(title,"ODQuasyEnergy");
   ODQuasyEnergy = new TH1F(name1, title, 500, 0., 3.);
-  ODQuasyEnergy->SetBit(TH1::kCanRebin);
+  SET_REBIN(ODQuasyEnergy);
 
   sprintf(name1,"muTriggerRateHistory");
   sprintf(title,"muTriggerRateHistory");
   muTriggerRateHistory = new TH1F(name1, title, 3, 0., 3.);
-  muTriggerRateHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(muTriggerRateHistory);
 
   sprintf(name1,"muTriggerRateHistogram"); // !!!
   sprintf(title,"muTriggerRateHistogram");
   muTriggerRateHistogram = new TH1F(name1, title, 3, 0., 3.);
-  muTriggerRateHistogram->SetBit(TH1::kCanRebin);
+  SET_REBIN(muTriggerRateHistogram);
 
   sprintf(name1,"muHitsTotalHistory");
   sprintf(title,"muHitsTotalHistory");
   muHitsTotalHistory = new TH1F(name1, title, 3, 0., 3.);
-  muHitsTotalHistory->SetBit(TH1::kCanRebin);
+  SET_REBIN(muHitsTotalHistory);
 
   sprintf(name1,"muHitsTotalDistribution");
   sprintf(title,"muHitsTotalDistribution");
   muHitsTotalDistribution = new TH1F(name1, title, 100, 0., 3.);
-  muHitsTotalDistribution->SetBit(TH1::kCanRebin);
+  SET_REBIN(muHitsTotalDistribution);
 
   sprintf(name1,"EvFlag");
   sprintf(title,"EvFlag");
@@ -303,7 +309,7 @@ void bx_omon::begin () {
   sprintf(title,"TTrig");
   TTrig = new TH1F(name1, title, 200, -200., 0.);
 
-  for(int i=0; i<MAXFWFD; i++) {
+  for(int32_t i=0; i<MAXFWFD; i++) {
 
     sprintf(name1,"PedCh=%03d", i); // mean pedestal in channel
     sprintf(title,"PedCh=%03d", i);
@@ -312,52 +318,52 @@ void bx_omon::begin () {
     sprintf(name1,"PeakCh=%03d", i); // peak position in channel
     sprintf(title,"PeakCh=%03d", i);
     PeakCh.push_back(new TH1F(name1, title, 100, 0., 100.));
-    PeakCh[i]->SetBit(TH1::kCanRebin);
+    SET_REBIN(PeakCh[i]);
 
     sprintf(name1,"AmplCh=%03d", i); // peak position in channel
     sprintf(title,"AmplCh=%03d", i);
     AmplCh.push_back(new TH1F(name1, title, 256, 0., 256.));
-    AmplCh[i]->SetBit(TH1::kCanRebin);
+    SET_REBIN(AmplCh[i]);
 
     sprintf(name1,"ChargeCh=%03d", i); // peak position in channel
     sprintf(title,"ChargeCh=%03d", i);
     ChargeCh.push_back(new TH1F(name1, title, 256, 0., 256.));
-    ChargeCh[i]->SetBit(TH1::kCanRebin);
+    SET_REBIN(ChargeCh[i]);
   }
 
   sprintf(name1,"PeakNSum"); // Total Sum Peak Position
   sprintf(title,"PeakNSum");
   PeakNSum = new TH1F(name1, title, 100, 0., 100.);
-  PeakNSum->SetBit(TH1::kCanRebin);
+  SET_REBIN(PeakNSum);
 
   sprintf(name1,"AmplNSum"); // Total Sum Amplitude
   sprintf(title,"AmplNSum");
   AmplNSum = new TH1F(name1, title, 256, 0., 256.);
-  AmplNSum->SetBit(TH1::kCanRebin);
+  SET_REBIN(AmplNSum);
 
   sprintf(name1,"ChargeNSum"); // Total Sum Charge
   sprintf(title,"ChargeNSum");
   ChargeNSum = new TH1F(name1, title, 256, 0., 256.);
-  ChargeNSum->SetBit(TH1::kCanRebin);
+  SET_REBIN(ChargeNSum);
 
   sprintf(name1,"NWin"); // Total Sum Charge
   sprintf(title,"NWin");
   NWin = new TH1F(name1, title, 100, 0., 100.);
-  NWin->SetBit(TH1::kCanRebin);
+  SET_REBIN(NWin);
 
   sprintf(name1,"NPulse"); // Total Sum Charge
   sprintf(title,"NPulse");
   NPulse = new TH1F(name1, title, 256, 0., 256.);
-  NPulse->SetBit(TH1::kCanRebin);
+  SET_REBIN(NPulse);
 
   sprintf(name1,"TotSize"); // Total Sum Charge
   sprintf(title,"TotSize");
   TotSize = new TH1F(name1, title, 256, 0., 256.);
-  TotSize->SetBit(TH1::kCanRebin);
+  SET_REBIN(TotSize);
 
   events = 0;
   events_mu = 1;
-//  for(int i=0; i<MAXCHID; i++) HisPmtCounts[i]=0; // почему-то эта строчка не работала? фиг скобки?
+//  for(int32_t i=0; i<MAXCHID; i++) HisPmtCounts[i]=0; // почему-то эта строчка не работала? фиг скобки?
   run_number = 0;
   trigger_type = 0xFFFF;
   last_update = 0;
@@ -373,7 +379,7 @@ bx_echidna_event* bx_omon::doit (bx_echidna_event *ev) {
   // in case of change, reset histograms
   // if file not found, ignore and use all trigger types
   time_t now = time(0);
-  unsigned int diff = now - last_update;
+  uint32_t diff = now - last_update;
   if ( diff > 10 ) {
   	FILE *fp=fopen("/bxwww/data/omon_trigger_type.txt","rt");
 	if (!fp) {
@@ -381,7 +387,7 @@ bx_echidna_event* bx_omon::doit (bx_echidna_event *ev) {
 		trigger_type = 0xFFFF;
 	} else {
 		char dummy[200];
-		int new_type = 0;
+		int32_t new_type = 0;
 		fscanf(fp,"%s\n",dummy);
 		fclose(fp);
 
@@ -436,7 +442,7 @@ bx_echidna_event* bx_omon::doit (bx_echidna_event *ev) {
 void bx_omon::end () {
   get_message (bx_message::debug) << "OMON end" << dispatch;
 
-  for(int i=0; i<MAXCHID; i++) {
+  for(int32_t i=0; i<MAXCHID; i++) {
     delete RawChargeLCh[i];  
   }
 }
@@ -455,8 +461,8 @@ void bx_omon::update_histos(bx_echidna_event *ev) // update histograms with curr
 
 // ----- event based
 // trigger rate history
-  int hour = ev->get_trigger ().get_hour();
-  int min = ev->get_trigger ().get_min();
+  int32_t hour = ev->get_trigger ().get_hour();
+  int32_t min = ev->get_trigger ().get_min();
   char tmstmp[20];
   sprintf(tmstmp, "%02d:%02d", hour, min);
   TriggerRateHistory->Fill(tmstmp, 1./60.);
@@ -507,10 +513,10 @@ void bx_omon::update_histos(bx_echidna_event *ev) // update histograms with curr
 
 // ----- hit-based histograms
 
-  for (int i=0; i<er.get_decoded_nhits(); i++)
+  for (int32_t i=0; i<er.get_decoded_nhits(); i++)
   {
     const bx_laben_decoded_hit& h = er.get_decoded_hit(i);
-    int lg = h.get_raw_hit().get_logical_channel();
+    int32_t lg = h.get_raw_hit().get_logical_channel();
     HisPmtCounts[lg]++;
     HisPmtOccupancy[lg] = (float)HisPmtCounts[lg]/(float)events;
 
@@ -528,10 +534,10 @@ void bx_omon::update_histos(bx_echidna_event *ev) // update histograms with curr
 	  const bx_muon_event& em = ev->get_muon ();
 	//  get_message (bx_message::warn) << "total muon hits: " << em.get_decoded_nhits() << "; logical channels: " << dispatch;
 	// ----- cycle on muon hits
-	  for (int i=0; i<em.get_decoded_nhits(); i++) // raw or decoded?
+	  for (int32_t i=0; i<em.get_decoded_nhits(); i++) // raw or decoded?
 	  {
 	    const bx_muon_decoded_hit &decoded_hit = em.get_decoded_hit (i);
-	    int ml = decoded_hit.get_raw_hit().get_logical_channel();
+	    int32_t ml = decoded_hit.get_raw_hit().get_logical_channel();
 	//    get_message (bx_message::warn) << ml << ", " << dispatch;
 	    MuonPmtCounts[ml - 3000]++;
 	    MuonPmtOccupancy[ml - 3000] = (float)MuonPmtCounts[ml - 3000]/(float)events_mu;
@@ -550,7 +556,7 @@ void bx_omon::update_histos(bx_echidna_event *ev) // update histograms with curr
 }
 
 //-----------------------------------------------------------------------------
-int bx_omon::condition() // update histograms with current event
+int32_t bx_omon::condition() // update histograms with current event
 {
   get_message (bx_message::debug) << "condition" << count << dispatch;
   // pick up rule
@@ -560,7 +566,7 @@ int bx_omon::condition() // update histograms with current event
   }
   if (law==2) {
   	time_t now = time(0);
-	int diff = now - last_condition_time;
+	int32_t diff = now - last_condition_time;
 	if ( diff > after_t )
 		return 1;
   }
@@ -568,7 +574,7 @@ int bx_omon::condition() // update histograms with current event
 }
 
 //-----------------------------------------------------------------------------
-int bx_omon::reset_condition() // update histograms with current event
+int32_t bx_omon::reset_condition() // update histograms with current event
 {
   get_message (bx_message::debug) << "reset condition" << dispatch;
   // pick up rule
@@ -598,7 +604,7 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/cci.txt";
   FILE* fpcci = fopen(fname.c_str(),"wt+");
   fprintf(fpccd,"# nchannels\n2240\n");
-  for (int ch=1; ch<MAXCHID; ch++) {
+  for (int32_t ch=1; ch<MAXCHID; ch++) {
     fprintf(fpccd,"# Logical Channel %04d\n",ch);
     fprintf(fpcci,"%04ld\n",ftell(fpccd) );
     MyDump1DHisto(RawChargeLCh[ch], fpccd);
@@ -612,7 +618,7 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/vci.txt";
   FILE* fpvci = fopen(fname.c_str(),"wt+");
   fprintf(fpvcd,"# nchannels\n2240\n");
-  for (int ch=1; ch<MAXCHID; ch++) {
+  for (int32_t ch=1; ch<MAXCHID; ch++) {
     fprintf(fpvcd,"# Logical Channel %04d\n",ch);
     fprintf(fpvci,"%04ld\n",ftell(fpvcd) );
     MyDump1DHisto(ChargeCutLCh[ch], fpvcd);
@@ -626,7 +632,7 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/bci.txt";
   FILE* fpbci = fopen(fname.c_str(),"wt+");
   fprintf(fpbcd,"# nchannels\n2240\n");
-  for (int ch=1; ch<MAXCHID; ch++) {
+  for (int32_t ch=1; ch<MAXCHID; ch++) {
     fprintf(fpbcd,"# Logical Channel %04d\n",ch);
     fprintf(fpbci,"%04ld\n",ftell(fpbcd) );
     MyDump1DHisto(RawBaseLCh[ch], fpbcd);
@@ -640,7 +646,7 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/tci.txt";
   FILE* fptci = fopen(fname.c_str(),"wt+");
   fprintf(fptcd,"# nchannels\n2240\n");
-  for (int ch=1; ch<MAXCHID; ch++) {
+  for (int32_t ch=1; ch<MAXCHID; ch++) {
     fprintf(fptcd,"# Logical Channel %04d\n",ch);
     fprintf(fptci,"%04ld\n",ftell(fptcd) );
     MyDump1DHisto(TimeLCh[ch], fptcd);
@@ -654,10 +660,10 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/hci.txt";
   FILE* fphci = fopen(fname.c_str(),"wt+");
   fprintf(fphcd,"# nchannels\n2240\n");
-  for (int ch=1; ch<MAXCHID; ch++) {
+  for (int32_t ch=1; ch<MAXCHID; ch++) {
     fprintf(fphcd,"# Logical Channel %04d\n",ch);
     fprintf(fphci,"%04ld\n",ftell(fphcd) );
-    for(int i=0; i < HistoryLCh[ch]->GetNbinsX(); i++) {
+    for(int32_t i=0; i < HistoryLCh[ch]->GetNbinsX(); i++) {
       fprintf(fphcd, "%s %06.2f\n", HistoryLCh[ch]->GetXaxis()->GetBinLabel(i), (float)HistoryLCh[ch]->GetBinContent(i));
     }
   }
@@ -669,13 +675,13 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* fpoccupancy = fopen(fname.c_str(),"wt+");
   fprintf(fpoccupancy,"## pmt occupancy\n");
   fprintf(fpoccupancy,"2240\n");
-  for(int i=1; i<MAXCHID; i++) fprintf(fpoccupancy, "%d %6.2f\n", i, HisPmtOccupancy[i]);
+  for(int32_t i=1; i<MAXCHID; i++) fprintf(fpoccupancy, "%d %6.2f\n", i, HisPmtOccupancy[i]);
   fclose(fpoccupancy);
 
   // main trigger history // file mth.txt
   fname = path + "/mth.txt";
   FILE* fptriggerhistory = fopen(fname.c_str(),"wt+");
-  for(int i=0; i < TriggerRateHistory->GetNbinsX(); i++) {
+  for(int32_t i=0; i < TriggerRateHistory->GetNbinsX(); i++) {
 //    if (TriggerRateHistory->GetXaxis()->GetBinLabel(i) != "") { // this line does not work... ?!
     if (strlen(TriggerRateHistory->GetXaxis()->GetBinLabel(i)) != 0) { // this line does not work... ?!
       fprintf(fptriggerhistory, "%s %06.2f\n", TriggerRateHistory->GetXaxis()->GetBinLabel(i), (float)TriggerRateHistory->GetBinContent(i));
@@ -686,7 +692,7 @@ void bx_omon::export_ascii() // update histograms with current event
   // triggers history // file mthm.txt
   fname = path + "/mthm.txt";
   FILE* mthm = fopen(fname.c_str(),"wt+");
-  for(int i=0; i < TriggerRateHistory->GetNbinsX(); i++) {
+  for(int32_t i=0; i < TriggerRateHistory->GetNbinsX(); i++) {
 //    if ((TriggerRateHistory->GetXaxis()->GetBinLabel(i) != "") 
     if ((strlen(TriggerRateHistory->GetXaxis()->GetBinLabel(i)) != 0) 
 		&& (TriggerRateHistory->GetBinContent(i) != 0)) { // this line does not work... ?!
@@ -710,26 +716,26 @@ void bx_omon::export_ascii() // update histograms with current event
   // main trigger distribution // file mtd.txt
 //  TriggerRateHistogram->Clear();
   TriggerRateHistogram->Reset();
-  for(int i=0; i < TriggerRateHistory->GetNbinsX(); i++)
+  for(int32_t i=0; i < TriggerRateHistory->GetNbinsX(); i++)
     if (TriggerRateHistory->GetBinContent(i) != 0)
     {
       TriggerRateHistogram->Fill((float)TriggerRateHistory->GetBinContent(i));
     }
 
-  int n = 22;
+  int32_t n = 22;
   fname = path + "/mtd.txt";
   FILE* fptriggerhistogram = fopen(fname.c_str(),"wt+");
   fprintf(fptriggerhistogram,"%d\n",n);
-  for(int i=0; i < n; i++) {
+  for(int32_t i=0; i < n; i++) {
     fprintf(fptriggerhistogram, "%06.2f %06.2f\n", (float)TriggerRateHistogram->GetBinCenter(i), (float)TriggerRateHistogram->GetBinContent(i));
   }
-  fprintf(fptriggerhistogram,"%d\n%5.1f\n%5.1f\n", (int)TriggerRateHistogram->GetEntries(), (float)TriggerRateHistogram->GetMean(), (float)TriggerRateHistogram->GetRMS() );
+  fprintf(fptriggerhistogram,"%d\n%5.1f\n%5.1f\n", (int32_t)TriggerRateHistogram->GetEntries(), (float)TriggerRateHistogram->GetMean(), (float)TriggerRateHistogram->GetRMS() );
   fclose(fptriggerhistogram);
 
   // event size history // file esh.txt
   fname = path + "/esh.txt";
   FILE* fpes = fopen(fname.c_str(),"wt+");
-  for(int i=0; i < EventSizeHistory->GetNbinsX(); i++)
+  for(int32_t i=0; i < EventSizeHistory->GetNbinsX(); i++)
 //    if (EventSizeHistory->GetXaxis()->GetBinLabel(i) != "") // this line does not work... ?!
     if (strlen(EventSizeHistory->GetXaxis()->GetBinLabel(i)) != 0) // this line does not work... ?!
     {
@@ -741,16 +747,16 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/esd.txt";
   FILE* fpesd = fopen(fname.c_str(),"wt+");
   fprintf(fpesd,"%d\n",EventSizeDistribution->GetNbinsX());
-  for(int i=0; i < EventSizeDistribution->GetNbinsX(); i++)
+  for(int32_t i=0; i < EventSizeDistribution->GetNbinsX(); i++)
     fprintf(fpesd,"%06.2f %06.2f\n",(float)EventSizeDistribution->GetBinCenter(i), (float)EventSizeDistribution->GetBinContent(i));
   fprintf(fpesd,"%d\n%5.1f\n%5.1f\n",
-    (int)EventSizeDistribution->GetEntries(), (float)EventSizeDistribution->GetMean(), (float)EventSizeDistribution->GetRMS() );
+    (int32_t)EventSizeDistribution->GetEntries(), (float)EventSizeDistribution->GetMean(), (float)EventSizeDistribution->GetRMS() );
   fclose(fpesd);
 
   // total hits -- history  // file nhh.txt
   fname = path + "/nhh.txt";
   FILE* fpnh = fopen(fname.c_str(),"wt+");
-  for(int i=0; i < HitsTotalHistory->GetNbinsX(); i++)
+  for(int32_t i=0; i < HitsTotalHistory->GetNbinsX(); i++)
 //    if (HitsTotalHistory->GetXaxis()->GetBinLabel(i) != "") {
     if (strlen(HitsTotalHistory->GetXaxis()->GetBinLabel(i)) != 0) {
 //      fprintf(fpnh,"h %s %06.2f\n", TriggerRateHistory->GetXaxis()->GetBinLabel(i), (float)HitsTotalHistory->GetBinContent(i));
@@ -766,16 +772,16 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/nhd.txt";
   FILE* fpnhd = fopen(fname.c_str(),"wt+");
   fprintf(fpnhd,"%d\n",HitsTotalDistribution->GetNbinsX());
-  for(int i=0; i < HitsTotalDistribution->GetNbinsX(); i++)
+  for(int32_t i=0; i < HitsTotalDistribution->GetNbinsX(); i++)
     fprintf(fpnhd,"%06.2f %06.2f\n", (float)HitsTotalDistribution->GetBinCenter(i), (float)HitsTotalDistribution->GetBinContent(i));
   fprintf(fpnhd,"%d\n%5.1f\n%5.1f\n",
-    (int)HitsTotalDistribution->GetEntries(), (float)HitsTotalDistribution->GetMean(), (float)HitsTotalDistribution->GetRMS() );
+    (int32_t)HitsTotalDistribution->GetEntries(), (float)HitsTotalDistribution->GetMean(), (float)HitsTotalDistribution->GetRMS() );
   fclose(fpnhd);
 
   // hits with cones -- history // file wch.txt
   fname = path + "/wch.txt";
   FILE* fwch = fopen(fname.c_str(),"wt+");
-  for(int i=0; i < HitsWConeHistory->GetNbinsX(); i++)
+  for(int32_t i=0; i < HitsWConeHistory->GetNbinsX(); i++)
 //    if (HitsWConeHistory->GetXaxis()->GetBinLabel(i) != "") {
     if (strlen(HitsWConeHistory->GetXaxis()->GetBinLabel(i)) != 0) {
       fprintf(fwch,"%s %06.2f\n", TriggerRateHistory->GetXaxis()->GetBinLabel(i), (float)HitsWConeHistory->GetBinContent(i) / (float)TriggerRateHistory->GetBinContent(i) / 60.);
@@ -786,16 +792,16 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/wcd.txt";
   FILE* fpwcd = fopen(fname.c_str(),"wt+");
   fprintf(fpwcd,"%d\n",HitsWConeDistribution->GetNbinsX());
-  for(int i=0; i < HitsWConeDistribution->GetNbinsX(); i++)
+  for(int32_t i=0; i < HitsWConeDistribution->GetNbinsX(); i++)
     fprintf(fpwcd,"%06.2f %06.2f\n",(float)HitsWConeDistribution->GetBinCenter(i), (float)HitsWConeDistribution->GetBinContent(i));
   fprintf(fpwcd,"%d\n%5.1f\n%5.1f\n",
-    (int)HitsWConeDistribution->GetEntries(), (float)HitsWConeDistribution->GetMean(), (float)HitsWConeDistribution->GetRMS() );
+    (int32_t)HitsWConeDistribution->GetEntries(), (float)HitsWConeDistribution->GetMean(), (float)HitsWConeDistribution->GetRMS() );
   fclose(fpwcd);
 
   // hits no cones -- history // file nch.txt
   fname = path + "/nch.txt";
   FILE* fnch = fopen(fname.c_str(),"wt+");
-  for(int i=0; i < HitsNConeHistory->GetNbinsX(); i++)
+  for(int32_t i=0; i < HitsNConeHistory->GetNbinsX(); i++)
 //    if (HitsNConeHistory->GetXaxis()->GetBinLabel(i) != "") {
     if (strlen(HitsNConeHistory->GetXaxis()->GetBinLabel(i)) != 0) {
       fprintf(fnch,"%s %06.2f\n", TriggerRateHistory->GetXaxis()->GetBinLabel(i), (float)HitsNConeHistory->GetBinContent(i) / (float)TriggerRateHistory->GetBinContent(i) / 60.);
@@ -806,60 +812,60 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/ncd.txt";
   FILE* fpncd = fopen(fname.c_str(),"wt+");
   fprintf(fpncd,"%d\n", HitsNConeDistribution->GetNbinsX());
-  for(int i=0; i < HitsNConeDistribution->GetNbinsX(); i++)
+  for(int32_t i=0; i < HitsNConeDistribution->GetNbinsX(); i++)
     fprintf(fpncd,"%06.2f %06.2f\n", (float)HitsNConeDistribution->GetBinCenter(i), (float)HitsNConeDistribution->GetBinContent(i));
   fprintf(fpncd,"%d\n%5.1f\n%5.1f\n",
-    (int)HitsNConeDistribution->GetEntries(), (float)HitsNConeDistribution->GetMean(), (float)HitsNConeDistribution->GetRMS() );
+    (int32_t)HitsNConeDistribution->GetEntries(), (float)HitsNConeDistribution->GetMean(), (float)HitsNConeDistribution->GetRMS() );
   fclose(fpncd);
 
   // trigger type distribution // file ttd.txt
   fname = path + "/ttd.txt";
   FILE* fpttd = fopen(fname.c_str(),"wt+");
   fprintf(fpttd,"%d\n", TriggerTypeDistribution->GetNbinsX());
-  for(int i=0; i < TriggerTypeDistribution->GetNbinsX(); i++)
+  for(int32_t i=0; i < TriggerTypeDistribution->GetNbinsX(); i++)
     fprintf(fpttd, "%s %06.2f\n", TriggerTypeDistribution->GetXaxis()->GetBinLabel(i), (float)TriggerTypeDistribution->GetBinContent(i));
   fprintf(fpttd,"%d\n%5.1f\n%5.1f\n",
-    (int)TriggerTypeDistribution->GetEntries(), (float)TriggerTypeDistribution->GetMean(), (float)TriggerTypeDistribution->GetRMS() );
+    (int32_t)TriggerTypeDistribution->GetEntries(), (float)TriggerTypeDistribution->GetMean(), (float)TriggerTypeDistribution->GetRMS() );
   fclose(fpttd);
 
   // events time distribution // file tbd.txt
   fname = path + "/tbd.txt";
   FILE* fptbd = fopen(fname.c_str(),"wt+");
   fprintf(fptbd,"%d\n", EventsTimeDistribution->GetNbinsX());
-  for(int i=1; i <= EventsTimeDistribution->GetNbinsX(); i++)
+  for(int32_t i=1; i <= EventsTimeDistribution->GetNbinsX(); i++)
     fprintf(fptbd,"%s %06.2f\n", EventsTimeDistribution->GetXaxis()->GetBinLabel(i), (float)EventsTimeDistribution->GetBinContent(i));
   fprintf(fptbd,"%d\n%5.1f\n%5.1f\n",
-    (int)EventsTimeDistribution->GetEntries(), (float)EventsTimeDistribution->GetMean(), (float)EventsTimeDistribution->GetRMS() );
+    (int32_t)EventsTimeDistribution->GetEntries(), (float)EventsTimeDistribution->GetMean(), (float)EventsTimeDistribution->GetRMS() );
   fclose(fptbd);
 
   // gps time distribution // file gps.txt
   fname = path + "/gps.txt";
   FILE* fpgps = fopen(fname.c_str(),"wt+");
   fprintf(fpgps,"%d\n", GPS_ppc0_Distribution->GetNbinsX());
-  for(int i=1; i <= GPS_ppc0_Distribution->GetNbinsX(); i++)
+  for(int32_t i=1; i <= GPS_ppc0_Distribution->GetNbinsX(); i++)
     fprintf(fpgps, "%06.2f %06.2f %06.2f\n", (float)GPS_ppc0_Distribution->GetBinCenter(i), (float)GPS_ppc0_Distribution->GetBinContent(i), (float)GPS_build_Distribution->GetBinContent(i));
   fprintf(fpgps,"%d\n%5.1f\n%5.1f\n",
-    (int)GPS_ppc0_Distribution->GetEntries(), (float)GPS_ppc0_Distribution->GetMean(), (float)GPS_ppc0_Distribution->GetRMS() );
+    (int32_t)GPS_ppc0_Distribution->GetEntries(), (float)GPS_ppc0_Distribution->GetMean(), (float)GPS_ppc0_Distribution->GetRMS() );
   fclose(fpgps);
 
   // average time distribution // file atd.txt
   fname = path + "/atd.txt";
   FILE* fpatd = fopen(fname.c_str(),"wt+");
   fprintf(fpatd,"%d\n", DistribAverTime->GetNbinsX());
-  for(int i=1; i <= DistribAverTime->GetNbinsX(); i++)
+  for(int32_t i=1; i <= DistribAverTime->GetNbinsX(); i++)
     fprintf(fpatd, "%06.2f %06.2f\n", (float)DistribAverTime->GetBinCenter(i), (float)DistribAverTime->GetBinContent(i));
   fprintf(fpatd,"%d\n%5.1f\n%5.1f\n",
-    (int)DistribAverTime->GetEntries(), (float)DistribAverTime->GetMean(), (float)DistribAverTime->GetRMS() );
+    (int32_t)DistribAverTime->GetEntries(), (float)DistribAverTime->GetMean(), (float)DistribAverTime->GetRMS() );
   fclose(fpatd);
 
   // reference time distribution // file rtd.txt
   fname = path + "/rtd.txt";
   FILE* fprtd = fopen(fname.c_str(), "wt+");
   fprintf(fprtd,"%d\n", DistribRefTime->GetNbinsX());
-  for(int i=1; i <= DistribRefTime->GetNbinsX(); i++)
+  for(int32_t i=1; i <= DistribRefTime->GetNbinsX(); i++)
     fprintf(fprtd, "%06.2f %06.2f\n", (float)DistribRefTime->GetBinCenter(i), (float)DistribRefTime->GetBinContent(i));
   fprintf(fprtd,"%d\n%5.1f\n%5.1f\n",
-    (int)DistribRefTime->GetEntries(), (float)DistribRefTime->GetMean(), (float)DistribRefTime->GetRMS() );
+    (int32_t)DistribRefTime->GetEntries(), (float)DistribRefTime->GetMean(), (float)DistribRefTime->GetRMS() );
   fclose(fprtd);
 
   // file end.txt (energy --  sum of amplitudes -- distribution)
@@ -867,7 +873,7 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* fpmsad = fopen(fname.c_str(), "wt+");
   fprintf (fpmsad, "#sum of amplitudes -- distribution\n");
   fprintf(fpmsad,"%d\n", QuasyEnergy->GetNbinsX());
-  for(int i=1; i <= QuasyEnergy->GetNbinsX(); i++) {
+  for(int32_t i=1; i <= QuasyEnergy->GetNbinsX(); i++) {
     fprintf(fpmsad,"%06.2f %06.2f %06.2f %06.2f %06.2f %06.2f\n", (float)QuasyEnergy->GetBinCenter(i), 
                                              (float)QuasyEnergy->GetBinContent(i), 
                                              (float)QuasyEnergyT01->GetBinContent(i),
@@ -876,7 +882,7 @@ void bx_omon::export_ascii() // update histograms with current event
                                              (float)QuasyEnergyT64->GetBinContent(i));
   }
   fprintf(fpmsad,"%d\n%5.1f\n%5.1f\n",
-    (int)QuasyEnergy->GetEntries(), (float)QuasyEnergy->GetMean(), (float)QuasyEnergy->GetRMS() );
+    (int32_t)QuasyEnergy->GetEntries(), (float)QuasyEnergy->GetMean(), (float)QuasyEnergy->GetRMS() );
   fclose(fpmsad);
 
   // file endc.txt (sum of amplitudes (cutted) -- distribution)
@@ -884,11 +890,11 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* fpmsac = fopen(fname.c_str(), "wt+");
   fprintf (fpmsac, "#sum of amplitudes (cutted) -- distribution\n");
   fprintf(fpmsac,"%d\n",QuasyEnergyCutted->GetNbinsX());
-  for(int i=1; i <= QuasyEnergyCutted->GetNbinsX(); i++) {
+  for(int32_t i=1; i <= QuasyEnergyCutted->GetNbinsX(); i++) {
     fprintf(fpmsac,"%06.2f %06.2f\n", (float)QuasyEnergyCutted->GetBinCenter(i), (float)QuasyEnergyCutted->GetBinContent(i));
   }
   fprintf(fpmsac,"%d\n%5.1f\n%5.1f\n",
-    (int)QuasyEnergyCutted->GetEntries(), (float)QuasyEnergyCutted->GetMean(), (float)QuasyEnergyCutted->GetRMS() );
+    (int32_t)QuasyEnergyCutted->GetEntries(), (float)QuasyEnergyCutted->GetMean(), (float)QuasyEnergyCutted->GetRMS() );
   fclose(fpmsac);
 
   // run number // file ofrn.txt
@@ -909,7 +915,7 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/mltci.txt";
   FILE* fpmltci = fopen(fname.c_str(), "wt+");
   fprintf(fpmltcd,comment);
-  for(int iCh=0; iCh<MAXOD; iCh++) {
+  for(int32_t iCh=0; iCh<MAXOD; iCh++) {
     fprintf(fpmltcd,"# OD Logical Channel %04d\n",iCh+3001);
     fprintf(fpmltci,"%04ld\n",ftell(fpmltcd) );
     MyDump1DHisto(ODLeadTimeLCh[iCh],fpmltcd);
@@ -923,7 +929,7 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/mttci.txt";
   FILE* fpmttci = fopen(fname.c_str(), "wt+");
   fprintf(fpmttcd,comment);
-  for(int iCh=0; iCh<MAXOD; iCh++) {
+  for(int32_t iCh=0; iCh<MAXOD; iCh++) {
     fprintf(fpmttcd,"# OD Logical Channel %04d\n",iCh+3001);
     fprintf(fpmttci,"%04ld\n",ftell(fpmttcd) );
     MyDump1DHisto(ODTrailTimeLCh[iCh],fpmttcd);
@@ -937,7 +943,7 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/mcci.txt";
   FILE* fpmcci = fopen(fname.c_str(), "wt+");
   fprintf(fpmccd,comment);
-  for(int iCh=0; iCh<MAXOD; iCh++) {
+  for(int32_t iCh=0; iCh<MAXOD; iCh++) {
     fprintf(fpmccd,"# OD Logical Channel %04d\n",iCh+3001);
     fprintf(fpmcci,"%04ld\n",ftell(fpmccd) );
     MyDump1DHisto(ODChargeLCh[iCh],fpmccd);
@@ -951,10 +957,10 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/mhci.txt";
   FILE* fpmhci = fopen(fname.c_str(), "wt+");
   fprintf(fpmhcd,comment);
-  for(int iCh=0; iCh<MAXOD; iCh++) {
+  for(int32_t iCh=0; iCh<MAXOD; iCh++) {
     fprintf(fpmhcd,"# OD Logical Channel %04d\n",iCh+3001);
     fprintf(fpmhci,"%04ld\n",ftell(fpmhcd) );
-    for(int i=0; i < ODHistoryLCh[iCh]->GetNbinsX(); i++)
+    for(int32_t i=0; i < ODHistoryLCh[iCh]->GetNbinsX(); i++)
       fprintf(fpmhcd,"%s %06.2f\n",ODHistoryLCh[iCh]->GetXaxis()->GetBinLabel(i),(float)ODHistoryLCh[iCh]->GetBinContent(i));
   }
   fclose(fpmhcd);
@@ -965,7 +971,7 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* mfpoccupancy = fopen(fname.c_str(), "wt+");
   fprintf(mfpoccupancy,"## pmt occupancy\n");
   fprintf(mfpoccupancy,"%d\n",MAXOD-1);
-  for(int i=1; i<MAXOD; i++) {
+  for(int32_t i=1; i<MAXOD; i++) {
     fprintf(mfpoccupancy,"%d %6.2f\n",i+3000,MuonPmtOccupancy[i]);
   }
   fclose(mfpoccupancy);
@@ -974,11 +980,11 @@ void bx_omon::export_ascii() // update histograms with current event
   // file mmth.txt
   fname = path + "/mmth.txt";
   FILE* mfptriggerhistory = fopen(fname.c_str(), "wt+");
-//  for(int i=0; i < muTriggerRateHistory->GetNbinsX(); i++)
+//  for(int32_t i=0; i < muTriggerRateHistory->GetNbinsX(); i++)
 //  if (muTriggerRateHistory->GetXaxis()->GetBinLabel(i) != "") {
 //    fprintf(mfptriggerhistory,"%s %06.2f\n",muTriggerRateHistory->GetXaxis()->GetBinLabel(i), (float)muTriggerRateHistory->GetBinContent(i));
 //  }
-  for(int i=0; i < TriggerRateHistory->GetNbinsX(); i++)
+  for(int32_t i=0; i < TriggerRateHistory->GetNbinsX(); i++)
 //  if (TriggerRateHistory->GetXaxis()->GetBinLabel(i) != "") {
   if (strlen(TriggerRateHistory->GetXaxis()->GetBinLabel(i)) != 0) {
     fprintf(mfptriggerhistory,"%s %06.2f\n",TriggerRateHistory->GetXaxis()->GetBinLabel(i), (float)Trigger2RateHistory->GetBinContent(i));
@@ -987,24 +993,24 @@ void bx_omon::export_ascii() // update histograms with current event
 
   // muon trigger history
   n = 22;
-  for(int i=0; i < muTriggerRateHistory->GetNbinsX(); i++)
+  for(int32_t i=0; i < muTriggerRateHistory->GetNbinsX(); i++)
     if (muTriggerRateHistory->GetBinContent(i) != 0) {
       muTriggerRateHistogram->Fill((float)muTriggerRateHistory->GetBinContent(i));
     }
   fname = path + "/mmtd.txt";
   FILE* mfptriggerhistogram = fopen(fname.c_str(), "wt+");
   fprintf(mfptriggerhistogram,"%d\n",n);
-  for(int i=0; i < n; i++)
+  for(int32_t i=0; i < n; i++)
     fprintf(mfptriggerhistogram,"%06.2f %06.2f\n", (float)muTriggerRateHistogram->GetBinCenter(i), (float)muTriggerRateHistogram->GetBinContent(i));
   fprintf(mfptriggerhistogram,"%d\n%5.1f\n%5.1f\n",
-    (int)muTriggerRateHistogram->GetEntries(), (float)muTriggerRateHistogram->GetMean(), (float)muTriggerRateHistogram->GetRMS() );
+    (int32_t)muTriggerRateHistogram->GetEntries(), (float)muTriggerRateHistogram->GetMean(), (float)muTriggerRateHistogram->GetRMS() );
   fclose(mfptriggerhistogram);
 //  muTriggerRateHistogram->Delete(); // не уничтожать, а обнулять... или вообще отказаться "временно"
 
   // file mmth.txt
   fname = path + "/mnhh.txt";
   FILE* mfpnh = fopen(fname.c_str(), "wt+");
-  for(int i=0; i < TriggerRateHistory->GetNbinsX(); i++)
+  for(int32_t i=0; i < TriggerRateHistory->GetNbinsX(); i++)
 //    if (TriggerRateHistory->GetXaxis()->GetBinLabel(i) != "") {
     if (strlen(TriggerRateHistory->GetXaxis()->GetBinLabel(i)) != 0) {
       fprintf(mfpnh,"%s %06.2f\n",TriggerRateHistory->GetXaxis()->GetBinLabel(i), (float)muHitsTotalHistory->GetBinContent(i) / (float)TriggerRateHistory->GetBinContent(i) / 60.);
@@ -1016,10 +1022,10 @@ void bx_omon::export_ascii() // update histograms with current event
   fname = path + "/mnhd.txt";
   FILE* fpmnhd = fopen(fname.c_str(), "wt+");
   fprintf(fpmnhd,"%d\n",muTriggerRateHistogram->GetNbinsX());
-  for(int i=0; i < muTriggerRateHistogram->GetNbinsX(); i++)
+  for(int32_t i=0; i < muTriggerRateHistogram->GetNbinsX(); i++)
     fprintf(fpmnhd,"%06.2f %06.2f\n",(float)muTriggerRateHistogram->GetBinCenter(i), (float)muTriggerRateHistogram->GetBinContent(i));
   fprintf(fpmnhd,"%d\n%5.1f\n%5.1f\n",
-    (int)muTriggerRateHistogram->GetEntries(), (float)muTriggerRateHistogram->GetMean(), (float)muTriggerRateHistogram->GetRMS() );
+    (int32_t)muTriggerRateHistogram->GetEntries(), (float)muTriggerRateHistogram->GetMean(), (float)muTriggerRateHistogram->GetRMS() );
   fclose(fpmnhd);
 
   // mu-Hits-Total-History // file nhh.txt
@@ -1029,11 +1035,11 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* mfpmsad = fopen(fname.c_str(), "wt+");
   fprintf (mfpmsad, "#muon sum of amplitudes -- distribution\n");
   fprintf(mfpmsad,"%d\n",ODQuasyEnergy->GetNbinsX());
-  for(int i=1; i <= ODQuasyEnergy->GetNbinsX(); i++) {
+  for(int32_t i=1; i <= ODQuasyEnergy->GetNbinsX(); i++) {
     fprintf(mfpmsad,"%06.2f %06.2f\n",(float)ODQuasyEnergy->GetBinCenter(i), (float)ODQuasyEnergy->GetBinContent(i));
   }
   fprintf(mfpmsad,"%d\n%5.1f\n%5.1f\n",
-    (int)ODQuasyEnergy->GetEntries(), (float)ODQuasyEnergy->GetMean(), (float)ODQuasyEnergy->GetRMS() );
+    (int32_t)ODQuasyEnergy->GetEntries(), (float)ODQuasyEnergy->GetMean(), (float)ODQuasyEnergy->GetRMS() );
   fclose(mfpmsad);
 
   // == fwfd part ==
@@ -1045,7 +1051,7 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* fphi = fopen(fname.c_str(),"wt+");
   fname = path + "/fmpm.txt";
   FILE* fmpm = fopen(fname.c_str(),"wt+");
-  for(int i=0; i<MAXFWFD; i++) {
+  for(int32_t i=0; i<MAXFWFD; i++) {
     fprintf(fphd,"# fwfd pedestal channel %03d\n",i);
     fprintf(fphi,"%04ld\n",ftell(fphd));
     MyDump1DHisto(PedCh[i], fphd);
@@ -1060,7 +1066,7 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* fpad = fopen(fname.c_str(),"wt+");
   fname = path + "/fpai.txt";
   FILE* fpai = fopen(fname.c_str(),"wt+");
-  for(int i=1; i<=MAXFWFD; i++) {
+  for(int32_t i=1; i<=MAXFWFD; i++) {
     fprintf(fpad,"# fwfd peak amplitude channel %03d\n",i);
     fprintf(fpai,"%04ld\n",ftell(fpad));
     MyDump1DHisto(AmplCh[i],fpad);
@@ -1073,7 +1079,7 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* fppd = fopen(fname.c_str(),"wt+");
   fname = path + "/fppi.txt";
   FILE* fppi = fopen(fname.c_str(),"wt+");
-  for(int i=1; i<=MAXFWFD; i++) {
+  for(int32_t i=1; i<=MAXFWFD; i++) {
     fprintf(fppd,"# fwfd peak position channel %03d\n",i);
     fprintf(fppi,"%04ld\n",ftell(fppd));
     MyDump1DHisto(PeakCh[i],fppd);
@@ -1086,7 +1092,7 @@ void bx_omon::export_ascii() // update histograms with current event
   FILE* fpqd = fopen(fname.c_str(),"wt+");
   fname = path + "/fpqi.txt";
   FILE* fpqi = fopen(fname.c_str(),"wt+");
-  for(int i=1; i<=MAXFWFD; i++) {
+  for(int32_t i=1; i<=MAXFWFD; i++) {
     fprintf(fpqd,"# fwfd peak charge channel %03d\n",i);
     fprintf(fpqi,"%04ld\n",ftell(fpqd));
     MyDump1DHisto(ChargeCh[i],fpqd);
@@ -1151,9 +1157,9 @@ void bx_omon::MyDump1DHisto(TH1F* th, FILE* fp) {
   if (!th || !fp ) return;
 //  get_message (bx_message::debug) << "Dump1D" << dispatch;
   fprintf(fp,"%6.2f\n%6.2f\n",(float)th->GetXaxis()->GetXmin(), (float)th->GetXaxis()->GetXmax());
-  for(int i=0; i < th->GetNbinsX(); i++)
+  for(int32_t i=0; i < th->GetNbinsX(); i++)
     fprintf(fp,"%06.2f\n",(float)th->GetBinContent(i));
-  fprintf(fp,"%d\n%5.1f\n%5.1f\n",(int)th->GetEntries(), (float)th->GetMean(), (float)th->GetRMS() );
+  fprintf(fp,"%d\n%5.1f\n%5.1f\n",(int32_t)th->GetEntries(), (float)th->GetMean(), (float)th->GetRMS() );
   fprintf(fp,"\n");
   return;
 }
@@ -1163,7 +1169,7 @@ void bx_omon::MyDump1DHisto(TH1F* th, FILE* fp) {
 void bx_omon::ResetHistos() {
   get_message (bx_message::info) << "OMON resetting histograms" << dispatch;
 
-  for(int i=0; i<MAXCHID; i++) {
+  for(int32_t i=0; i<MAXCHID; i++) {
     RawChargeLCh[i]->Reset("ICE");
     RawBaseLCh[i]->Reset("ICE");
     ChargeCutLCh[i]->Reset("ICE");
@@ -1194,7 +1200,7 @@ void bx_omon::ResetHistos() {
   QuasyEnergyCutted->Reset("ICE");
   TriggerRateHistogram->Reset("ICE");
 
-  for(int i=0; i<MAXOD; i++) {
+  for(int32_t i=0; i<MAXOD; i++) {
     ODLeadTimeLCh[i]->Reset("ICE");
     ODTrailTimeLCh[i]->Reset("ICE");
     ODChargeLCh[i]->Reset("ICE");
@@ -1207,7 +1213,7 @@ void bx_omon::ResetHistos() {
   muHitsTotalDistribution->Reset("ICE");
   EvFlag->Reset("ICE");
   TTrig->Reset("ICE");
-  for(int i=0; i<MAXFWFD; i++) {
+  for(int32_t i=0; i<MAXFWFD; i++) {
     PedCh[i]->Reset("ICE");
     PeakCh[i]->Reset("ICE");
     AmplCh[i]->Reset("ICE");

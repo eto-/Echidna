@@ -67,7 +67,7 @@ bx_echidna_event* bx_v1731sys::doit (bx_echidna_event* ev) {
   /* trigger128 event selection */
   if (!(ev->get_trigger().is_neutron())) return ev;
   
-  unsigned long u4_sec, u4_nsec;
+  uint32_t u4_sec, u4_nsec;
   ev->get_trigger().get_gps_time(u4_sec,u4_nsec);    /* get event gpstime */
 
   /* add new event's file to the index (if file exists, and not already indexed) */
@@ -88,13 +88,13 @@ bx_echidna_event* bx_v1731sys::doit (bx_echidna_event* ev) {
     std::vector <v1731_event::v1731event> v1731evs;
     v1731evs.reserve(find_event.get_n_founds());
     unsigned u4_min_dtrg_elem = 0;
-    int      i4_min_dtrg_value= 500;
+    int32_t      i4_min_dtrg_value= 500;
     const unsigned u4_trgid = (0xffff & ev->get_event_number());
     for (unsigned u4=0; u4<find_event.get_n_founds(); ++u4){
       v1731_event::v1731event v1731ev_tmp;
       v1731_event::v1731event_decoder v1731ev_decoder(find_event, v1731ev_tmp, u4, currNfile, p_connect, s_curr_file_name, i4_curr_file_position);
       v1731evs.push_back(v1731ev_tmp);
-      const int i4_trg_diff = static_cast <int> (u4_trgid - v1731ev_tmp.get_trigger_id());
+      const int32_t i4_trg_diff = static_cast <int32_t> (u4_trgid - v1731ev_tmp.get_trigger_id());
       if ((i4_trg_diff<=1) && (abs(i4_trg_diff) <= abs(i4_min_dtrg_value))){
 	i4_min_dtrg_value = i4_trg_diff;
 	u4_min_dtrg_elem  = u4;

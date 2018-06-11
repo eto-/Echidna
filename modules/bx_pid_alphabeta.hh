@@ -32,7 +32,7 @@ class bx_pid_alphabeta: public bx_base_module {
 
     // helper function to search for nearest run number file with alpha beta parameters
     // for each run, the nearest previous run is used
-    bool search_for_right_file(const std::string& path, int run, std::string& fname);
+    bool search_for_right_file(const std::string& path, int32_t run, std::string& fname);
 
     // tailtot calculation used for mlp algorithm
     float tailtot_ab_mlp(float timecut, std::vector<double> &current_sample);
@@ -44,11 +44,11 @@ class bx_pid_alphabeta: public bx_base_module {
     bx_alphabeta fAB;
     
     // minimum clusters size to consider alpha/beta 
-    int fMinClusterSize;
+    int32_t fMinClusterSize;
     
     // coeff for gatti and lkl
-    int fNBins;
-    int fBinSizeNs;
+    int32_t fNBins;
+    int32_t fBinSizeNs;
     float fGattiWeights[5000];
     float fGattiWeightsC[5000];
     float fLkl[5000];

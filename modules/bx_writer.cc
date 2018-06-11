@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 static char* __remove_file = 0;
-void remove_file (int unused) {
+void remove_file (int32_t unused) {
   if (__remove_file && ::strlen (__remove_file)) ::unlink (__remove_file);
   signal (SIGTERM, SIG_DFL);
   kill (getpid (), SIGTERM);
@@ -86,12 +86,12 @@ void bx_writer::begin () {
   if (check_parameter ("write_tree") && get_parameter ("write_tree").get_bool ()) {
 
     // get parameters: 3.buffer_size
-    int buffer_size = 32000;
+    int32_t buffer_size = 32000;
     if (check_parameter ("buffer_size"))
       buffer_size = get_parameter ("buffer_size").get_int();
 
     // get parameters: 4.splitting_level
-    int splitting_level = 99;
+    int32_t splitting_level = 99;
     if (check_parameter ("splitting_level"))
       splitting_level = get_parameter ("splitting_level").get_int();
 

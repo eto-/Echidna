@@ -27,7 +27,7 @@ class bx_laben_raw_validator: public bx_base_module {
   private:
     TH1F *flag_lg[8], *good_flag_lg_c; // 8 are the possible flags (see bx_laben_raw_hits::flags)
     char *board_occupancy;
-    int count;
+    int32_t count;
 };
 
 #endif

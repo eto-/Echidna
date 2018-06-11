@@ -21,7 +21,7 @@
 #include "TH2.h"
 #include <math.h>
 
-int flight_path::create_histo = -1;
+int32_t flight_path::create_histo = -1;
 TH2F *flight_path::path = 0;
 
 

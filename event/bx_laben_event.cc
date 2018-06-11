@@ -26,8 +26,8 @@ bx_laben_raw_event::bx_laben_raw_event (const char *disk_event): i4_nhits_fw(0) 
 
   raw_hits.reserve (head->entries);
   int last_channel = -1;
-  unsigned char hit_count = 1;
-  for (unsigned long i = 0; i < head->entries; i++) {
+  uint8_t hit_count = 1;
+  for (uint32_t i = 0; i < head->entries; i++) {
     bx_laben_raw_hit hit (disk_event + sizeof (laben_header_disk_format) + i * sizeof (laben_hit_disk_format), hit_count);
     raw_hits.push_back (hit);
     if (hit.get_logical_channel () == last_channel) hit_count++;
@@ -35,9 +35,9 @@ bx_laben_raw_event::bx_laben_raw_event (const char *disk_event): i4_nhits_fw(0) 
   }		
 }
 
-unsigned short bx_laben_raw_hit::flags_bits[__max__] = { 0x8770, 0x40, 0x20, 0x10, 0x100, 0x200, 0x400, 0x8000 }; // KEEP alligned to flags enum !!!
+uint16_t bx_laben_raw_hit::flags_bits[__max__] = { 0x8770, 0x40, 0x20, 0x10, 0x100, 0x200, 0x400, 0x8000 }; // KEEP alligned to flags enum !!!
 
-bx_laben_raw_hit::bx_laben_raw_hit (const char *disk_event, unsigned char order_in_channel) {
+bx_laben_raw_hit::bx_laben_raw_hit (const char *disk_event, uint8_t order_in_channel) {
   
   laben_hit_disk_format *hit = (laben_hit_disk_format *)disk_event;
 

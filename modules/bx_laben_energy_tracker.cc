@@ -346,10 +346,10 @@ bx_echidna_event* bx_laben_energy_tracker::doit (bx_echidna_event *ev) {
   float meantime_impact[8]  = {0,70,75,1200,5300,5600,5800,6000};
   float impact_meantime[8]  = {6.85,6.2,5.75,4.5,3.5,3,2.5,0.5};
 
-  int   ndechits = ev->get_laben().get_decoded_nhits();
+  int32_t   ndechits = ev->get_laben().get_decoded_nhits();
   float meantime = ev->get_laben().get_cluster(0).get_mean_time();
 
-  int idec = 0;
+  int32_t idec = 0;
   while (idec<10) {
     if (ndechits < ndechits_impact[idec]) break;
     idec++;
@@ -363,7 +363,7 @@ bx_echidna_event* bx_laben_energy_tracker::doit (bx_echidna_event *ev) {
 
   //get_message(bx_message::debug) << "Ndechits = " << ndechits << " => impact = " << impact_nh << "+/-" << impact_dnh << dispatch;
 
-  int imt = 0;
+  int32_t imt = 0;
   while (imt<8) {
     if (meantime < meantime_impact[imt]) break;
     imt++;

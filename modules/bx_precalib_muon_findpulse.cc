@@ -42,7 +42,7 @@ bx_echidna_event* bx_precalib_muon_findpulse::doit (bx_echidna_event *ev) {
   const db_profile& profile_info = bx_dbi::get ()->get_profile ();
 
   // start looping over hits
-  for (int i = 0; i <er.get_raw_nhits(); i++) { 
+  for (int32_t i = 0; i <er.get_raw_nhits(); i++) { 
     const bx_muon_raw_hit& h = er.get_raw_hit(i);
 
     // skip special channels
@@ -67,17 +67,21 @@ void bx_precalib_muon_findpulse::end () {
 
  
   TSpectrum *s = new TSpectrum();
-  int n_peaks = s->Search(pulses);
+  int32_t n_peaks = s->Search(pulses);
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  double *positions = s->GetPositionX();
+#else
   float *positions = s->GetPositionX();
+#endif
   if (n_peaks < 1 || n_peaks > 2) 
 	get_message(bx_message::error) << "npeaks " << entries << " is out of range (1-2)." << dispatch;
-  int precalib_peak_index = 0;
+  int32_t precalib_peak_index = 0;
   if (n_peaks == 2 && positions[1] < positions[0]) 
 	precalib_peak_index = 1;
 
   get_message(bx_message::info) << "entries " << entries << " n_peaks " << n_peaks << " pos0 " << positions[0] << " pos1 " << positions[1] << " selecting peak " << precalib_peak_index << dispatch;
 
-  unsigned long value_for_db = positions[precalib_peak_index];
+  uint32_t value_for_db = positions[precalib_peak_index];
   run_info.set_muon_precalib_pulse_time( value_for_db, this);	
 
   get_message(bx_message::debug) << "end" << dispatch;

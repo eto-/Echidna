@@ -37,7 +37,7 @@ class bx_writer: public bx_base_module {
     TFile *p_root_file;       // ptr to TFile
     TTree *p_root_tree;       // ptr to TTree 
     BxEvent *p_root_event;    // ptr to BxEvent, used for TTree::Branch() 
-    unsigned long u4_written_events;
+    uint32_t u4_written_events;
 };
 
 #endif

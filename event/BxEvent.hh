@@ -17,6 +17,7 @@
 #define CYCLE_NUMBER 18
 #endif
 
+#include <stdint.h>
 #include <TMath.h>
 #include <vector>
 #include <map>
@@ -108,19 +109,19 @@ class BxTrigger  {
       };
 
     // getters
-    UChar_t  GetTrgType               () const { return trgtype          ; }
+    uint8_t  GetTrgType               () const { return trgtype          ; }
     Bool_t   IsTrgType     ( TrgType t ) const { return trgtype==t       ; }
-    ULong_t  GetTrgTime               () const { return trgtime          ; }
-    UChar_t  GetBtbInputs             () const { return btb_inputs       ; }
+    uint32_t  GetTrgTime               () const { return trgtime          ; }
+    uint8_t  GetBtbInputs             () const { return btb_inputs       ; }
     Bool_t   HasBtbFlag ( BtbFlag flag ) const { return btb_inputs & flag; }
-    UShort_t GetBtbThreshold          () const { return btb_threshold    ; }
-    const ULong_t* GetGpsTimes        () const { return gpstimes         ; }
-    ULong_t  GetGpsTimeSec            () const { return gpstimes[0]      ; }
-    ULong_t  GetGpsTimeNs             () const { return gpstimes[1]      ; }
+    uint16_t GetBtbThreshold          () const { return btb_threshold    ; }
+    const uint32_t* GetGpsTimes        () const { return gpstimes         ; }
+    uint32_t  GetGpsTimeSec            () const { return gpstimes[0]      ; }
+    uint32_t  GetGpsTimeNs             () const { return gpstimes[1]      ; }
     time_t GetTimeT 	              () const { return timet		 ; }
     Double_t GetMjd                   () const { return double ( GetTimeT () ) / 86400. + 40587.; }
     static time_t Mjd2TimeT (double mjd) { return time_t((mjd - 40587.) * 86400.); }
-    Long_t GetRunDay () const { 
+    int32_t GetRunDay () const { 
       time_t t = GetTimeT (); 
       struct tm * ts = gmtime (&t); 
       return (ts->tm_year + 1900 - 2007) * 365 + ts->tm_yday - 136; // 136:2007 = May 16 2007 => first run 
@@ -138,15 +139,15 @@ class BxTrigger  {
 
     virtual Bool_t IsFolder() const { return kTRUE; }
   private:
-    UChar_t  trgtype;         // trigger type
-    ULong_t  trgtime;         // ppc0 cpu time 
-    UShort_t btb_threshold;   // BTB threshold, n. channels 
-    UChar_t  btb_inputs;      // BTB active inputs during event. 
+    uint8_t  trgtype;         // trigger type
+    uint32_t  trgtime;         // ppc0 cpu time 
+    uint16_t btb_threshold;   // BTB threshold, n. channels 
+    uint8_t  btb_inputs;      // BTB active inputs during event. 
 			      // bifield (0,1,7 unused;2 mtb; 3 neutron; 4 l355; 5 l266; 6 l394+calib+random) 
-    ULong_t gpstimes[2];      // GPS time, [0] seconds since 01.01.00 0:0:0, [1] nanoseconds
+    uint32_t gpstimes[2];      // GPS time, [0] seconds since 01.01.00 0:0:0, [1] nanoseconds
     time_t timet;	      // Time_t = number of seconds since 1970
 
-    friend void fmerge_fake_bxevent(BxEvent* ev, Int_t run, Int_t evnum, UChar_t trgtype, Int_t nclu);
+    friend void fmerge_fake_bxevent(BxEvent* ev, Int_t run, Int_t evnum, uint8_t trgtype, Int_t nclu);
     ClassDef (BxTrigger, CYCLE_NUMBER)
 };
 
@@ -361,7 +362,7 @@ class BxTrackFitted: public BxTrack {
     Float_t  dtheta;
     Float_t  dimpact;
     Float_t  idnhits;     // normalized laben decoded hits (for dedx computation);
-    Char_t   points;      // points used in fit; bitfield 0=entry OD; 1=exit OD; 
+    int8_t   points;      // points used in fit; bitfield 0=entry OD; 1=exit OD; 
                           // 2=entry ID; 3=exit ID; 4-7=unused
     Bool_t   downward;    // true for downward going muons 
 
@@ -379,16 +380,16 @@ class BxLabenRawHit {
     virtual ~BxLabenRawHit () {};
  
     // getters
-    UShort_t GetLg           () const { return lg;          }
-    UChar_t  GetTime1        () const { return time1;       }
-    UChar_t  GetTime2        () const { return time2;       }
-    UShort_t GetGray         () const { return gray;        }
-    UChar_t  GetBase         () const { return base;        }
-    UChar_t  GetPeak         () const { return peak;        }
-    UChar_t  GetOrder        () const { return order;       }
-    UShort_t GetErrors       () const { return errors;      }
-    UChar_t  GetFlagsBoard   () const { return flags_board; }
-    UChar_t  GetFlagsChannel () const { return flags_ch;    }
+    uint16_t GetLg           () const { return lg;          }
+    uint8_t  GetTime1        () const { return time1;       }
+    uint8_t  GetTime2        () const { return time2;       }
+    uint16_t GetGray         () const { return gray;        }
+    uint8_t  GetBase         () const { return base;        }
+    uint8_t  GetPeak         () const { return peak;        }
+    uint8_t  GetOrder        () const { return order;       }
+    uint16_t GetErrors       () const { return errors;      }
+    uint8_t  GetFlagsBoard   () const { return flags_board; }
+    uint8_t  GetFlagsChannel () const { return flags_ch;    }
     Bool_t   IsGood          () const { return !(flags_board & 0x7 || flags_ch & 0x60); }
     Bool_t   HasFifoFull     () const { return flags_ch    & 0x40; }
     Bool_t   HasFifoEmpty    () const { return flags_ch    & 0x20; }
@@ -400,16 +401,16 @@ class BxLabenRawHit {
     virtual Bool_t IsFolder() const { return kTRUE; }
 
   private:
-    UShort_t lg;          // logical channel (1 based)
-    UChar_t  time1;       // First triangular waveform sampling (ADC bins, 0-255)
-    UChar_t  time2;       // Second (~80ns later) triangular waveform sampling (ADC bins, 0-255)
-    UShort_t gray;        // Gray counter read out in bins 0->(1<<16-1)
-    UChar_t  base;        // Baseline charge sampling(ADC bins 0-255)}
-    UChar_t  peak;        // Peak (~80ns later) charge sampling (ADC bins 0-255)}
-    UChar_t  order;       // Order in channel as in daq fifo; 1-based
-    UChar_t  flags_board; // Flags of board header: 1 = N.TRG not consecutive, 2 = N.TRG > DELTA, 3 = TRG in BUSY, 4 = DPR FULL, 5 = FIFO EMPTY, 6 FIFO FULL
-    UChar_t  flags_ch;    // 5 = FIFO EMPTY, 6 = FIFO FULL, 7 = INVALID (...)
-    UShort_t errors;      // bitfield. Laben board error flags. A.Razeto refused to provide info (DD)
+    uint16_t lg;          // logical channel (1 based)
+    uint8_t  time1;       // First triangular waveform sampling (ADC bins, 0-255)
+    uint8_t  time2;       // Second (~80ns later) triangular waveform sampling (ADC bins, 0-255)
+    uint16_t gray;        // Gray counter read out in bins 0->(1<<16-1)
+    uint8_t  base;        // Baseline charge sampling(ADC bins 0-255)}
+    uint8_t  peak;        // Peak (~80ns later) charge sampling (ADC bins 0-255)}
+    uint8_t  order;       // Order in channel as in daq fifo; 1-based
+    uint8_t  flags_board; // Flags of board header: 1 = N.TRG not consecutive, 2 = N.TRG > DELTA, 3 = TRG in BUSY, 4 = DPR FULL, 5 = FIFO EMPTY, 6 FIFO FULL
+    uint8_t  flags_ch;    // 5 = FIFO EMPTY, 6 = FIFO FULL, 7 = INVALID (...)
+    uint16_t errors;      // bitfield. Laben board error flags. A.Razeto refused to provide info (DD)
     ClassDef (BxLabenRawHit, CYCLE_NUMBER)
 };
 
@@ -417,7 +418,7 @@ class BxLabenDecodedHit {
   public:
     BxLabenDecodedHit () {}
 #if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
-    BxLabenDecodedHit (const bx_laben_decoded_hit&, unsigned short raw_index);
+    BxLabenDecodedHit (const bx_laben_decoded_hit&, uint16_t raw_index);
 #endif
     virtual ~BxLabenDecodedHit () {};
 
@@ -430,11 +431,11 @@ class BxLabenDecodedHit {
     };
 
     // getters
-    UShort_t GetLg         () const { return lg;             }
+    uint16_t GetLg         () const { return lg;             }
     Double_t GetRawTime    () const { return raw_time;       }
 //    Float_t  GetTimeError () const { return time_error;     }
 //    Float_t  GetD80       () const { return d80;            }
-    UChar_t  GetFlag       () const { return flag;           }
+    uint8_t  GetFlag       () const { return flag;           }
     Bool_t   IsGood        () const { return !flag;          } 
     Bool_t   IsOutOfGate   () const { return flag & out_of_gate; }
     Bool_t   IsReflection  () const { return flag & reflection;  } 
@@ -444,9 +445,9 @@ class BxLabenDecodedHit {
     Float_t  GetCharge     () const { return charge;         }
     Float_t  GetChargeMean () const { return charge_mean;    }
 //    Int_t    GetNpe       () const { return npe;            }
-    UChar_t  GetOrder      () const { return order;          }
-    UShort_t GetRawIndex   () const { return raw_index;      }
-    UShort_t GetNumCluster () const { return num_cluster;    }
+    uint8_t  GetOrder      () const { return order;          }
+    uint16_t GetRawIndex   () const { return raw_index;      }
+    uint16_t GetNumCluster () const { return num_cluster;    }
     Float_t  GetRecTime    () const { return rec_time;       }
     Bool_t   IsShortCluster() const { return short_cluster;  }
 //    BxLabenRawHit& GetRawHit (BxEvent* e) const { return *e->GetLaben().GetRawHits()[raw_index]; }    
@@ -455,18 +456,18 @@ class BxLabenDecodedHit {
     virtual Bool_t IsFolder() const { return kTRUE; }
 
   private:
-    UShort_t lg;             // logical channel (1 based)
+    uint16_t lg;             // logical channel (1 based)
     Double_t raw_time;       // hit time; Units: ns; range: 0->6.4ms; 0=last gray crossing if < 3.2ms, 0=forelast gray crossing if > 3.2ms
 //    Float_t  time_error;     // 0-0.5 hit time validity (good if <0.4)
-    UChar_t  flag;           // Flag for out_of_gate=1, reflection=2, reference=4, retrigger=8, disabled=16;
-    UChar_t  order;          // Order in channel counting decoded hits only; 1-based
+    uint8_t  flag;           // Flag for out_of_gate=1, reflection=2, reference=4, retrigger=8, disabled=16;
+    uint8_t  order;          // Order in channel counting decoded hits only; 1-based
 //    Float_t  d80;            // Real 80ns gap in ns (from time2-time1)
     Float_t  raw_charge;     // peak-base in bins (without pileup corr.)
     Float_t  charge;         // photoelectrons (with pileup corr.)
     Float_t  charge_mean;    // photoelectrons normalized with mean (with pileup corr.)
 //    Int_t    npe;	     // number of photoelectrons (with a threshold)
-    UShort_t raw_index;      // Index in vector of corresponding raw hit
-    UShort_t num_cluster;    // Number of cluster the hit belongs to
+    uint16_t raw_index;      // Index in vector of corresponding raw hit
+    uint16_t num_cluster;    // Number of cluster the hit belongs to
     Float_t  rec_time;       // Time after TOF subtraction
     Bool_t   short_cluster;  // Flag to say if the hit belonged to the old (c11) clustering 
 
@@ -478,7 +479,7 @@ class BxLabenClusteredHit {
   public:
     BxLabenClusteredHit () {}
 #if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
-    BxLabenClusteredHit (const int cluster, const bx_laben_clustered_hit&, unsigned short decoded_index);
+    BxLabenClusteredHit (const int cluster, const bx_laben_clustered_hit&, uint16_t decoded_index);
 #endif
     virtual ~BxLabenClusteredHit () {};
 
@@ -582,7 +583,7 @@ class BxLabenCluster {
   public:
     BxLabenCluster () {}
 #if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
-    BxLabenCluster (const bx_laben_cluster&, unsigned short decoded_index);
+    BxLabenCluster (const bx_laben_cluster&, uint16_t decoded_index);
 #endif
     virtual ~BxLabenCluster () {};
 
@@ -620,13 +621,13 @@ class BxLabenCluster {
       broad       = 2,
       trigger     = 4,
     };
-    UChar_t GetFlag	     () const { return flag;               }
+    uint8_t GetFlag	     () const { return flag;               }
     Bool_t  IsGood	     () const { return !flag;              }
     Bool_t  IsOutOfGate      () const { return flag & out_of_gate; }
     Bool_t  IsBroad          () const { return flag & broad;       }
     Bool_t  IsTrigger        () const { return flag & trigger;     }
     Bool_t  IsNeutron        () const { return is_neutron;    }
-    UShort_t GetDecodedIndex () const { return decoded_index; }
+    uint16_t GetDecodedIndex () const { return decoded_index; }
     Int_t    GetNPeaks       () const { return npeaks;        }
 
     const BxPosition& GetBaricenter  () const { return baricenter;   }
@@ -682,9 +683,9 @@ class BxLabenCluster {
     Float_t  rms_time_short;   // cluster rms time in ns relative to mean_time (old c11 clustering)
     Float_t  duration;         // time of the last hit in ns relative to start time
     Float_t  duration_short;   // time of the last hit in ns relative to start time (old c11 clutering)
-    UChar_t  flag;             // Flag for out_of_gate=1, broad=2, trigger=4
+    uint8_t  flag;             // Flag for out_of_gate=1, broad=2, trigger=4
     Bool_t   is_neutron;       // shows whether cluster meets neutron definition
-    UShort_t decoded_index;    // Index in vector of decoded hit corresponding to first hit
+    uint16_t decoded_index;    // Index in vector of decoded hit corresponding to first hit
     Int_t    npeaks;           // # of peaks identified by the splitting algorythm
     BxPosition baricenter;     // reconstructed position from baricentrator
     BxPosition position_lngs;  // reconstructed position from LNGS reco
@@ -742,7 +743,7 @@ class BxLabenRecCluster: public BxPosition/*, public BxEnergy*/ {
     Float_t        GetPlaneChi2          () const { return plane_chi2;     }
     Float_t        GetHPlaneChi2         () const { return h_plane_chi2;   }
     Float_t        GetSHPower (Int_t order) const { return sh_power[order];}
-    Char_t         GetQualityFlags       () const { return quality_flags;  }
+    int8_t         GetQualityFlags       () const { return quality_flags;  }
 
     // getters pid ab
     const Float_t* GetTailTot            () const { return tailtot;        }
@@ -790,7 +791,7 @@ class BxLabenRecCluster: public BxPosition/*, public BxEnergy*/ {
     Float_t plane_chi2;           // chi2/NDF of the fit of a plane in a cos(theta)-phi distribution
     Float_t h_plane_chi2;         // chi2/NDF of the fit of a horizontal plane in a cos(theta)-phi distribution
     Float_t sh_power[4]; 	  // power of spherical armonics		
-    Char_t  quality_flags;        // bitfield, meaning to be assigned
+    int8_t  quality_flags;        // bitfield, meaning to be assigned
 
     // alpha-beta data members
     Float_t tailtot[10];          // tailtot for tail value 40-130ns step 10ns
@@ -948,7 +949,7 @@ class BxLaben {
     BxTrackByPoints                  track_tof;     
 
     friend class n_live_charge;
-    friend void fmerge_fake_bxevent(BxEvent* ev, Int_t run, Int_t evnum, UChar_t trgtype, Int_t nclu);
+    friend void fmerge_fake_bxevent(BxEvent* ev, Int_t run, Int_t evnum, uint8_t trgtype, Int_t nclu);
     ClassDef (BxLaben, CYCLE_NUMBER)
 };
 
@@ -963,16 +964,16 @@ class BxMuonRawHit {
     virtual ~BxMuonRawHit () {};
  
     // getters
-    UShort_t GetMch       () const { return mch;        }
+    uint16_t GetMch       () const { return mch;        }
     Float_t  GetLeadTime  () const { return lead_time;  }
     Float_t  GetTrailTime () const { return trail_time; }
 
     virtual Bool_t IsFolder () const { return kTRUE; }
 
   private:
-    UShort_t mch;        // muon channel (0-255)
-    ULong_t  lead_time;  // leading edge time; Units: TDC ticks (1.0416ns); range: 0->8192
-    ULong_t  trail_time; // trailing edge time; Units: TDC ticks (1.0416ns); range: 0->8192
+    uint16_t mch;        // muon channel (0-255)
+    uint32_t  lead_time;  // leading edge time; Units: TDC ticks (1.0416ns); range: 0->8192
+    uint32_t  trail_time; // trailing edge time; Units: TDC ticks (1.0416ns); range: 0->8192
 
     ClassDef (BxMuonRawHit, CYCLE_NUMBER)
 };
@@ -986,7 +987,7 @@ class BxMuonDecodedHit {
     virtual ~BxMuonDecodedHit () {};
  
     // getters
-    UShort_t GetMch    () const { return mch;    }
+    uint16_t GetMch    () const { return mch;    }
     Float_t  GetTime   () const { return time;   }
     Float_t  GetCharge () const { return charge; }
 //    const db_channel_muon* GetDbChannel (bx_barn* db) const;
@@ -994,8 +995,8 @@ class BxMuonDecodedHit {
     virtual Bool_t IsFolder () const { return kTRUE; }
 
   private:
-    UShort_t run;	     // run number
-    UShort_t mch;    // muon channel (0-255)
+    uint16_t run;	     // run number
+    uint16_t mch;    // muon channel (0-255)
     Float_t  time;   // time after gate start (neutrino) or after led ref (laser); ns; 0->8.5$us
     Float_t  charge; // Charge (pe)
 
@@ -1011,7 +1012,7 @@ class BxMuonClusteredHit {
     virtual ~BxMuonClusteredHit () {};
  
     // getters
-    UShort_t GetMch    () const { return mch;    }
+    uint16_t GetMch    () const { return mch;    }
     Float_t  GetTime   () const { return time;   }
     Float_t  GetCharge () const { return charge; }
     //const db_channel_muon* GetDbChannel (bx_barn* db) const;
@@ -1019,8 +1020,8 @@ class BxMuonClusteredHit {
     virtual Bool_t IsFolder () const { return kTRUE; }
 
   private:
-    UShort_t run;     // run number
-    UShort_t mch;    // muon channel (0-255)
+    uint16_t run;     // run number
+    uint16_t mch;    // muon channel (0-255)
     Float_t  time;   // time after gate start (neutrino) or after led ref (laser); ns; 0->8.5$us
     Float_t  charge; // Charge (pe)
 
@@ -1146,14 +1147,14 @@ class BxMcTruthHit {
  
     // getters
     Int_t    GetNumFrame () const { return num_frame; }
-    UShort_t GetLg       () const { return lg;        }
+    uint16_t GetLg       () const { return lg;        }
     Float_t  GetTime     () const { return time;      }
 
     virtual Bool_t IsFolder () const { return kTRUE; }
 
   private:
     Int_t    num_frame; // frame the hit belongs to in frames array
-    UShort_t lg;        // logical channel (1 based)
+    uint16_t lg;        // logical channel (1 based)
     Float_t  time;      // tracking time (ns)
 
     ClassDef (BxMcTruthHit, CYCLE_NUMBER)
@@ -1255,7 +1256,7 @@ class BxMcTruthFrame {
     virtual ~BxMcTruthFrame () {};
  
     // getters
-    UShort_t GetFileId          () const { return file_id;         }
+    uint16_t GetFileId          () const { return file_id;         }
     Double_t GetElecEventTime   () const { return elec_event_time; }
     Int_t    GetEventId         () const { return event_id;        }
     Int_t    GetNSequence       () const { return n_sequence;      }
@@ -1278,7 +1279,7 @@ class BxMcTruthFrame {
     virtual Bool_t IsFolder () const { return kTRUE; }
 
   private:
-    UShort_t file_id;
+    uint16_t file_id;
     Double_t elec_event_time;    // relative to trg time
     Int_t    event_id;           // Event ID
     Int_t    n_sequence;         // Sequence number of isotope in the chain
@@ -1565,10 +1566,10 @@ class BxPhysTags {
      float var_user_6, var_user_7, var_user_8, var_user_9, var_user_10, var_user_11, var_user_12;
      float var_user_13, var_user_14, var_user_15, var_user_16, var_user_17, var_user_18, var_user_19;
      float mlp_ab, mlp_ab_m4, bdt_c11b, bdt_c11b_m4;
-     unsigned long long tags;
-     unsigned long tags_user;
-     unsigned long tags_solar;
-     unsigned long tags_cno;
+     uint32_t long tags;
+     uint32_t tags_user;
+     uint32_t tags_solar;
+     uint32_t tags_cno;
      short int coincidence_id, coincidence_index, nsiblings;
      float coincidence_dt, coincidence_distance, coincidence_duration;
      friend class bx_candidate;
@@ -1630,7 +1631,7 @@ class BxFwfdCluster  {
 class BxFwfd {
   public:
     BxFwfd();
-    BxFwfd(Bool_t, Bool_t, Int_t, Int_t, ULong_t, ULong_t, Int_t, Int_t, Int_t, UChar_t, Double_t, Int_t, UInt_t, UChar_t*);
+    BxFwfd(Bool_t, Bool_t, Int_t, Int_t, uint32_t, uint32_t, Int_t, Int_t, Int_t, uint8_t, Double_t, Int_t, UInt_t, uint8_t*);
 
     virtual ~BxFwfd() {}
 
@@ -1638,16 +1639,16 @@ class BxFwfd {
     Bool_t  IsODSumPresent     () const { return is_odsum_present; }
     Int_t   GetNFwfdEvs        () const { return n_fwfd_evs; }
     Int_t   GetUnixTime        () const { return unix_time; }
-    ULong_t GetGpsTimeSec      () const { return gpstimes[0]; }
-    ULong_t GetGpsTimeNs       () const { return gpstimes[1]; }
+    uint32_t GetGpsTimeSec      () const { return gpstimes[0]; }
+    uint32_t GetGpsTimeNs       () const { return gpstimes[1]; }
     Int_t   GetRun             () const { return run; }
     Int_t   GetEvNum           () const { return evnum; }
     Int_t   GetEvNumBx         () const { return evnum_bx; }
-    UChar_t GetError           () const { return error; }
+    uint8_t GetError           () const { return error; }
     Double_t  GetRawTime         () const { return raw_time; }
     Int_t   GetTrgType         () const { return trgtype; }
     UInt_t  GetNClusters       () const { return n_clusters; }
-    UChar_t GetDCode      (int i) const { return dcode[i]; }
+    uint8_t GetDCode      (int i) const { return dcode[i]; }
     const Float_t& GetWFormAsum (int i) const { return wform_asum.at(i); }
     const Float_t& GetWFormDsum (int i) const { return wform_dsum.at(i); }
     const Float_t& GetWFormODsum (int i) const { return wform_odsum.at(i); }
@@ -1662,16 +1663,16 @@ class BxFwfd {
     void SetStatusODsum(bool v)	{ is_odsum_present = v; }
     void SetNFwfdEvs(int v)     { n_fwfd_evs = v; }
     void SetUnixTime(int v)	{ unix_time = v; }
-    void SetGpsTimeSec(unsigned long v) { gpstimes[0] = v; }
-    void SetGpsTimeNs(unsigned long v)  { gpstimes[1] = v; }
+    void SetGpsTimeSec(uint32_t v) { gpstimes[0] = v; }
+    void SetGpsTimeNs(uint32_t v)  { gpstimes[1] = v; }
     void SetRun(int v)          { run = v; }
     void SetEvNum(int v)        { evnum = v; }
     void SetEvNumBx(int v)      { evnum_bx = v; }
-    void SetError(unsigned char v)	{ error = v; }
+    void SetError(uint8_t v)	{ error = v; }
     void SetRawTime(double v)	{ raw_time = v; }
     void SetTrgType(int v)      { trgtype = v; }
-    void SetNClusters(unsigned int v)  { n_clusters = v; } 
-    void SetDCode(int channel, unsigned char v)  { dcode[channel] = v; }
+    void SetNClusters(uint32_t v)  { n_clusters = v; } 
+    void SetDCode(int channel, uint8_t v)  { dcode[channel] = v; }
     void SetWFormAsum(std::vector<float> v)  { wform_asum = v; }
     void SetWFormDsum(std::vector<float> v)  { wform_dsum = v; }
     void SetWFormODsum(std::vector<float> v)  { wform_odsum = v; }
@@ -1685,11 +1686,11 @@ class BxFwfd {
     Bool_t  is_odsum_present;      // OD analog sum present or not in FADC data
     Int_t   n_fwfd_evs;      // number of FWFD events, corresponding to one BX event - to be used in dsts only
     Int_t   unix_time;       // UNIX time, seconds since 01/01/1970 00:00
-    ULong_t gpstimes[2];     // GPS time, [0] seconds since 01.01.00 0:0:0, [1] nanoseconds
+    uint32_t gpstimes[2];     // GPS time, [0] seconds since 01.01.00 0:0:0, [1] nanoseconds
     Int_t   run;             // FWFD run (normally coincides with main BX run)
     Int_t   evnum;           // FWFD event number
     Int_t   evnum_bx;        // BX event number as received from BX pattern
-    UChar_t error;           // =0 - no error, =1 - memory overflow
+    uint8_t error;           // =0 - no error, =1 - memory overflow
     Double_t  raw_time;      // hardware time to previous trigger (ns)
     Int_t   trgtype;         // FWFD trigger type:
                              // 1 - neutrino
@@ -1700,7 +1701,7 @@ class BxFwfd {
                              // 9 - muon
                              // 11 - pulser 0.1 Hz during the run
     UInt_t n_clusters;       // number of clusters
-    UChar_t dcode[16];       // flag on discriminator's channel: =0 - channel slept, =1 - channel fired
+    uint8_t dcode[16];       // flag on discriminator's channel: =0 - channel slept, =1 - channel fired
     std::vector<Float_t> wform_asum; // waveform of the analog sum
     std::vector<Float_t> wform_dsum; // waveform of the digital sum (deconvoluted)
     std::vector<Float_t> wform_odsum; // waveform of the OD analog sum
@@ -1728,7 +1729,7 @@ class BxEvent : public TObject  {
     Int_t GetRun   () const { return run;   }
     Int_t GetEvNum () const { return evnum; }
     Bool_t IsCrateEnabled ( int i ) const { return (enabled_crates >> (i-1)) & 1;}
-    UShort_t GetEnabledCrates () const { return enabled_crates; }
+    uint16_t GetEnabledCrates () const { return enabled_crates; }
     Bool_t IsMuonEnabled      () const { return (enabled_crates >> 14) & 1; }
     Bool_t IsMuonAligned      () const { return IsMuonEnabled() && muon.IsAligned (); }
     Bool_t IsMcTruthEnabled   () const { return mctruth.GetNFrames() > 0; }
@@ -1755,20 +1756,20 @@ class BxEvent : public TObject  {
     // digits) -if you trust the atomic time for so long-.
     double GetTimeDifference (const BxEvent* prev) const { return GetTimeDifference (*prev); }
     double GetTimeDifference (const BxEvent& prev) const { return GetTimeDifference (prev.GetTrigger ().GetGpsTimes (), prev.GetLaben ().GetTriggerTime ()); }
-    double GetTimeDifference (const ULong_t* prev_gps_times, Double_t prev_laben_trigger_time) const;
+    double GetTimeDifference (const uint32_t* prev_gps_times, Double_t prev_laben_trigger_time) const;
     // Calculate the time difference between 2 clusters, as
     // Dt = this_event.current_cluster - prev_event.prev_cluster. 
     // Same timing arguments of previus methods.
     double GetTimeDifference (int current_cluster, const BxEvent* prev_event, int prev_cluster) const { return GetTimeDifference (current_cluster, *prev_event, prev_cluster); }
     double GetTimeDifference (int current_cluster, const BxEvent& prev_event, int prev_cluster) const;
-    double GetTimeDifference (int current_cluster, const ULong_t* prev_gps_times, Double_t prev_laben_cluster_time) const;
+    double GetTimeDifference (int current_cluster, const uint32_t* prev_gps_times, Double_t prev_laben_cluster_time) const;
 
     virtual Bool_t IsFolder() const { return kTRUE; }
 
   private:
     Int_t         run;             // run number
     Int_t         evnum;           // event number (trigger ID)
-    UShort_t      enabled_crates;  // bitfield: 0=trigger, 1-14=laben, 15=muon
+    uint16_t      enabled_crates;  // bitfield: 0=trigger, 1-14=laben, 15=muon
     //Bool_t        is_tracked_cmt;    // the cmt tracker worked fine
     Bool_t        is_tracked_global; // the global tracker worked fine
 
@@ -1786,7 +1787,7 @@ class BxEvent : public TObject  {
 
     friend class bx_candidate;
     friend void merge_events (const BxEvent*, const Mach4Event*);
-    friend void fmerge_fake_bxevent(BxEvent* ev, Int_t run, Int_t evnum, UChar_t trgtype, Int_t nclu);
+    friend void fmerge_fake_bxevent(BxEvent* ev, Int_t run, Int_t evnum, uint8_t trgtype, Int_t nclu);
     ClassDef (BxEvent, CYCLE_NUMBER * 100 + M4VERSION)    
 };
 
@@ -1906,7 +1907,7 @@ class BxEvent : public TObject  {
  * FADC raw_time is being double, ulong is not enough at 32bits (bxmaster)
  *
  * Revision 1.200  2012-10-17 18:24:57  litvinov
- * FADC raw_time now ULong_t (was UInt_t)
+ * FADC raw_time now uint32_t (was UInt_t)
  *
  * Revision 1.199  2011-05-31 15:30:34  razeto
  * muon stuff committed back
@@ -1967,7 +1968,7 @@ class BxEvent : public TObject  {
  * set getters to phi/theta computed by global_tracker
  *
  * Revision 1.180  2010-11-29 16:03:01  litvinov
- * added run to BxFwfd; n_clusters was UChar_t, now integer
+ * added run to BxFwfd; n_clusters was uint8_t, now integer
  *
  * Revision 1.179  2010-08-26 08:25:20  wurm
  * fixed theta getter

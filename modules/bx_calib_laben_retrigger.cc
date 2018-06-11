@@ -53,7 +53,7 @@ bx_echidna_event* bx_calib_laben_retrigger::doit (bx_echidna_event *ev) {
     double N_hits = er.get_cluster (0).get_clustered_nhits ();
       
     //loop in hits
-    for (int hit = 0 ;hit < N_hits; hit++) {    
+    for (int32_t hit = 0 ;hit < N_hits; hit++) {    
       double lg = er.get_cluster(0).get_clustered_hit(hit).get_decoded_hit().get_raw_hit ().get_logical_channel ();
       double time = (er.get_cluster (0).get_clustered_hit(hit).get_time ());
       time_vs_lg->Fill (lg,time);
@@ -61,7 +61,7 @@ bx_echidna_event* bx_calib_laben_retrigger::doit (bx_echidna_event *ev) {
     }    
     
       //find retriggering lg
-    for (int ch = 1 ;ch < (constants::laben::channels + 1); ch++) {    
+    for (int32_t ch = 1 ;ch < (constants::laben::channels + 1); ch++) {    
       double hit_or_no = lg_junk->GetBinContent (ch);
       if (hit_or_no > 1) lg_retrig->Fill (ch);
     }
@@ -76,9 +76,9 @@ void bx_calib_laben_retrigger::end () {
 
   //find mean number of hits per lg in lg-ditrsibution histo
   double mean_retrig = 0;
-  int n_work_lg = 0; 
+  int32_t n_work_lg = 0; 
   
-  for (int ch = 1 ;ch < (constants::laben::channels + 1); ch++) {    
+  for (int32_t ch = 1 ;ch < (constants::laben::channels + 1); ch++) {    
     double nhit_retrig_one_ch = lg_retrig->GetBinContent (ch);
     if(bx_dbi::get ()->get_channel (ch).is_ordinary ()) {
       if (nhit_retrig_one_ch) {
@@ -107,7 +107,7 @@ void bx_calib_laben_retrigger::end () {
   }
 
   //now to chcek each ordinary lg
-  for (int ch = 1 ;ch < (constants::laben::channels + 1); ch++) {    
+  for (int32_t ch = 1 ;ch < (constants::laben::channels + 1); ch++) {    
     if(bx_dbi::get ()->get_channel (ch).is_ordinary ()) {
       index = 0;   
       

@@ -40,29 +40,29 @@ class bx_laben_findcluster : public bx_base_module {
 
   private:
     // parameter cache
-    int i4_start_threshold;
-    int i4_neutron_start_threshold;
-    int i4_count_threshold;
-    int i4_he_threshold;
-    int i4_ripple_bins;
-    int i4_he_ripple_bins;
-    int i4_tail_bins;
-    int i4_long_bins;
-    int i4_enable_histos;
+    int32_t i4_start_threshold;
+    int32_t i4_neutron_start_threshold;
+    int32_t i4_count_threshold;
+    int32_t i4_he_threshold;
+    int32_t i4_ripple_bins;
+    int32_t i4_he_ripple_bins;
+    int32_t i4_tail_bins;
+    int32_t i4_long_bins;
+    int32_t i4_enable_histos;
     bool b_force_one_large_cluster;
     bool b_strict_gate;
 	bool b_mach4_cluster;
-    int i4_gate_start, i4_gate_end, i4_cluster_offset;
+    int32_t i4_gate_start, i4_gate_end, i4_cluster_offset;
 
-    int i4_ripple_count;
-    int i4_he_ripple_count;
+    int32_t i4_ripple_count;
+    int32_t i4_he_ripple_count;
 	float f_dark_rate;
-  static const int i4_dt1_len_=230;
-  static const int i4_dt2_len_=400;
-  int i4_NFrames_win1_, i4_NFrames_win2_;
+  static const int32_t i4_dt1_len_=230;
+  static const int32_t i4_dt2_len_=400;
+  int32_t i4_NFrames_win1_, i4_NFrames_win2_;
   float f4_trigger_start_;
-  /*int* pablo_npmts_dt1;
-    int* pablo_npmts_dt2;*/
+  /*int32_t* pablo_npmts_dt1;
+    int32_t* pablo_npmts_dt2;*/
 
       // Histograms
     TH2F *clusters_raw_times;
@@ -77,28 +77,28 @@ class bx_laben_findcluster : public bx_base_module {
     
       // Internal methods
     void findcluster (bx_echidna_event *ev);
-    void clusterize (int start_bin, int end_bin, const bx_echidna_event *ev);
-    void clusterize_mach4 (int start_bin, int end_bin, const bx_echidna_event *ev);
-    void clusterize_neutrons (int start_bin, int end_bin, const bx_echidna_event *ev);
-    void clusterize_neutrons_in_muongate (int start_bin, int end_bin, const bx_echidna_event *ev);
+    void clusterize (int32_t start_bin, int32_t end_bin, const bx_echidna_event *ev);
+    void clusterize_mach4 (int32_t start_bin, int32_t end_bin, const bx_echidna_event *ev);
+    void clusterize_neutrons (int32_t start_bin, int32_t end_bin, const bx_echidna_event *ev);
+    void clusterize_neutrons_in_muongate (int32_t start_bin, int32_t end_bin, const bx_echidna_event *ev);
     void findcluster_time (bx_echidna_event *ev);
-    int find_start_hit (const bx_laben_cluster& cluster_ref, float& time_separation, int intervals);
-    int evaluate_ripple_count (float dark_rate, int ripple_bins, int count_threshold, const char* message);
-    int get_gate_index_ (const int gate_length, const Float_t dt);
+    int32_t find_start_hit (const bx_laben_cluster& cluster_ref, float& time_separation, int32_t intervals);
+    int32_t evaluate_ripple_count (float dark_rate, int32_t ripple_bins, int32_t count_threshold, const char* message);
+    int32_t get_gate_index_ (const int32_t gate_length, const Float_t dt);
 
     // vector with 16 ns binned times 
-    int i4_time_bins;
-    short int *binned_times;
-    unsigned long prev_gps_times[2];
+    int32_t i4_time_bins;
+    int16_t *binned_times;
+    uint32_t prev_gps_times[2];
 
     struct cluster_data {
       cluster_data (): i4_short_end_bin(-1) {}
-      int i4_start_bin, i4_long_end_bin, i4_short_end_bin, i4_n_hits;
+      int32_t i4_start_bin, i4_long_end_bin, i4_short_end_bin, i4_n_hits;
       float f4_n_hits_background;
       bool bool_muon_clustered, b_is_neutron;
     };
     std::vector<cluster_data> clusters;
-    int* fired_channel;
+    int32_t* fired_channel;
 //**noavg code::db_run instance**
     db_run* run_info;
 //*******************************
@@ -162,7 +162,7 @@ class bx_laben_findcluster : public bx_base_module {
  * Filling new flag variable
  *
  * Revision 1.13  2007-11-12 09:51:58  razeto
- * Use int as specified in name
+ * Use int32_t as specified in name
  *
  * Revision 1.12  2007-11-05 23:42:28  razeto
  * Code more stable

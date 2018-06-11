@@ -40,7 +40,7 @@ bx_calib_laser_transparency::bx_calib_laser_transparency():bx_base_module("bx_ca
 
 const float bx_calib_laser_transparency::buffer_source_theta[19] = {26.4,26.4,26.4,26.4,26.4,26.4,7.,7.,7.,7.,7.,-26.4,-26.4,-26.4,-26.4,-26.4,-26.4,-7.,-7.};
 const float bx_calib_laser_transparency::buffer_source_phi[19] = {335.,50.,5.,125.,215.,260.,10.,90.,170.,190.,270.,185.,155.,140.,35.,305.,320.,270.,90.}; 
-const int bx_calib_laser_transparency::buffer_target[19] = {942,1248,314,448,1427,475,1934,1604,147,319,1779,922,1113,1606,1615,1932,1777,1779,1116};
+const int32_t bx_calib_laser_transparency::buffer_target[19] = {942,1248,314,448,1427,475,1934,1604,147,319,1779,922,1113,1606,1615,1932,1777,1779,1116};
 const float bx_calib_laser_transparency::radial_source_theta[12] = {67.15,50.7,26.4,26.4,26.4,7.,-26.4,-26.4,-7.,-50.7,-67.15,-26.4};
 const float bx_calib_laser_transparency::radial_source_phi[12] = {190.,250.,65.,185.,305.,210.,125.,245.,30.,70.,10.,5.};
 // module interface
@@ -109,15 +109,15 @@ void bx_calib_laser_transparency::begin() {
 bx_echidna_event* bx_calib_laser_transparency::doit (bx_echidna_event *ev) {
   const bx_laben_event& er = ev->get_laben();
   counter_ev++;
-  int nhits = er.get_decoded_nhits();
+  int32_t nhits = er.get_decoded_nhits();
   
   //Filling calibration histo
   if (counter_ev <= time_calib_events){
-    for(int i = 0; i < nhits; i++){
+    for(int32_t i = 0; i < nhits; i++){
       const bx_laben_decoded_hit& hit = er.get_decoded_hit(i);
       double itime = hit.get_raw_time() - er.get_laser_rawt() - delay;
-      int npe = hit.get_charge_npe();
-      time_dis_calib->SetBinContent(int(itime), time_dis_calib->GetBinContent(int(itime)) + npe);
+      int32_t npe = hit.get_charge_npe();
+      time_dis_calib->SetBinContent(int32_t(itime), time_dis_calib->GetBinContent(int32_t(itime)) + npe);
     }
   }
   //Searching peaks
@@ -129,7 +129,7 @@ bx_echidna_event* bx_calib_laser_transparency::doit (bx_echidna_event *ev) {
     time_calib->Search(time_dis_calib ,peak_width ,"new", threshold);
     peak_time = time_calib->GetPositionX();
     get_message(bx_message::log) << " Number of peaks in time distribution: " << time_calib->GetNPeaks() <<dispatch;
-    for(int k = 0; k < time_calib->GetNPeaks(); k++){
+    for(int32_t k = 0; k < time_calib->GetNPeaks(); k++){
       get_message(bx_message::log) << " Time position for peak number " << k + 1 << " " << peak_time[k] << " in meters " << peak_time[k]*0.3/refidx <<dispatch;
     }
     get_message(bx_message::log) << " Direct peak flight time: " << dir_peak_time << " in meters " << (dir_peak_time)*0.3/refidx <<dispatch;
@@ -138,14 +138,14 @@ bx_echidna_event* bx_calib_laser_transparency::doit (bx_echidna_event *ev) {
   
   //Search for target PMT in direct peak time gate
   if (counter_ev > time_calib_events && counter_ev < time_calib_events + 1000){
-   for(int i = 0; i < nhits; i++){
+   for(int32_t i = 0; i < nhits; i++){
       const bx_laben_decoded_hit& hit = er.get_decoded_hit(i);
       const db_channel* ch_info = hit.get_db_channel();
       ich = ch_info->get_lg();
       double itime = hit.get_raw_time();
       itime -= er.get_laser_rawt() + delay;
       if(itime>time_inf && itime < time_sup){
-        int npe = hit.get_charge_npe();
+        int32_t npe = hit.get_charge_npe();
         ich = ch_info->get_lg();
         lg_dis->SetBinContent(ich, lg_dis->GetBinContent(ich) + npe);
       }
@@ -165,16 +165,16 @@ bx_echidna_event* bx_calib_laser_transparency::doit (bx_echidna_event *ev) {
     processed_events++;
     counter_charge_dir_peak = 0;
     dir_peak_ev = 0;
-    for(int j = 0; j<nhits; j++){
+    for(int32_t j = 0; j<nhits; j++){
       fbflag = 0;
       const bx_laben_decoded_hit& hit = er.get_decoded_hit(j);
       const db_channel* ch_info = hit.get_db_channel();
       ich = ch_info->get_lg();
       double itime = hit.get_raw_time();
       itime -= er.get_laser_rawt() + delay;
-      int npe = hit.get_charge_npe();
+      int32_t npe = hit.get_charge_npe();
       raw_charge = hit.get_charge_bin();
-      time_dis->SetBinContent(int(itime), time_dis->GetBinContent(int(itime)) + npe);
+      time_dis->SetBinContent(int32_t(itime), time_dis->GetBinContent(int32_t(itime)) + npe);
       if(itime > time_inf && itime < time_sup){
       dir_peak_ev++;
         lg_dis->Fill(ich);
@@ -206,9 +206,9 @@ bx_echidna_event* bx_calib_laser_transparency::doit (bx_echidna_event *ev) {
         z_pmt /= norma_pmt;
         //angolo al centro tra sorgente e pmt in esame
         alpha = acos((x_s*x_pmt)+(y_s*y_pmt)+(z_s*z_pmt))*180/pi;
-        time_vs_angle->SetBinContent(int(itime),int(alpha),time_vs_angle->GetBinContent(int(itime),int(alpha))+npe);
-        if(z_pmt > 0.) top->SetBinContent(int(x_tb*A + Nbins/2), int(y_tb*A + B), top->GetBinContent(int(x_tb*A + B),int(y_tb*A + B))+1);
-        else bottom->SetBinContent(int(x_tb*A + Nbins/2), int(y_tb*A + B) , bottom->GetBinContent(int(x_tb*A + B),int(y_tb*A + B))+1);
+        time_vs_angle->SetBinContent(int32_t(itime),int32_t(alpha),time_vs_angle->GetBinContent(int32_t(itime),int32_t(alpha))+npe);
+        if(z_pmt > 0.) top->SetBinContent(int32_t(x_tb*A + Nbins/2), int32_t(y_tb*A + B), top->GetBinContent(int32_t(x_tb*A + B),int32_t(y_tb*A + B))+1);
+        else bottom->SetBinContent(int32_t(x_tb*A + Nbins/2), int32_t(y_tb*A + B) , bottom->GetBinContent(int32_t(x_tb*A + B),int32_t(y_tb*A + B))+1);
         //calcolo per le variabili proiettate (srotolamento delle due semisfere)
         omega2 = acos(z_r/R);
         mod2 = R*omega2;
@@ -225,12 +225,12 @@ bx_echidna_event* bx_calib_laser_transparency::doit (bx_echidna_event *ev) {
         //riempimento scatterplot illustrativi
         if(itime > time_inf && itime < time_sup){
         if( fbflag == 0){
-          frontpro->SetBinContent(int(x_p*A + B), int(y_p*A + B) , frontpro->GetBinContent(int(x_p*A + B),int(y_p*A + B)) + npe);
+          frontpro->SetBinContent(int32_t(x_p*A + B), int32_t(y_p*A + B) , frontpro->GetBinContent(int32_t(x_p*A + B),int32_t(y_p*A + B)) + npe);
           x_bar += x_p*npe;
           y_bar += y_p*npe;
           N_bar +=npe;}
         else
-        backpro->SetBinContent(int(x_p*A + B), int(y_p*A + B) , backpro->GetBinContent(int(x_p*A + B),int(y_p*A + B)) + npe);
+        backpro->SetBinContent(int32_t(x_p*A + B), int32_t(y_p*A + B) , backpro->GetBinContent(int32_t(x_p*A + B),int32_t(y_p*A + B)) + npe);
         }
       }
      
@@ -254,19 +254,19 @@ void bx_calib_laser_transparency::end () {
     get_message(bx_message::log) << " This is a Radial Run " <<dispatch;
     get_message(bx_message::log) << " Total charge collected (in NPE excluded calibration event) = " << time_dis->Integral() <<dispatch;
     get_message(bx_message::log) << " center of light position  X =  " << x_bar << " Y = " << y_bar << dispatch;
-    for(int i=1; i <= Nbins; i++){
-      for (int j=1; j <= Nbins; j++){
+    for(int32_t i=1; i <= Nbins; i++){
+      for (int32_t j=1; j <= Nbins; j++){
         x_p = (i - B)/A;
 	y_p = (j - B)/A;
-	int npe = int(frontpro->GetBinContent(i,j));
+	int32_t npe = int32_t(frontpro->GetBinContent(i,j));
         distance += sqrt(pow((x_p - x_bar),2) + pow((y_p - y_bar),2))*npe;
       }
     }
     distance /= N_bar;
     get_message(bx_message::log) << " Radius of spot of light in front of source = " << distance <<dispatch;
     get_message(bx_message::log) << " Back charge in semisphere containing source = " << time_vs_angle->Integral(1,160,1,90)/time_dis->Integral()*100 << " % " <<dispatch;
-    get_message(bx_message::log) << " Charge in spot R=1 m = " << frontpro->Integral( int((-1+x_bar)*A+B) ,int((1+x_bar)*A+B), int((-1+y_bar)*A+B),int((1+y_bar)*A+B))/time_dis->Integral()*100 << " % " <<dispatch;
-    get_message(bx_message::log) << " Ratio Spot R=1 charge/back charge " <<  frontpro->Integral( int((-1+x_bar)*A+B) ,int((1+x_bar)*A+B),int((-1+y_bar)*A+B),int((1+y_bar)*A+B))/time_vs_angle->Integral(1,160,1,90) <<dispatch;
+    get_message(bx_message::log) << " Charge in spot R=1 m = " << frontpro->Integral( int32_t((-1+x_bar)*A+B) ,int32_t((1+x_bar)*A+B), int32_t((-1+y_bar)*A+B),int32_t((1+y_bar)*A+B))/time_dis->Integral()*100 << " % " <<dispatch;
+    get_message(bx_message::log) << " Ratio Spot R=1 charge/back charge " <<  frontpro->Integral( int32_t((-1+x_bar)*A+B) ,int32_t((1+x_bar)*A+B),int32_t((-1+y_bar)*A+B),int32_t((1+y_bar)*A+B))/time_vs_angle->Integral(1,160,1,90) <<dispatch;
     get_message(bx_message::log) << " Zero charge in direct peak (% on total event)= " << zero_charge_dir_peak/processed_events*100 <<dispatch;
   }
   if(type == 2){

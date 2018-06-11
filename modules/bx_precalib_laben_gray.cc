@@ -34,9 +34,9 @@ void bx_precalib_laben_gray::begin () {
   f_mean_bound = get_parameter ("mean_bound").get_float ();
   f_rms_bound = get_parameter ("rms_bound").get_float ();
 
-  i_nreferences = int(constants::laben::channels / i_channel_skip);
+  i_nreferences = int32_t(constants::laben::channels / i_channel_skip);
   gray_diffs = new TH2F* [i_nreferences];
-  for (int i = 0; i < i_nreferences; i++) {
+  for (int32_t i = 0; i < i_nreferences; i++) {
     std::ostringstream name, title;
     name << "gray_diff_" << (i + 1) * i_channel_skip;
     title << "bx_precalib_laben_gray TDC gray counter diffs for lg " << (i + 1) * i_channel_skip;
@@ -46,7 +46,7 @@ void bx_precalib_laben_gray::begin () {
   gray_shifts = new TH1S ("gray_shifts", "bx_precalib_laben_gray TDC gray counter shift", 2400, 1, 2401);
   barn_interface::get ()->store (barn_interface::file, gray_shifts, this);
 
-  gray_map = new int[i_nreferences];
+  gray_map = new int32_t[i_nreferences];
 }
 
 bx_echidna_event* bx_precalib_laben_gray::doit (bx_echidna_event *ev) {
@@ -58,9 +58,9 @@ bx_echidna_event* bx_precalib_laben_gray::doit (bx_echidna_event *ev) {
   if (er.get_raw_nhits ()) b_has_data = true;
 
     // First set the refernce channels
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
-    for (int j = 0; j < constants::laben::channels / i_channel_skip; j++) 
+    for (int32_t j = 0; j < constants::laben::channels / i_channel_skip; j++) 
       if (hit.get_logical_channel () == i_channel_skip * (j + 1) && hit.get_time_1 () != 0xff && hit.get_time_2 () != 0xff)
 	if (!count[j]) {
           gray_map[j] = hit.get_gray_counter ();
@@ -68,15 +68,15 @@ bx_echidna_event* bx_precalib_laben_gray::doit (bx_echidna_event *ev) {
   }
   
     // Then fill the shift histogram using only first hit
-  int fired_channels[constants::laben::channels];
+  int32_t fired_channels[constants::laben::channels];
   std::fill_n (fired_channels, constants::laben::channels, 0);
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
     if (hit.get_time_1 () == 0xff && hit.get_time_2 () == 0xff) continue;
-    int lg = hit.get_logical_channel ();
+    int32_t lg = hit.get_logical_channel ();
     if (fired_channels[lg - 1]++) continue;
-    int gray = hit.get_gray_counter ();
-    for (int j = 0; j < i_nreferences; j++) gray_diffs[j]->Fill (lg, gray - gray_map[j]);
+    int32_t gray = hit.get_gray_counter ();
+    for (int32_t j = 0; j < i_nreferences; j++) gray_diffs[j]->Fill (lg, gray - gray_map[j]);
   }
   return ev;
 }
@@ -87,7 +87,7 @@ void bx_precalib_laben_gray::end () {
     db_run& run_info = bx_dbi::get ()->get_run ();
     bool found = false;
 
-    for (int j = 0; j < constants::laben::channels / i_channel_skip; j++) {
+    for (int32_t j = 0; j < constants::laben::channels / i_channel_skip; j++) {
       float mean, rms;
       mean = gray_diffs[j]->GetMean (2);
       rms = gray_diffs[j]->GetRMS (2);
@@ -95,9 +95,9 @@ void bx_precalib_laben_gray::end () {
         get_message (bx_message::log) << "found channel reference " << i_channel_skip * (j + 1) << " with shift " << mean << "+-" << rms << dispatch;
         found = true;
 
-        for (int i = 0; i < constants::laben::channels; i++) {
+        for (int32_t i = 0; i < constants::laben::channels; i++) {
 	  TH1D * p = gray_diffs[j]->ProjectionY ("base_one_lg", i + 1, i + 1);
-	  int gray_shift = p->GetMaximumBin () - 129; // 129 is the center
+	  int32_t gray_shift = p->GetMaximumBin () - 129; // 129 is the center
 	  if (p->Integral () < 100) gray_shift = 0; // ROOT SUCKS!!! GetEntries does not work with older root version
 	  if (gray_shift < -20 || gray_shift > 20) get_message (bx_message::info) << "ch " << i + 1 << " shift " << gray_shift << " out of bounds" << dispatch;
 	

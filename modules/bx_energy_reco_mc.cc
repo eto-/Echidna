@@ -65,12 +65,12 @@ void bx_energy_reco_mc::begin () {
 
   }
  			      
-//  for( int i = 0; i < 5.q; i++ )
-//    for( int j = 0; j < 3; j++ ) std::cout << r[i] << " " << e[j] << " " << n[i][j] << std::endl;
+//  for( int32_t i = 0; i < 5.q; i++ )
+//    for( int32_t j = 0; j < 3; j++ ) std::cout << r[i] << " " << e[j] << " " << n[i][j] << std::endl;
 
 //initialization of interpolator2d object
-   const int M = 5, N = 3;
-   int i, j;
+   const int32_t M = 5, N = 3;
+   int32_t i, j;
          			    
    interpolator2d::Vec_DP x1(M),x2(N);
    interpolator2d::Mat_DP y(M,N);
@@ -90,7 +90,7 @@ void bx_energy_reco_mc::begin () {
 
 bx_echidna_event* bx_energy_reco_mc::doit (bx_echidna_event *ev) {
     // Loop on every cluster
-    for (int i = 0; i < ev->get_laben ().get_nclusters (); i++) {
+    for (int32_t i = 0; i < ev->get_laben ().get_nclusters (); i++) {
         
 	// Get rec_cluster reference
 	//bx_laben_cluster& c = ev->get_laben ().get_cluster (i);

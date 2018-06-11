@@ -77,7 +77,7 @@ void bx_detector::compute_disabled_channels (int run_number) {
 
     // First disable user specified channels
   if (check_laben_property ("user")) 
-    for (unsigned int i = 0; i < user_disabled_channels_v.size (); i++)
+    for (uint32_t i = 0; i < user_disabled_channels_v.size (); i++)
       disable_lg (user_disabled_channels_v[i], "user");
 
   if (check_laben_property ("db")) use_db = true;

@@ -52,7 +52,7 @@ bx_echidna_event* bx_precalib_laben_check_tdc::doit (bx_echidna_event *ev) {
   double reference_time = 0;  // The assegnation is just to avoid warns from compiler
   laben_time_hit t_hit;
     // First set the refernce channels
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
     if (hit.get_logical_channel () != i_ref_channel) continue;
     t_hit.init (hit);
@@ -63,19 +63,19 @@ bx_echidna_event* bx_precalib_laben_check_tdc::doit (bx_echidna_event *ev) {
   //const db_profile &profile_data = bx_dbi::get ()->get_profile ();
   const db_run &run_data = bx_dbi::get ()->get_run ();
     // Then fill the shift histogram
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     float dt;
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
-    int lg = hit.get_logical_channel ();
+    int32_t lg = hit.get_logical_channel ();
     if (hit.get_time_1 () == 0xff && hit.get_time_2 () == 0xff) continue; // check faster than fist converting hit to t_hit
  //   if (profile_data.logical_channel_description (lg) != db_profile::ordinary) continue;
     t_hit.init (hit);
     dt = t_hit.get_time () - reference_time;
     if ((dt > -110 && dt < -90) || (dt > 90 && dt < 110)) {
-      int rising_on_even = run_data.get_laben_precalib_rising_on_even (lg);
-      int slope = t_hit.guess_slope ();
+      int32_t rising_on_even = run_data.get_laben_precalib_rising_on_even (lg);
+      int32_t slope = t_hit.guess_slope ();
       if (slope != t_hit.hw_slope ()) {
-        int bit = hit.get_flags_ch () & 0x3;
+        int32_t bit = hit.get_flags_ch () & 0x3;
         time_bits->Fill (bit, slope + 2 * rising_on_even);
       }
     }

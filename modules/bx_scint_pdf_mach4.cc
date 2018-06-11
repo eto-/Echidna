@@ -1,4 +1,5 @@
 #include "bx_scint_pdf_mach4.hh"
+#include <stdint.h>
 #include <cmath>
 
 void ScintPDF::Load(const ScintPDF & p)
@@ -25,7 +26,7 @@ void ScintPDF::CalculateCoefficients()
   static const double sqrt2_inv = 1.0 / std::sqrt(2.0);
 
   b = sqrt2_inv / sigma;
-  for (unsigned int i = 0; i < 2; i++) {
+  for (uint32_t i = 0; i < 2; i++) {
     a[i] = q[i] * std::exp(0.5 * sqr(sigma / tau[i]));
     c[i] = -sigma * sqrt2_inv / tau[i];
     lambda[i] = 1.0 / tau[i];

@@ -37,14 +37,14 @@ void bx_position_reco::begin () {
   algo = position_algorithm_name_map[get_parameter ("position_algorithm").get_string ()];
   float ref_index = get_parameter ("refidx").get_float ();
   if (ref_index > 0) path.set_refraction_index (ref_index);
-  for (int i = 0; i < 3 && algo == fixed; i++)
+  for (int32_t i = 0; i < 3 && algo == fixed; i++)
     fixed_positions[i] = get_parameter("fixed_position").get_vector ()[i].get_float ();
 
 }
 
 bx_echidna_event* bx_position_reco::doit (bx_echidna_event *ev) {
     // Loop on every cluster
-  for (int i = 0; i < ev->get_laben ().get_nclusters (); i++) {
+  for (int32_t i = 0; i < ev->get_laben ().get_nclusters (); i++) {
       // Get cluster reference
     const bx_laben_cluster& cluster = ev->get_laben ().get_cluster (i);
     bx_laben_rec_event &laben_rec = dynamic_cast<bx_laben_rec_event &>(ev->get_laben ());
@@ -96,7 +96,7 @@ bx_echidna_event* bx_position_reco::doit (bx_echidna_event *ev) {
 void bx_position_reco::tof_hits (bx_laben_rec_cluster &rec_cluster) {
   const bx_laben_cluster& cluster = *rec_cluster.p_cluster;
 
-  for (int j = 0; j < cluster.get_clustered_nhits (); j++) {
+  for (int32_t j = 0; j < cluster.get_clustered_nhits (); j++) {
     const bx_laben_clustered_hit& hit = cluster.get_clustered_hit (j);
     
       // Initialize path
@@ -112,7 +112,7 @@ void bx_position_reco::tof_hits (bx_laben_rec_cluster &rec_cluster) {
   std::sort (rec_cluster.rec_hits.begin (), rec_cluster.rec_hits.end ());
 
   double t0 = rec_cluster.rec_hits[0].f8_time;
-  for (int j = 0; j < rec_cluster.get_rec_nhits (); j++) rec_cluster.rec_hits[j].f8_time -= t0;
+  for (int32_t j = 0; j < rec_cluster.get_rec_nhits (); j++) rec_cluster.rec_hits[j].f8_time -= t0;
 }
   
 void bx_position_reco::end () {

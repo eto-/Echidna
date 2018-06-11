@@ -23,8 +23,8 @@ class bx_calib_gate: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    int i4_times;
-    int i4_bin;
+    int32_t i4_times;
+    int32_t i4_bin;
     double up_limit;
     double low_limit;
     double media[1000];

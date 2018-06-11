@@ -40,7 +40,7 @@ class bx_position_reco: public bx_base_module {
     std::cmap<std::string, position_algorithm> position_algorithm_name_map;
     float fixed_positions[3];
     
-    int get_hit_charge (const bx_laben_clustered_hit& hit);
+    int32_t get_hit_charge (const bx_laben_clustered_hit& hit);
     void tof_hits (bx_laben_rec_cluster &rec_cluster);
     
     flight_path path;

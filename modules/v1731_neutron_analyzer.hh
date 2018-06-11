@@ -89,7 +89,7 @@ private:
   v1731_neutron_analyzer::peak analog_neutrons;
   bool b_is_muon;
   float f4_muon_time;
-  int i2_n_pulses;
+  int32_t i2_n_pulses;
   bool is_muon(const v1731event&, bool b_always_muon = false);
   void analog_sum_analyze(const v1731event&);
   void zle_analog_sum_analyze(const v1731event&);
@@ -109,7 +109,7 @@ private:
   long i4_size;
   Int_t i2_npeak_found;  
   std::vector <v1731_neutron_analyzer::pulse> peaks;
-  void extrema(int i2_nextrema, long* i4_extrema, Float_t* f_peak_pos, float* f_in_samples);  // returns extrema of peak zones 
+  void extrema(int32_t i2_nextrema, long* i4_extrema, Float_t* f_peak_pos, float* f_in_samples);  // returns extrema of peak zones 
 
 
 

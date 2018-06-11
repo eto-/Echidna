@@ -48,7 +48,7 @@ bx_echidna_event* bx_trigger_decoder::doit (bx_echidna_event *ev) {
 
   // dump btb threshold
   if(!ev->get_event_number())
-    get_message(bx_message::log) << "BTB threshold = " << int(er.get_btb_threshold()) << dispatch;
+    get_message(bx_message::log) << "BTB threshold = " << int32_t(er.get_btb_threshold()) << dispatch;
 
   m_decode_trgtype(er, ew);
 
@@ -79,8 +79,8 @@ bx_echidna_event* bx_trigger_decoder::doit (bx_echidna_event *ev) {
  		 (ev->get_trigger().has_btb_flag(bx_trigger_event::mtb_flag));
 
   // Calculate dt  
-  int dt_gps_ppc0 = er.get_time_t() - ev-> get_trigger().get_trg_time();
-  int dt_build_gps = ev->get_builder_time_seconds()- er.get_time_t();
+  int32_t dt_gps_ppc0 = er.get_time_t() - ev-> get_trigger().get_trg_time();
+  int32_t dt_build_gps = ev->get_builder_time_seconds()- er.get_time_t();
 
   // Selecting events with time difference between ppc0 and gps > 200 sec or <-200 sec
   if ( (ev-> get_event_number () != 0) && (dt_gps_ppc0 > 200 || dt_gps_ppc0 < -200 )){
@@ -92,10 +92,10 @@ bx_echidna_event* bx_trigger_decoder::doit (bx_echidna_event *ev) {
      ppc0_dt->Fill (dt_gps_ppc0 ); 
     
  // Evaluating gps time difference and  additional checks for gps dt
-  long unsigned gps_times[2];                                           
+  uint32_t gps_times[2];                                           
   ev->get_trigger ().get_gps_time (gps_times[0], gps_times[1]);         
-  long int gps_dt_s = gps_times[0] - prev_gps_times[0];              
-  long int gps_dt_ns = gps_times[1] - prev_gps_times[1];                 
+  int32_t gps_dt_s = gps_times[0] - prev_gps_times[0];              
+  int32_t gps_dt_ns = gps_times[1] - prev_gps_times[1];                 
   double dt_gps = double(gps_dt_s) * 1e9 + double(gps_dt_ns);
   double dt_gps_sec = dt_gps * 1e-9;
 	  	          
@@ -142,12 +142,12 @@ void bx_trigger_decoder::m_decode_trgtype(const bx_trigger_event& er, bx_trigger
 // D. Manuzio 12-11-2001
 //            23-03-2004 slight changes to be class member
 void bx_trigger_decoder::gpsclock_decode (
-    unsigned long g1, unsigned long g2, unsigned long g3, // GPS clock raw data (input)
-    int evnum,     
-    int& mday, int& mon, int& year,  // day, month, year (out)
-    int& hour, int& min, int& sec,   // hour, minute, second (out)
-    int& msec, int& microsec,        // milli-sec and micro-sec (out)
-    unsigned long& sec2k, unsigned long& nsec2k,  // secs and nano-sec since 01-01-2000 at 0:0:0
+    uint32_t g1, uint32_t g2, uint32_t g3, // GPS clock raw data (input)
+    int32_t evnum,     
+    int32_t& mday, int32_t& mon, int32_t& year,  // day, month, year (out)
+    int32_t& hour, int32_t& min, int32_t& sec,   // hour, minute, second (out)
+    int32_t& msec, int32_t& microsec,        // milli-sec and micro-sec (out)
+    uint32_t& sec2k, uint32_t& nsec2k,  // secs and nano-sec since 01-01-2000 at 0:0:0
     time_t& timet) {
 
 // YEAR (*year)    current year	
@@ -157,10 +157,10 @@ void bx_trigger_decoder::gpsclock_decode (
 // MIN (*min)	     0 -> 59	
 // SEC (*sec)	     0 -> 59	
 	
-  unsigned short wrd;
-  int first,second,third,fourth,five;
-  int leg;
-  unsigned int nsec;
+  uint16_t wrd;
+  int32_t first,second,third,fourth,five;
+  int32_t leg;
+  uint32_t nsec;
     
   // compute micro-seconds and nano-seconds
   wrd = (g1>>16)&0xFFFF;
@@ -281,7 +281,7 @@ void bx_trigger_decoder::gpsclock_decode (
   else if (timet > 1230768000L) sec2k += 2; //31 Dic 2008 2 leap seconds
   else if (timet > 1136073600L) sec2k += 1; //1 Jan 2005 1 leap second
 
-  nsec2k = (unsigned long)(msec*1000000 + microsec*1000 + nsec);
+  nsec2k = (uint32_t)(msec*1000000 + microsec*1000 + nsec);
 }
 
 /*

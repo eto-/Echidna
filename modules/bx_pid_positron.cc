@@ -93,12 +93,12 @@ void bx_pid_positron::begin () {
 bx_echidna_event* bx_pid_positron::doit (bx_echidna_event *ev) {
 
 	
-	const int nc = ev->get_laben().get_nclusters();
+	const int32_t nc = ev->get_laben().get_nclusters();
 	if (nc <= 0) return ev;
 
 
 	// loop on clusters and compute gatti variables
-	for(int iclus=0; iclus<nc; iclus++) {
+	for(int32_t iclus=0; iclus<nc; iclus++) {
 		
 		// get echidna positron_cluster
 		bx_laben_positron_cluster& ps = ev->get_laben().get_positron_cluster(iclus);
@@ -110,8 +110,8 @@ bx_echidna_event* bx_pid_positron::doit (bx_echidna_event *ev) {
 		
 		if (!gatti_weights_loaded) continue;
 
-		const int nhits     = ev->get_laben().get_cluster(iclus).get_clustered_nhits();
-		const int nlivepmts = ev->get_laben().get_n_live_pmts();
+		const int32_t nhits     = ev->get_laben().get_cluster(iclus).get_clustered_nhits();
+		const int32_t nlivepmts = ev->get_laben().get_n_live_pmts();
 		// TODO: better normalization (invalid pmts??)
 		const float nnhits = nhits*2000./nlivepmts;
 
@@ -121,17 +121,17 @@ bx_echidna_event* bx_pid_positron::doit (bx_echidna_event *ev) {
 		 * nnhits_min, nnhits_max should be larger than the c11/pep region, in order to catch event with bad energy resolution
 		 */
 
-		const int ebin =  ( (nnhits < nnhits_min) || (nnhits >= nnhits_max) ) ? ( (nnhits < nnhits_min) ? 0 : ene_bins - 1  )  : int(nnhits - nnhits_min);
+		const int32_t ebin =  ( (nnhits < nnhits_min) || (nnhits >= nnhits_max) ) ? ( (nnhits < nnhits_min) ? 0 : ene_bins - 1  )  : int32_t(nnhits - nnhits_min);
 
 		//if ( (nnhits < nnhits_min) || (nnhits >= nnhits_max) )
 		//	continue; 
-		//const int ebin = int(nnhits - nnhits_min);
+		//const int32_t ebin = int32_t(nnhits - nnhits_min);
 
 		hSample->Reset();
 
 		// Fill histo of times (skip the first 2 and shift to avoid noise hit effects)
 		const float shift_time = ps.get_rec_hit(2).get_time();
-		for (int i=2; i<nhits; i++) hSample->Fill( ps.get_rec_hit(i).get_time()-shift_time );
+		for (int32_t i=2; i<nhits; i++) hSample->Fill( ps.get_rec_hit(i).get_time()-shift_time );
 
 		// Normalize histo
 		const Double_t integral = hSample->Integral(1, time_max);
@@ -144,7 +144,7 @@ bx_echidna_event* bx_pid_positron::doit (bx_echidna_event *ev) {
 		double gatti_ops_beta = 0.;
 		double gatti_c11_beta = 0.;
 		double gatti_ops_nops = 0.;
-		for (int it=0; it<time_max; it++) {
+		for (int32_t it=0; it<time_max; it++) {
 			const double sample = hSample->GetBinContent(hSample->FindBin(it));
 			gatti_ops_beta  +=  sample * gatti_weight_ops_beta[ebin][it];
 			gatti_c11_beta  +=  sample * gatti_weight_c11_beta[ebin][it];
@@ -172,7 +172,7 @@ void bx_pid_positron::end () {
 }
 
 
-bool bx_pid_positron::load_shape(TFile *f, const std::string & histo_name, double** & shape, int smear){
+bool bx_pid_positron::load_shape(TFile *f, const std::string & histo_name, double** & shape, int32_t smear){
 
 	// allocation of rec-times shapes matrix -> 1st index energy, 2nd index time
 	bool noerror = allocate(shape);
@@ -188,9 +188,9 @@ bool bx_pid_positron::load_shape(TFile *f, const std::string & histo_name, doubl
 		return false;
 	}
 
-	for (int ie = 0; ie < ene_bins; ie++){
-		const int proj_start = nnhits_min + ie - smear;
-		const int proj_stop  = nnhits_min + ie + smear;
+	for (int32_t ie = 0; ie < ene_bins; ie++){
+		const int32_t proj_start = nnhits_min + ie - smear;
+		const int32_t proj_stop  = nnhits_min + ie + smear;
 
 		TH1D* h1shape = (TH1D*) h2shape->ProjectionY("h1_ene_proj", proj_start+1, proj_stop); 
 		if (!h1shape) return false;
@@ -203,7 +203,7 @@ bool bx_pid_positron::load_shape(TFile *f, const std::string & histo_name, doubl
 		}
 		h1shape->Scale(1./integral);
 	
-		for (int it = 0; it< time_max; it++){
+		for (int32_t it = 0; it< time_max; it++){
 			shape[ie][it] = h1shape->GetBinContent(h1shape->FindBin(it));
 		}
 		h1shape->Delete();
@@ -217,8 +217,8 @@ bool bx_pid_positron::load_shape(TFile *f, const std::string & histo_name, doubl
 bool bx_pid_positron::compute_gatti_weights(double** &w, double** p, double** e){
 	bool noerror= allocate(w);
 	if (!noerror) return false;
-	for (int ie=0; ie < ene_bins; ie++){
-		for (int it=0; it < time_max; it++){
+	for (int32_t ie=0; ie < ene_bins; ie++){
+		for (int32_t it=0; it < time_max; it++){
 			const double pp = p[ie][it];
 			const double ee = e[ie][it];
 			const double sum  = pp + ee; 
@@ -232,7 +232,7 @@ bool bx_pid_positron::compute_gatti_weights(double** &w, double** p, double** e)
 bool bx_pid_positron::allocate(double** &shape){
 	shape = new double* [ene_bins];
 	if (!shape) return false;   
-	for (int i=0; i<ene_bins; i++){
+	for (int32_t i=0; i<ene_bins; i++){
 		shape[i] = new double [time_max];
 		if (!shape[i]) return false;
 	}
@@ -240,7 +240,7 @@ bool bx_pid_positron::allocate(double** &shape){
 }
 
 void bx_pid_positron::mdelete(double** &shape){
-	for (int i=0; i<ene_bins; i++){
+	for (int32_t i=0; i<ene_bins; i++){
 		delete (shape[i]);	
 	}
 	delete [] (shape);

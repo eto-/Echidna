@@ -70,13 +70,13 @@ void bx_calib_laben_dark_rates::begin () {
   //number of time bins for histos, 50 ns binning
   time_after_gate = 2000.; 
   time_before_gate = 2000.; 
-  time_bins = (int) (gate_width + time_before_gate + time_after_gate) / 50; 
+  time_bins = (int32_t) (gate_width + time_before_gate + time_after_gate) / 50; 
   
 
       // Histograms
-  int nch = constants::laben::channels;
+  int32_t nch = constants::laben::channels;
 
-  ID_ok_dark_rates = new TH1F ("ID_ok_dark_rates","of good inner det. PMTs", 20 * (int) (1.1 * dark_rate_thresh_high)  , 0,  1.1 * dark_rate_thresh_high);
+  ID_ok_dark_rates = new TH1F ("ID_ok_dark_rates","of good inner det. PMTs", 20 * (int32_t) (1.1 * dark_rate_thresh_high)  , 0,  1.1 * dark_rate_thresh_high);
   ID_ok_dark_rates->SetXTitle("dark rate of good ID PMTs [kHZ], 50 Hz bin");
 
   ID_all_dark_rates = new TH1F ("ID_all_dark_rates","of all alive PMTs", 20 * 100 , 0, 100);
@@ -118,15 +118,15 @@ bx_echidna_event* bx_calib_laben_dark_rates::doit (bx_echidna_event *ev) {
     const bx_laben_event& er = ev->get_laben ();
   
       //loop in decoded hits
-    for(int i = 0; i < er.get_decoded_nhits (); i++) {
-      int lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
+    for(int32_t i = 0; i < er.get_decoded_nhits (); i++) {
+      int32_t lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
       float time = er.get_decoded_hit (i).get_raw_time () - er.get_trigger_rawt () + trigger_offset;
                   
       //fill maps
       if(er.get_decoded_hit (i).get_db_channel ()->is_ordinary () ) {
-	int hole_id = er.get_decoded_hit (i).get_db_channel ()->pmt_hole_id ();
-	int ring = hole_id / 100;
-	int azimut = abs(hole_id % 100);
+	int32_t hole_id = er.get_decoded_hit (i).get_db_channel ()->pmt_hole_id ();
+	int32_t ring = hole_id / 100;
+	int32_t azimut = abs(hole_id % 100);
         
         random_hits_map_cumulative->Fill(azimut, ring); 	
 	random_hits_map-> Fill(azimut, ring); 
@@ -152,8 +152,8 @@ bx_echidna_event* bx_calib_laben_dark_rates::doit (bx_echidna_event *ev) {
     count_pulser_triggers++;
     const bx_laben_event& er = ev->get_laben ();
     //loop in decoded hits
-    for(int i = 0; i < er.get_decoded_nhits (); i++) {
-      int lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
+    for(int32_t i = 0; i < er.get_decoded_nhits (); i++) {
+      int32_t lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
       float time = er.get_decoded_hit (i).get_raw_time () - er.get_trigger_rawt () + trigger_offset;
       if((time > 200.) &&  (time < (time_pulser - 200.)) && !(er.get_decoded_hit (i).is_out_of_gate ())) nhits_pulser[lg - 1] += 1;
       if((time > 200.) &&  (time < (time_pulser - 200.)) && (er.get_decoded_hit (i).is_out_of_gate ())){
@@ -168,8 +168,8 @@ bx_echidna_event* bx_calib_laben_dark_rates::doit (bx_echidna_event *ev) {
     count_laser_triggers++;
     const bx_laben_event& er = ev->get_laben ();
     //loop in decoded hits
-    for(int i = 0; i < er.get_decoded_nhits (); i++) {
-      int lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
+    for(int32_t i = 0; i < er.get_decoded_nhits (); i++) {
+      int32_t lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
       float time = er.get_decoded_hit (i).get_raw_time () - er.get_trigger_rawt () + trigger_offset;
       if((time > 200.) &&  (time < (time_laser - 200.)) && !(er.get_decoded_hit (i).is_out_of_gate ())) nhits_laser[lg - 1] += 1;
       if((time > 200.) &&  (time < (time_laser - 200.)) && (er.get_decoded_hit (i).is_out_of_gate ())){
@@ -186,7 +186,7 @@ bx_echidna_event* bx_calib_laben_dark_rates::doit (bx_echidna_event *ev) {
     const bx_laben_event& er = ev->get_laben ();
     //only 1-cluster events
     if( (er.get_nclusters ()) == 1.){ 
-      int N_clustered_hits =  er.get_cluster (0).get_clustered_nhits ();
+      int32_t N_clustered_hits =  er.get_cluster (0).get_clustered_nhits ();
         //time of the the last clustered hit
       double time_last = er.get_cluster (0).get_clustered_hit (N_clustered_hits - 1).get_decoded_hit ().get_raw_time () - er.get_trigger_rawt () + trigger_offset;
 
@@ -194,9 +194,9 @@ bx_echidna_event* bx_calib_laben_dark_rates::doit (bx_echidna_event *ev) {
       if(((time_neutrino + width_neutrino) < (gate_width - 200)) && (time_last < (time_neutrino + width_neutrino)) ) {
 	count_neutrino_triggers++;
   	  //loop in decoded hits before cluster
-	for(int i = N_clustered_hits; i < er.get_decoded_nhits (); i++) {
+	for(int32_t i = N_clustered_hits; i < er.get_decoded_nhits (); i++) {
 	  float time = er.get_decoded_hit (i).get_raw_time () - er.get_trigger_rawt () + trigger_offset;
-	  int lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
+	  int32_t lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
 	  //hit after the cluster 
           if((time > (time_neutrino + width_neutrino)) && (time < (gate_width - 200))  &&  !(er.get_decoded_hit (i).is_out_of_gate ())) nhits_neutrino[lg - 1] += 1;
 	  if((time > 200.) &&  (time < (time_neutrino - 100.)) && (er.get_decoded_hit (i).is_out_of_gate ())){
@@ -214,19 +214,19 @@ bx_echidna_event* bx_calib_laben_dark_rates::doit (bx_echidna_event *ev) {
   //END
 void bx_calib_laben_dark_rates::end () {
 
-  int index_random = (int) index_trg_type / 1000;
-  int index_pulser = (int) (index_trg_type % 1000)/100;
-  int index_laser = (int) (index_trg_type % 100)/ 10;
-  int index_neutrino = (int) (index_trg_type % 10);
+  int32_t index_random = (int32_t) index_trg_type / 1000;
+  int32_t index_pulser = (int32_t) (index_trg_type % 1000)/100;
+  int32_t index_laser = (int32_t) (index_trg_type % 100)/ 10;
+  int32_t index_neutrino = (int32_t) (index_trg_type % 10);
 
 
-  int n_ordinary_lg = 0; //number of ordinary PMTs     
-  int n_ok_pmt = 0; //number of ok PMTs     
-  int count_not_ordinary_pmts = 0;
-  int count_cone_pmts_dead = 0; 
-  int count_cone_pmts_hot = 0; 
-  int count_not_cone_pmts_dead = 0; 
-  int count_not_cone_pmts_hot = 0; 
+  int32_t n_ordinary_lg = 0; //number of ordinary PMTs     
+  int32_t n_ok_pmt = 0; //number of ok PMTs     
+  int32_t count_not_ordinary_pmts = 0;
+  int32_t count_cone_pmts_dead = 0; 
+  int32_t count_cone_pmts_hot = 0; 
+  int32_t count_not_cone_pmts_dead = 0; 
+  int32_t count_not_cone_pmts_hot = 0; 
 
     //variables for calculating mean dark rate of the detector
   double sum_rates_all_pmts = 0;
@@ -252,10 +252,10 @@ void bx_calib_laben_dark_rates::end () {
   std::vector<pmt_status>  alive(constants::laben::channels);
   
     //for non ordinary channels set dark_rate to -1, alive-pmt_status set to 0
-  for(int ch = 1; ch < (constants::laben::channels + 1); ch++) {  
+  for(int32_t ch = 1; ch < (constants::laben::channels + 1); ch++) {  
     if(!(bx_dbi::get ()->get_channel (ch).is_ordinary ()) ) {
       count_not_ordinary_pmts ++;
-      for(int i = 1; i < 6; i++) ID_dark_rate_vs_channel->SetBinContent (ch, i, -1);
+      for(int32_t i = 1; i < 6; i++) ID_dark_rate_vs_channel->SetBinContent (ch, i, -1);
       dark_rates_total[ch - 1] = -1.;      
       error_dark_rates_total[ch - 1] = -1.;
       alive[ch - 1] = no_pmt;
@@ -269,16 +269,16 @@ void bx_calib_laben_dark_rates::end () {
 	
   if (tot_dark_time < min_dark_time * 1e9) get_message(bx_message::warn) << "Not enough statistics to calculate dark rates" << dispatch ; 
   else{ // enough stat
-    int nhits_random_all = 0;
-    int nhits_pulser_all = 0;
-    int nhits_laser_all = 0;
-    int nhits_neutrino_all = 0;
+    int32_t nhits_random_all = 0;
+    int32_t nhits_pulser_all = 0;
+    int32_t nhits_laser_all = 0;
+    int32_t nhits_neutrino_all = 0;
       
     //loop on lg
-    for(int ch = 1; ch < (constants::laben::channels + 1); ch++) {
+    for(int32_t ch = 1; ch < (constants::laben::channels + 1); ch++) {
       if((bx_dbi::get ()->get_channel (ch).is_ordinary ()) ) {
-	int lg_is_ok = 1;
-	int lg_is_dead = 0;
+	int32_t lg_is_ok = 1;
+	int32_t lg_is_dead = 0;
 	  
 	//random triggers (rate in kHz)
 	double dark_rate_random = nhits_random[ch - 1] / (tot_random_time * 1e-9) / 1e3;   
@@ -307,7 +307,7 @@ void bx_calib_laben_dark_rates::end () {
  	//all  types of triggers together (rate in kHz)
         double error_dark_rate_total;
 
-	int nhits_total = (index_random * nhits_random[ch - 1] + index_pulser * nhits_pulser[ch - 1] + index_laser * nhits_laser[ch - 1] + index_neutrino * nhits_neutrino[ch - 1]);   
+	int32_t nhits_total = (index_random * nhits_random[ch - 1] + index_pulser * nhits_pulser[ch - 1] + index_laser * nhits_laser[ch - 1] + index_neutrino * nhits_neutrino[ch - 1]);   
 	double dark_rate_total = nhits_total / (tot_dark_time * 1e-9) / 1e3;   
 	if(dark_rate_total != 0)  {
 	  error_dark_rate_total = dark_rate_total / sqrt(nhits_total); 
@@ -439,7 +439,7 @@ void bx_calib_laben_dark_rates::end () {
       
       // checking individual channels
       // get values from the previous calibration run
-      for(int ch = 1; ch < (constants::laben::channels + 1); ch++) {
+      for(int32_t ch = 1; ch < (constants::laben::channels + 1); ch++) {
 	float previous_laben_dark_noise = run_info.get_laben_dark_noise (ch) ;
 	float previous_laben_dark_sigma = run_info.get_laben_dark_sigma (ch) ;
 	
@@ -456,11 +456,11 @@ void bx_calib_laben_dark_rates::end () {
 	if (!translation_map.check (previous_laben_alive_descr)) {
 	  get_message(bx_message::error) << "unknown pmt status" << previous_laben_alive_descr << " for ch " << ch << dispatch;
 	  previous_laben_alive = good;
-	} else previous_laben_alive = pmt_status(int(translation_map[previous_laben_alive_descr]) % 10);
+	} else previous_laben_alive = pmt_status(int32_t(translation_map[previous_laben_alive_descr]) % 10);
 	
 	if(previous_laben_alive != alive[ch - 1]){
 	  get_message(bx_message::warn) << "Dark rate status changed for channel " << ch << " from " <<  previous_laben_alive << " to " << alive[ch - 1] << dispatch;
-	  alive [ch - 1] = pmt_status(int(alive [ch - 1]) + 10);
+	  alive [ch - 1] = pmt_status(int32_t(alive [ch - 1]) + 10);
 	}
 	
 	
@@ -481,7 +481,7 @@ void bx_calib_laben_dark_rates::end () {
   // The parameter a should be compatible with 0 (flat distribution),  
   //  while the constant b is related with the dark rate.
 
-float bx_calib_laben_dark_rates::fit_rate (TH1D *histo, int npmts) {	
+float bx_calib_laben_dark_rates::fit_rate (TH1D *histo, int32_t npmts) {	
   
   float rate = 0.;
   float slope = 0.;
@@ -508,7 +508,7 @@ float bx_calib_laben_dark_rates::fit_rate (TH1D *histo, int npmts) {
     if( (fabs(error_constant / constant)) > 0.1 )
       get_message(bx_message::warn) << "big error of the mean dark rate: " << fabs(error_constant / constant) * 100 << " %" << dispatch;
       // number of bins in the fitted part of the histo
-    int nbins = ((int) gate_width - 400) / 50; 
+    int32_t nbins = ((int32_t) gate_width - 400) / 50; 
     rate = (constant * (float) nbins) / (count_random_triggers * (gate_width - 400.) * 1e-9 ) / npmts * 1e-3; 
   }
   return rate;

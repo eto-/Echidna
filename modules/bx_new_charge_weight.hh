@@ -28,13 +28,13 @@ class bx_new_charge_weight: public bx_base_module {
     
   private:
 
-    unsigned char *p_disabled_lg;
-    unsigned int i4_n_disabled_channels, i4_n_disabled_charge;
+    uint8_t *p_disabled_lg;
+    uint32_t i4_n_disabled_channels, i4_n_disabled_charge;
     const db_channel_laben **ch_info_v;
     bool *p_disabled_pmts_lg;
     bool *p_disabled_charge_lg;
 
-    int nlg;
+    int32_t nlg;
     float xp,yp,zp;
     float QE;
     float R_pmt;

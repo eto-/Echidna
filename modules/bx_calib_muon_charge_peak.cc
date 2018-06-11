@@ -29,7 +29,7 @@ void bx_calib_muon_charge_peak::begin () {
   get_message(bx_message::debug) << "begin" << dispatch;
 
   // creation of the 2-dim histogram 
-  int nch = constants::muon::channels;
+  int32_t nch = constants::muon::channels;
   muon_charge_calib = new TH2S ("muon_charge_calib", "Charge Calibration Histogram",nch,0,nch, 256 ,  0, 256);
   barn_interface::get ()->store (barn_interface::file, muon_charge_calib, this);
 
@@ -49,7 +49,7 @@ void bx_calib_muon_charge_peak::begin () {
 bx_echidna_event* bx_calib_muon_charge_peak::doit (bx_echidna_event *ev) {
   const bx_muon_event& er = ev->get_muon();
 
-  int nhits = er.get_decoded_nhits();
+  int32_t nhits = er.get_decoded_nhits();
 
   // Update has data field
   if (!nhits) return ev;
@@ -57,9 +57,9 @@ bx_echidna_event* bx_calib_muon_charge_peak::doit (bx_echidna_event *ev) {
   i4_nevents++;
   b_has_data |= true;
 
-  for(int i = 0; i < nhits; i++){
+  for(int32_t i = 0; i < nhits; i++){
     const bx_muon_decoded_hit& hit = er.get_decoded_hit(i);
-    unsigned short mch = hit.get_raw_hit().get_muon_channel();
+    uint16_t mch = hit.get_raw_hit().get_muon_channel();
     float time   = hit.get_time  ();
     float charge = hit.get_charge();
     // filling of the 2-dim histogram, only positive charge values
@@ -87,7 +87,7 @@ void bx_calib_muon_charge_peak::end () {
 
   // mean value of the laser peak
   TH1D *mean_proj_charge = muon_charge_calib->ProjectionY("mean_proj_charge");
-  int avg_entries = int(mean_proj_charge->Integral()/208.);
+  int32_t avg_entries = int32_t(mean_proj_charge->Integral()/208.);
   float avg_peak;
   avg_peak = (float) mean_proj_charge->GetMean();
 
@@ -102,15 +102,15 @@ void bx_calib_muon_charge_peak::end () {
   std::fill_n (charge_sigma,constants::muon::channels,       0.);
 
   // some ctrs
-  int not_connected = 0, no_light = 0;
-  int not_conv_charge = 0;
-//  int no_charge_mean = 0;
-  int large_drift_charge = 0;
-  int good_in_charge = 0;
+  int32_t not_connected = 0, no_light = 0;
+  int32_t not_conv_charge = 0;
+//  int32_t no_charge_mean = 0;
+  int32_t large_drift_charge = 0;
+  int32_t good_in_charge = 0;
 
 
   // main loop
-  for (int i=0; i<constants::muon::channels; i++) {
+  for (int32_t i=0; i<constants::muon::channels; i++) {
     // discard non Pmt channels
     if (profile_info.logical_channel_description (i+constants::muon::channel_offset+1) != db_profile::ordinary){
       charge_peak[i]=0.;
@@ -119,7 +119,7 @@ void bx_calib_muon_charge_peak::end () {
       continue;
     }
     TH1D *proj_charge = muon_charge_calib->ProjectionY("proj_charge", i+1, i+1);
-    int entries = int(proj_charge->Integral());
+    int32_t entries = int32_t(proj_charge->Integral());
     // discard channels with no direct light
     if (float(entries)/float(i4_nevents) < minimum_efficiency) {
       get_message(bx_message::log) << "Mch " << i << ": low statistics; entries = " << entries << " ; required minimum entries = " << minimum_efficiency * float(i4_nevents) << dispatch;
@@ -136,12 +136,12 @@ void bx_calib_muon_charge_peak::end () {
     double cpar[3];
 
     //Find Gauss-Peak of spe-spektrum
-    int maximumbin = proj_charge->GetMaximumBin();
+    int32_t maximumbin = proj_charge->GetMaximumBin();
 
     //Average over peak
-    int n=1;	//1 bin left and right of the maximumbin
+    int32_t n=1;	//1 bin left and right of the maximumbin
     cpar[0] = 0;
-    if (maximumbin >=2) for (int q=-n;q<=n;q++) {cpar[0] += proj_charge->GetBinContent(maximumbin + q);}
+    if (maximumbin >=2) for (int32_t q=-n;q<=n;q++) {cpar[0] += proj_charge->GetBinContent(maximumbin + q);}
     else cpar[0] = proj_charge->GetBinContent(maximumbin);
     cpar[0] /= float(2*n+1);
     cpar[1] = proj_charge->GetBinCenter(maximumbin);
@@ -160,12 +160,12 @@ void bx_calib_muon_charge_peak::end () {
    //Define Fit-Range
    double leftthreshold = 2./3. * cpar[0];
    double rightthreshold = 1./4. * cpar[0];
-   int leftrangebin  = proj_charge->GetXaxis()->GetFirst();
-   int rightrangebin = proj_charge->GetXaxis()->GetLast();
+   int32_t leftrangebin  = proj_charge->GetXaxis()->GetFirst();
+   int32_t rightrangebin = proj_charge->GetXaxis()->GetLast();
    bool leftrange = false; bool rightrange = false;
 
    //Search for left and right bin of the fit range
-   for (int bin = leftrangebin; bin <=  maximumbin; bin++)
+   for (int32_t bin = leftrangebin; bin <=  maximumbin; bin++)
    {
       //Leftside
       if (bin < maximumbin && proj_charge->GetBinContent(bin) > leftthreshold && leftrange == false) {leftrangebin = bin; leftrange = true; break;}
@@ -177,7 +177,7 @@ void bx_calib_muon_charge_peak::end () {
       }
    }
 
-   for (int bin = rightrangebin; bin >=  maximumbin; bin--)
+   for (int32_t bin = rightrangebin; bin >=  maximumbin; bin--)
    {
       //Rightside
       if (bin > maximumbin && proj_charge->GetBinContent(bin) > rightthreshold && rightrange == false) {rightrangebin = bin; rightrange = true; break;}
@@ -243,8 +243,8 @@ void bx_calib_muon_charge_peak::end () {
   }
 
 
-//  int good_ch_time   = constants::muon::channels - not_connected - no_light - not_conv_time   - large_drift_time;
-//  int good_ch_charge = constants::muon::channels - not_connected - no_light - not_conv_charge - large_drift_charge;
+//  int32_t good_ch_time   = constants::muon::channels - not_connected - no_light - not_conv_time   - large_drift_time;
+//  int32_t good_ch_charge = constants::muon::channels - not_connected - no_light - not_conv_charge - large_drift_charge;
   
   get_message(bx_message::info) << not_connected      << " channels not connected to a Pmt"  << dispatch;
   get_message(bx_message::info) << no_light           << " channels with no direct light"    << dispatch;
@@ -254,8 +254,8 @@ void bx_calib_muon_charge_peak::end () {
  
   // fill the visitors to db_run
   run_info.set_muon_charge_peak (constants::muon::channel_offset+1, avg_peak, this);
-  for (int i=1; i<constants::muon::channels; i++) {
-    int lg = i + 1 + constants::muon::channel_offset;
+  for (int32_t i=1; i<constants::muon::channels; i++) {
+    int32_t lg = i + 1 + constants::muon::channel_offset;
     if (profile_info.logical_channel_description (lg) != db_profile::ordinary) continue;
     run_info.set_muon_charge_peak  (lg , charge_peak [i], this);
     run_info.set_muon_charge_sigma (lg , charge_sigma[i], this);

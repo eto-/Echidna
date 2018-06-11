@@ -52,7 +52,7 @@ void bx_laben_decoder::begin () {
   barn_interface::get ()->store (barn_interface::file, gray_cross_h, this);
 
     // channels properties (disabled, ch_info, empty)
-  p_disabled_lg = new unsigned char[constants::laben::channels + 1];
+  p_disabled_lg = new uint8_t[constants::laben::channels + 1];
   memset (p_disabled_lg, 0, constants::laben::channels + 1); // Init vector at 0
   i4_ordinary_pmt = i4_n_disabled_channels = i4_n_disabled_charge = i4_n_disabled_pmts = i4_n_disabled_pmts_charge = 0;
   ch_info_v = new const db_channel_laben*[constants::laben::channels + 1];
@@ -76,8 +76,8 @@ namespace {
 
 bx_echidna_event* bx_laben_decoder::doit (bx_echidna_event *ev) {
   detector_interface::get ()->read_disabled_channels (ev->get_event_number ());
-  const std::vector<int>& v = detector_interface::get ()->get_disabled_channels ();
-  const std::vector<int>& vc = detector_interface::get ()->get_disabled_charge ();
+  const std::vector<int32_t>& v = detector_interface::get ()->get_disabled_channels ();
+  const std::vector<int32_t>& vc = detector_interface::get ()->get_disabled_charge ();
   if (v.size () != i4_n_disabled_channels || vc.size () != i4_n_disabled_charge) {
     i4_n_disabled_pmts = 0;
     i4_n_disabled_pmts_charge = 0;
@@ -119,14 +119,14 @@ bx_echidna_event* bx_laben_decoder::doit (bx_echidna_event *ev) {
   bool gray_cross = gray_cross_ratio > 0.7;
 
     // 1) Create the matrix and an iterator
-  std::map <int, bx_laben_decoded_hit_list> channel_hits_map;
-  std::map <int, bx_laben_decoded_hit_list>::iterator it;
+  std::map <int32_t, bx_laben_decoded_hit_list> channel_hits_map;
+  std::map <int32_t, bx_laben_decoded_hit_list>::iterator it;
 
     // 2) Fill the matrix (even fill the time since the laben_time_hit is create to check if the hit is valid)
-  int invalid_on_good = 0, invalid_on_charge = 0;
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  int32_t invalid_on_good = 0, invalid_on_charge = 0;
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
-    int lg = hit.get_logical_channel ();
+    int32_t lg = hit.get_logical_channel ();
     const db_channel_laben *ch_info = ch_info_v[lg];
 
       // Ignore laben invalid hits (0xffff)
@@ -251,7 +251,7 @@ bx_echidna_event* bx_laben_decoder::doit (bx_echidna_event *ev) {
   }
     // And calculate the times
   if (!trigger_times.size ()) {
-    get_message (bx_message::error) << "no trigger hits in event " << ev->get_event_number () << " of type " << int(ev->get_trigger ().get_trgtype ()) << dispatch;
+    get_message (bx_message::error) << "no trigger hits in event " << ev->get_event_number () << " of type " << int32_t(ev->get_trigger ().get_trgtype ()) << dispatch;
     return ev;
   }
   if (ev->get_trigger ().is_laser () && !laser_times.size ()) {
@@ -299,12 +299,12 @@ bx_echidna_event* bx_laben_decoder::doit (bx_echidna_event *ev) {
     middle = std::stable_partition (c_list.begin (), c_list.end (), in_gate_checker (low_bound, high_bound));
     if (b_discard_out_of_gate_hits) c_list.erase (middle, c_list.end ());
     else for (; middle != c_list.end (); middle++) middle->u1_flag |= bx_laben_decoded_hit::out_of_gate;
-    int i = 0;
+    int32_t i = 0;
     for (bx_laben_decoded_hit_list::iterator it_curr = c_list.begin (); it_curr != c_list.end (); it_curr++) it_curr->u1_order_in_channel = ++i;
   }
 
     // 3d) Calculate the vector lenghts
-  int std_decoded_nhits = 0, trigger_decoded_nhits = 0, laser_decoded_nhits = 0;
+  int32_t std_decoded_nhits = 0, trigger_decoded_nhits = 0, laser_decoded_nhits = 0;
   for (it = channel_hits_map.begin (); it != channel_hits_map.end (); it++) {
     bx_laben_decoded_hit_list &c_list = it->second;
     if (c_list.size ()) {
@@ -367,7 +367,7 @@ bx_echidna_event* bx_laben_decoder::doit (bx_echidna_event *ev) {
   e.i4_invalid_charge = invalid_on_charge;
     
     // Put an energy threshold
-  if (int(e.decoded_hits.size ()) < i4_nhits_threshold) return ev;
+  if (int32_t(e.decoded_hits.size ()) < i4_nhits_threshold) return ev;
 
   er.mark_stage (bx_base_event::decoded);
   return ev;
@@ -385,10 +385,10 @@ float bx_laben_decoder::m_check_gray_cross (const bx_laben_event& er) {
     // Create an empty laben time hit
   laben_time_hit t_hit;
   
-  int n_cross = 0;
-  int n_valid = 0;
+  int32_t n_cross = 0;
+  int32_t n_valid = 0;
   
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
     
        // only check logical channels
@@ -432,7 +432,7 @@ double bx_laben_decoder::m_get_moda_mean (const std::vector<double>& v) {
   return count ? sum / count : 0.;
 }
 
-double bx_laben_decoder::m_search_moda (const double *times, unsigned short size) {
+double bx_laben_decoder::m_search_moda (const double *times, uint16_t size) {
   if (!size) return 0;
   if (size == 1) return times[0];
   
@@ -441,15 +441,15 @@ double bx_laben_decoder::m_search_moda (const double *times, unsigned short size
   double dt = max - min;
   if (dt < 10) return (min + max) / 2; // If the are too close use simple interpolation
 
-  unsigned char *histo = new unsigned char[int(dt / 5) + 1];
-  std::fill (histo, histo + int(dt / 5) + 1, 0);
+  uint8_t *histo = new uint8_t[int32_t(dt / 5) + 1];
+  std::fill (histo, histo + int32_t(dt / 5) + 1, 0);
   
   for (unsigned i = 0; i < size; i++) {
-    int bin = int((times[i] - min) / 5);
+    int32_t bin = int32_t((times[i] - min) / 5);
     histo[bin]++;
   }
 
-  int moda_bin = std::max_element (histo, histo + int(dt / 5) + 1) - histo;
+  int32_t moda_bin = std::max_element (histo, histo + int32_t(dt / 5) + 1) - histo;
     
   delete [] histo;
   return moda_bin * 5 + min;

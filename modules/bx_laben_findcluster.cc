@@ -58,14 +58,14 @@ void bx_laben_findcluster::begin () {
   b_mach4_cluster = get_parameter ("mach4_cluster").get_bool ();
   
     // Define some parameters
-  i4_gate_start = int(bx_dbi::get ()->get_run ().get_laben_gate_start ());
-  i4_gate_end = int(bx_dbi::get ()->get_run ().get_laben_gate_width () + i4_gate_start + 500);
-  i4_cluster_offset = int(bx_dbi::get ()->get_run ().get_laben_cluster_offset ());
+  i4_gate_start = int32_t(bx_dbi::get ()->get_run ().get_laben_gate_start ());
+  i4_gate_end = int32_t(bx_dbi::get ()->get_run ().get_laben_gate_width () + i4_gate_start + 500);
+  i4_cluster_offset = int32_t(bx_dbi::get ()->get_run ().get_laben_cluster_offset ());
   const float pre_width = bx_dbi::get ()->get_run ().get_laben_gate_width();
   f4_trigger_start_ = bx_dbi::get ()->get_run ().get_laben_gate_start();
-  //!(int) rounds down, so we miss the last bit if pre_width is not an integer multiple of _length_
-  i4_NFrames_win1_=(int)(pre_width/i4_dt1_len_);
-  i4_NFrames_win2_=(int)(pre_width/i4_dt2_len_);
+  //!(int32_t) rounds down, so we miss the last bit if pre_width is not an integer multiple of _length_
+  i4_NFrames_win1_=(int32_t)(pre_width/i4_dt1_len_);
+  i4_NFrames_win2_=(int32_t)(pre_width/i4_dt2_len_);
   get_message (bx_message::info)<<"pre_width = "<<pre_width<<dispatch;
   get_message (bx_message::info)<<"f4_trigger_start_ = "<<f4_trigger_start_<<dispatch;
   get_message (bx_message::info)<<"i4_NFrames_win1_ = "<<i4_NFrames_win1_<<dispatch;
@@ -73,9 +73,9 @@ void bx_laben_findcluster::begin () {
 
     // Allocate space for internal storage
   i4_time_bins = (1 << 16) * 50 * 2 / 16;
-  binned_times = new short int[i4_time_bins + 20]; // 20 bins are added to have some extra space (set to 0)
+  binned_times = new int16_t[i4_time_bins + 20]; // 20 bins are added to have some extra space (set to 0)
   				 		   // on which to loop for (without any need for boundary check)
-  fired_channel = new int[constants::laben::channels];
+  fired_channel = new int32_t[constants::laben::channels];
   prev_gps_times[0] = prev_gps_times[1] = 0;
   
   //double dark_rate = bx_dbi::get ()->get_run ()->get_laben_mean_dark_noise () * 2000 * 16e-9
@@ -96,7 +96,7 @@ bx_echidna_event* bx_laben_findcluster::doit (bx_echidna_event *ev) {
   findcluster_time (ev);
   
   /*
-  for (int i = 0; i < ev->get_laben ().get_nclusters (); i++) {
+  for (int32_t i = 0; i < ev->get_laben ().get_nclusters (); i++) {
     double t1 = ev->get_laben ().get_trigger_rawt ();
     double t2 = ev->get_laben ().get_cluster (i).get_start_time ();
     if (::fabs(t1 - t2) > 30000) 
@@ -116,8 +116,8 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
   bx_laben_clustered_event &ew = dynamic_cast<bx_laben_clustered_event&>(er);
 
   //random offset for filling array variables for tt1
-  int random_offset1 = 0;
-  int random_offset2 = 0;
+  int32_t random_offset1 = 0;
+  int32_t random_offset2 = 0;
   
   if(ev->get_trigger ().is_neutrino()){
     random_offset1 = rand () % i4_dt1_len_;
@@ -126,34 +126,34 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
  
   // Clear internal storage
   clusters.clear ();
-  ::memset (binned_times, 0, (i4_time_bins + 20) * sizeof (short int)); // memset is much faster than std::fill_n
+  ::memset (binned_times, 0, (i4_time_bins + 20) * sizeof (int16_t)); // memset is much faster than std::fill_n
   //std::fill_n (binned_times, i4_time_bins + 20, 0); // always the same 20
 
   //! Prepare the array variables to be filled in the next loop
-  std::vector<int> empty_vec(constants::laben::channels,0);
-  for(int ii = 0; ii<i4_NFrames_win1_; ++ii) {
+  std::vector<int32_t> empty_vec(constants::laben::channels,0);
+  for(int32_t ii = 0; ii<i4_NFrames_win1_; ++ii) {
     (ew.v_npmts_win1).push_back(0);
     (ew.v_charge_win1).push_back(0);
   }
-  for(int ii = 0; ii<i4_NFrames_win2_; ++ii) {
+  for(int32_t ii = 0; ii<i4_NFrames_win2_; ++ii) {
     (ew.v_npmts_win2).push_back(0);
     (ew.v_charge_win2).push_back(0);
   }
 
-  std::vector<std::vector<int> > fc_win1(i4_NFrames_win1_,empty_vec);
-  std::vector<std::vector<int> > fc_win2(i4_NFrames_win2_,empty_vec);
+  std::vector<std::vector<int32_t> > fc_win1(i4_NFrames_win1_,empty_vec);
+  std::vector<std::vector<int32_t> > fc_win2(i4_NFrames_win2_,empty_vec);
 
     // FILL the 16ns binned time histogram and the array variables
-  for (int i = 0; i < er.get_decoded_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_decoded_nhits (); i++) {
 
     const bx_laben_decoded_hit &decoded_hit = er.get_decoded_hit (i);
     const db_channel_laben* db = decoded_hit.get_db_channel ();
-    const int lg = db->get_lg ();
+    const int32_t lg = db->get_lg ();
 
     if (!(decoded_hit.get_flag () & ~bx_laben_decoded_hit::out_of_gate) && decoded_hit.get_db_channel ()->is_ordinary ()) {
       //! Accept only ordinary channels and hits that either have flag=0 or have flag=out_of_gate
       float hit_time = decoded_hit.get_raw_time ();
-      int bin = int(hit_time / 16.);
+      int32_t bin = int32_t(hit_time / 16.);
       if (bin >= 0 && bin < i4_time_bins && binned_times[bin] < 0x7FF0) binned_times[bin]++;
 
       //! Fill array variables; hit time is double, but I don't want to modify old code
@@ -164,7 +164,7 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
       const double subt_time = d_hit_time - ref_time;
       if(subt_time<0)
       {
-	get_message (bx_message::debug)<<"UNDERFLOW d_hit_time = "<<(int)d_hit_time<<", trigger time = "<<(int)er.get_trigger_rawt ()<<",f4_trigger_start_ = "<<f4_trigger_start_<<dispatch;
+	get_message (bx_message::debug)<<"UNDERFLOW d_hit_time = "<<(int32_t)d_hit_time<<", trigger time = "<<(int32_t)er.get_trigger_rawt ()<<",f4_trigger_start_ = "<<f4_trigger_start_<<dispatch;
 	continue;
       }
       
@@ -172,8 +172,8 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
       const double subt_time_random2 = subt_time +  random_offset2;
 
 
-      const int frame_win1 = get_gate_index_(i4_dt1_len_,subt_time_random1);
-      const int frame_win2 = get_gate_index_(i4_dt2_len_,subt_time_random2);
+      const int32_t frame_win1 = get_gate_index_(i4_dt1_len_,subt_time_random1);
+      const int32_t frame_win2 = get_gate_index_(i4_dt2_len_,subt_time_random2);
 
       if(frame_win1>i4_NFrames_win1_ || frame_win2>i4_NFrames_win2_)
       {
@@ -202,10 +202,10 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
   } //End loop over decoded hits
 
     // Define the stating point
-  long unsigned gps_times[2];
+  uint32_t gps_times[2];
   ev->get_trigger ().get_gps_time (gps_times[0], gps_times[1]);
-  long int gps_dt_s = gps_times[0] - prev_gps_times[0];
-  long int gps_dt_ns = gps_times[1] - prev_gps_times[1];
+  int32_t gps_dt_s = gps_times[0] - prev_gps_times[0];
+  int32_t gps_dt_ns = gps_times[1] - prev_gps_times[1];
   double dt_gps = double(gps_dt_s) * 1e9 + double(gps_dt_ns);
   ew.f4_window_limit = dt_gps;
   if (dt_gps < 0) get_message (bx_message::error) << "internal error negative gps_dt (" << dt_gps << ") for event " << ev->get_event_number () <<  dispatch;
@@ -217,12 +217,12 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
     //else if (dt_gps < 100 && dt_gps > 0) start_time = er.get_trigger_rawt () - dt_gps;
   }
 
-  int start_bin = int(start_time / 16.);
+  int32_t start_bin = int32_t(start_time / 16.);
   if (start_bin < 0 || start_bin > i4_time_bins) {
     get_message (bx_message::error) << "internal error start_time (" << start_time << ") out of range for event " << ev->get_event_number () <<  dispatch; 
     return;
   }
-  int bin_end = int((er.get_trigger_rawt () + i4_gate_end) / 16.);
+  int32_t bin_end = int32_t((er.get_trigger_rawt () + i4_gate_end) / 16.);
   if (bin_end > i4_time_bins) {
     get_message (bx_message::warn) << "internal error end_time (" << bin_end << ") out of range for event " << ev->get_event_number () <<  dispatch; 
     bin_end = i4_time_bins;
@@ -235,8 +235,8 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
 
 		//bool_muon_clustered and i4_nhits_background are not filled in the main-clustering-subroutines
 		//Set to zero here
-		int n_main_clusters = clusters.size ();		//these are the main clusters for non-muons
-		for (int cl = 0; cl < n_main_clusters; cl++){
+		int32_t n_main_clusters = clusters.size ();		//these are the main clusters for non-muons
+		for (int32_t cl = 0; cl < n_main_clusters; cl++){
 			clusters[cl].bool_muon_clustered = 0;		//these clusters were not identified by second muon-clustering (neutron-finding-algorithm), but identified by main-clustering
 			clusters[cl].f4_n_hits_background = 0;		//background for main-clustering clusters is calculated in routine "bx_laben_findcluster::findcluster_time"
 		}
@@ -247,9 +247,9 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
   if (ev->get_trigger ().get_btb_inputs () == 4  && ev->get_trigger ().get_trgtype () == 1) clusterize_neutrons_in_muongate (start_bin, bin_end, ev);
 
   //At this point, we are done with clustering
-  int n_clusters = clusters.size ();		//now includes also possible additional muonclusters
-  int num_neutron_clusters_above_cycle13_tresh = 0;	//for recoverability cycle13 within cycle14 of tt128 clusters, count the number of tt128 clusters above the old cycle13 threshold
-  int num_clusters_above_neutron_tresh = 0;	// counts the number of clusters above neutron detection threshold (both in tt1 && tt128 events)
+  int32_t n_clusters = clusters.size ();		//now includes also possible additional muonclusters
+  int32_t num_neutron_clusters_above_cycle13_tresh = 0;	//for recoverability cycle13 within cycle14 of tt128 clusters, count the number of tt128 clusters above the old cycle13 threshold
+  int32_t num_clusters_above_neutron_tresh = 0;	// counts the number of clusters above neutron detection threshold (both in tt1 && tt128 events)
   if (n_clusters == 0) ; //get_message (bx_message::info) << "no candidate cluster found for event " << ev->get_event_number () << dispatch;
   else {
       // FOUND some clusters, handle them
@@ -274,7 +274,7 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
       // (still within n_clusters!=0)
     float empty_board_factor = 1. - ev->get_laben().get_empty_boards() / 280.;
     float pmt_factor = (ev->get_laben ().get_n_live_pmts() - ev->get_laben ().get_invalid_pmts() ) / 2000.;
-    for (int cl = 0; cl < n_clusters; cl++) {	//loops over all clusters (if muon-event : over main-clusters and muon-clusters identified by neutron algorithm)
+    for (int32_t cl = 0; cl < n_clusters; cl++) {	//loops over all clusters (if muon-event : over main-clusters and muon-clusters identified by neutron algorithm)
       if (clusters[cl].i4_short_end_bin <= 0) clusters[cl].i4_short_end_bin = clusters[cl].i4_long_end_bin;
    
       bx_laben_cluster::bx_laben_cluster_vector *cluster_vector;
@@ -289,7 +289,7 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
 
       c.f4_clustered_nhits_bkg = clusters[cl].f4_n_hits_background;
 
-      for (int hit = 0; hit < er.get_decoded_nhits (); hit++) {
+      for (int32_t hit = 0; hit < er.get_decoded_nhits (); hit++) {
 	const bx_laben_decoded_hit &decoded_hit = er.get_decoded_hit (hit);
 	if (!(decoded_hit.get_flag () & ~bx_laben_decoded_hit::out_of_gate) && decoded_hit.get_db_channel ()->is_ordinary ()) {
 	  float hit_time = decoded_hit.get_raw_time () / 16;
@@ -313,7 +313,7 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
     if (ev->get_trigger().is_neutron ()) {
       bx_laben_cluster::bx_laben_cluster_vector *cluster_vector;
       cluster_vector = &ew.clusters;
-      for (unsigned int cl=0; cl < (*cluster_vector).size(); cl++) {
+      for (uint32_t cl=0; cl < (*cluster_vector).size(); cl++) {
         if ((*cluster_vector)[cl].get_clustered_nhits() > pmt_factor * (385 - 2*ev->get_laben ().get_empty_boards() ) ) {
           num_clusters_above_neutron_tresh++;
           (*cluster_vector)[cl].b_is_neutron = 1;
@@ -330,16 +330,16 @@ void bx_laben_findcluster::findcluster (bx_echidna_event *ev) {
   ev->get_trigger ().get_gps_time (prev_gps_times[0], prev_gps_times[1]);
 }
 
-void bx_laben_findcluster::clusterize (int start_bin, int bin_end, const bx_echidna_event *ev) {
+void bx_laben_findcluster::clusterize (int32_t start_bin, int32_t bin_end, const bx_echidna_event *ev) {
     // Search for the cluster candidates 
-  int start_threshold = i4_start_threshold;
+  int32_t start_threshold = i4_start_threshold;
   if (ev->get_trigger ().is_neutron ()) start_threshold = i4_neutron_start_threshold;
-  for (int bin = start_bin; bin < bin_end; bin++) {
+  for (int32_t bin = start_bin; bin < bin_end; bin++) {
       // Avoid looping on void bins
     if (binned_times[bin]) {
         // Then sums the count of 3 consecutive bins and comare it with the low threshold
-      int number_hits = 0;
-      for (int j = 0; j < 3; j++) number_hits += binned_times[bin + j]; // bin + j > i4_time_bins is fine since there is 20 spare bins
+      int32_t number_hits = 0;
+      for (int32_t j = 0; j < 3; j++) number_hits += binned_times[bin + j]; // bin + j > i4_time_bins is fine since there is 20 spare bins
       if (number_hits > start_threshold) {
 	  // If here a cluster is found, define the start
 	cluster_data data;
@@ -356,9 +356,9 @@ void bx_laben_findcluster::clusterize (int start_bin, int bin_end, const bx_echi
 	}
 
 	  // Select operating mode: High Energy or normal
-	int draft_energy = 0;
-	for (int j = 0; j < 10; j++) draft_energy += binned_times[bin + j];  // bin + j > i4_time_bins is fine since there is 20 spare bins
-	int ripple_bins, ripple_count;
+	int32_t draft_energy = 0;
+	for (int32_t j = 0; j < 10; j++) draft_energy += binned_times[bin + j];  // bin + j > i4_time_bins is fine since there is 20 spare bins
+	int32_t ripple_bins, ripple_count;
 	if (draft_energy > i4_he_threshold) {
 	  ripple_bins = i4_he_ripple_bins;
 	  ripple_count = i4_he_ripple_count;
@@ -370,7 +370,7 @@ void bx_laben_findcluster::clusterize (int start_bin, int bin_end, const bx_echi
 	  // Search the end of cluster
 	for (; bin < bin_end; bin ++) {
           number_hits = 0;
-	  for (int j = 0; j < ripple_bins; j++) number_hits += binned_times[bin + j];  // bin + j > i4_time_bins is fine since there is 20 spare bins
+	  for (int32_t j = 0; j < ripple_bins; j++) number_hits += binned_times[bin + j];  // bin + j > i4_time_bins is fine since there is 20 spare bins
 	  if (number_hits <= ripple_count) {  // END of cluster found (ripple reagion)
 	    data.i4_n_hits += number_hits;
 //	    bin += ripple_bins; // will be included later by tail_bins
@@ -382,16 +382,16 @@ void bx_laben_findcluster::clusterize (int start_bin, int bin_end, const bx_echi
 	if (data.i4_n_hits < i4_count_threshold) continue; // IGNORE this cluster if integral is too low
 
 	  // Add the tail contribution which define the very last bin
-	int tail_bins = i4_tail_bins;
-	int eoc_bin = bin + tail_bins;
-	int eoc_long_bin = data.i4_start_bin + i4_long_bins;
+	int32_t tail_bins = i4_tail_bins;
+	int32_t eoc_bin = bin + tail_bins;
+	int32_t eoc_long_bin = data.i4_start_bin + i4_long_bins;
 	if (eoc_long_bin < eoc_bin) eoc_long_bin = eoc_bin;
 	if (eoc_long_bin > bin_end) eoc_long_bin = bin_end; // no more than the gate
 	
 	  // Look for other clusters in this tail in which case close the cluster prematurelly
 	for (; bin < eoc_long_bin; bin ++) { 	
 	  number_hits = 0;
-          for (int j = 0; j < 3; j++) number_hits += binned_times[bin + j]; // bin + j > i4_time_bins is fine since there is 20 spare bins
+          for (int32_t j = 0; j < 3; j++) number_hits += binned_times[bin + j]; // bin + j > i4_time_bins is fine since there is 20 spare bins
           if (number_hits > i4_start_threshold) { bin--; break; }
 	  data.i4_n_hits += binned_times[bin];
 	}
@@ -411,7 +411,7 @@ void bx_laben_findcluster::clusterize (int start_bin, int bin_end, const bx_echi
   }
 }
 
-void bx_laben_findcluster::clusterize_mach4 (int start_bin__, int bin_end_, const bx_echidna_event *ev) {
+void bx_laben_findcluster::clusterize_mach4 (int32_t start_bin__, int32_t bin_end_, const bx_echidna_event *ev) {
 
 	size_t start_bin_ = start_bin__;
 	size_t bin_end = bin_end_;
@@ -482,7 +482,7 @@ void bx_laben_findcluster::clusterize_mach4 (int start_bin__, int bin_end_, cons
 				
 				if (posn == start_gate_width) { //If we have reached the end, start check for cluster start 
 					posn = 0;
-					if (gate_hits >= start_gate_width*start_threshold[(int)(bin-start_gate_width*0.5)]) { //Looks like the start of a cluster
+					if (gate_hits >= start_gate_width*start_threshold[(int32_t)(bin-start_gate_width*0.5)]) { //Looks like the start of a cluster
 						cluster_hits = gate_hits;
 						gate_hits = 0;
 						start_bin = bin - start_gate_width + 1;
@@ -498,7 +498,7 @@ void bx_laben_findcluster::clusterize_mach4 (int start_bin__, int bin_end_, cons
 				gate_hits += ps[bin] - ps[bin - start_gate_width];
 				//std::cout << "two" << std::endl;
 				
-				if (gate_hits >= start_gate_width*start_threshold[(int)(bin-start_gate_width*0.5)]) { //Looks like the start of a cluster
+				if (gate_hits >= start_gate_width*start_threshold[(int32_t)(bin-start_gate_width*0.5)]) { //Looks like the start of a cluster
 					cluster_hits = gate_hits;
 					gate_hits = 0;
 					start_bin = bin - start_gate_width + 1;
@@ -541,7 +541,7 @@ void bx_laben_findcluster::clusterize_mach4 (int start_bin__, int bin_end_, cons
 				
 				case SEARCHING_END:
 				gate_hits += ps[bin] - ps[bin - end_gate_width];
-				if (gate_hits >=  end_gate_width*end_threshold[(int)(bin-end_gate_width*0.5)]) {
+				if (gate_hits >=  end_gate_width*end_threshold[(int32_t)(bin-end_gate_width*0.5)]) {
 					cluster_hits += ps[bin];
 				}
 				else { //Looks like the end of the cluster
@@ -586,7 +586,7 @@ void bx_laben_findcluster::clusterize_mach4 (int start_bin__, int bin_end_, cons
 					if (cluster_hits > log_en) // big event, increase tail length
 						tail_width *= (1.0 + std::log(cluster_hits / (double)log_en));
 					
-					tail_bin = std::min(psvlen, end_bin + (int)(tail_width + 1)); //Ensure that tail isn't outside the window
+					tail_bin = std::min(psvlen, end_bin + (int32_t)(tail_width + 1)); //Ensure that tail isn't outside the window
 					/*Note: We have only moved the end bin - we have not yet filled the hits between the tail_bin and end_bin.
 					 That will only be done once the cluster is finalized - after the start of the next cluster is identified*/
 				}
@@ -672,11 +672,11 @@ inline bool smaller_error (float a, float b) {
   return smaller (a, b, err);
 }
 
-void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, const bx_echidna_event *ev) {
+void bx_laben_findcluster::clusterize_neutrons (int32_t start_bin, int32_t bin_end, const bx_echidna_event *ev) {
 
     const bool mute = true;
 
-    int num_neutron_clusters = 0;
+    int32_t num_neutron_clusters = 0;
     bool double_peak = false;
     float tailline_value = 0;
 
@@ -686,9 +686,9 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
     float data_highest_bin_population = 0;
     bool data_start = false;
-    int data_first_rising_bin = 0;
-    int data_start_threshold = 1;
-    for (int bin = start_bin; bin < bin_end; bin++) {
+    int32_t data_first_rising_bin = 0;
+    int32_t data_start_threshold = 1;
+    for (int32_t bin = start_bin; bin < bin_end; bin++) {
     	if (binned_times[bin] >= data_start_threshold && data_start == false){data_first_rising_bin = bin;data_start = true;}  //find where the data starts
 	if (binned_times[bin] > data_highest_bin_population) data_highest_bin_population = binned_times[bin];
     }
@@ -700,9 +700,9 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
     //Protection against misclustering of the gate-start
     //peak search starts after the highest bin which is within the first 160ns after gate-start
-    int data_start_max_bin=0;
-    int data_start_max_bin_pos=0;
-    for (int bin = start_bin; bin < start_bin+10; bin++) {
+    int32_t data_start_max_bin=0;
+    int32_t data_start_max_bin_pos=0;
+    for (int32_t bin = start_bin; bin < start_bin+10; bin++) {
     	if (binned_times[bin] > data_start_max_bin) {data_start_max_bin = binned_times[bin];data_start_max_bin_pos=bin;}
     }
     start_bin = data_start_max_bin_pos;
@@ -719,7 +719,7 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
     rebinned_vector.clear();
 
 
-    for (int bin = start_bin; bin < bin_end; bin++) {
+    for (int32_t bin = start_bin; bin < bin_end; bin++) {
 	    cluster_data data;
 
 	    float baseline_value;
@@ -728,7 +728,7 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 	    float probability_second_bin=1;
             float bin_probability; 
 	    float upper_integration_limit = data_highest_bin_population; //initialize
-	    int integral;
+	    int32_t integral;
 	    float m=0;//initialize value
 	    float b=minimum_mean_population;//initialize value
 
@@ -736,18 +736,18 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
 		    // First reject low integral regions (less than 5 hits)
 		    integral = 0;
-		    for (int j = 0; j < 3; j++) integral += binned_times[bin  + j];
+		    for (int32_t j = 0; j < 3; j++) integral += binned_times[bin  + j];
 		    if (integral < 5) continue;
 
 
 		   //Fill the noise_distribution-vectors ignoring regions which have been identified as a cluster
 		   noise_distribution_vector_bin.clear();
 		   noise_distribution_vector_bincontent.clear();
-		   int rejection_zone=5; //don't consider close 5bins = 80ns
-		   int u = int(last_cluster_starttimes_vector.size()-1);
-		   int nonzerocounter=0;
+		   int32_t rejection_zone=5; //don't consider close 5bins = 80ns
+		   int32_t u = int32_t(last_cluster_starttimes_vector.size()-1);
+		   int32_t nonzerocounter=0;
 		   float range=-200;//intialize
- 		   for (int j = 0; j >= start_bin-bin; j--) {
+ 		   for (int32_t j = 0; j >= start_bin-bin; j--) {
 			if (j>-rejection_zone && j < rejection_zone) continue; //don't consider close 5bins = 80ns
 			if (u >= 0) {
 				if (bin+j >= last_cluster_starttimes_vector[u] && bin+j <= last_cluster_endtimes_vector[u]) continue;
@@ -767,10 +767,10 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 		  float mean_population;
 		  float weight;
 		  float weight_sum=0;
-		  unsigned int n_bins = noise_distribution_vector_bin.size();
+		  uint32_t n_bins = noise_distribution_vector_bin.size();
 
 		  if (n_bins >= 2){//Fitting a line only possible for at least 2 points
-		     for (unsigned int j = 0; j < n_bins;j++){
+		     for (uint32_t j = 0; j < n_bins;j++){
 			weight = 1;//all weights set to 1; gives importance to strong statistical fluctuations
 			mean_x += noise_distribution_vector_bin[j] * weight;
 			mean_y += noise_distribution_vector_bincontent[j] * weight;
@@ -781,7 +781,7 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
 		     float numerator=0;
 		     float denominator=0;		   
-		     for (unsigned int j = 0;j<n_bins;j++){
+		     for (uint32_t j = 0;j<n_bins;j++){
 			weight = 1;//all weights set to 1; gives importance to strong statistical fluctuations
 			numerator += (noise_distribution_vector_bin[j] - mean_x) * (noise_distribution_vector_bincontent[j] - mean_y) * weight;
 			denominator += (noise_distribution_vector_bin[j] - mean_x) * (noise_distribution_vector_bin[j] - mean_x) * weight;
@@ -810,10 +810,10 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
 		  probability=1;
 		  rebinned_vector.clear();
-		  for (int j=0; j<3; j++) {
+		  for (int32_t j=0; j<3; j++) {
 	     		//take integral over the poisson-statistic
 			//only bins contribute which are higher than the mean_population
-			if (binned_times[bin+j] <= int(mean_population+0.5)) bin_probability=1;
+			if (binned_times[bin+j] <= int32_t(mean_population+0.5)) bin_probability=1;
 			else {
 				upper_integration_limit = 10 * binned_times[bin+j];
 				if (upper_integration_limit < 20) upper_integration_limit = 20;
@@ -837,8 +837,8 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
 			//Calculate the probabilities anew
 			probability = 1;
-			for (int j=0;j<3;j++){
-				if (rebinned_vector[j] <= int(mean_population+0.5)) bin_probability=1;
+			for (int32_t j=0;j<3;j++){
+				if (rebinned_vector[j] <= int32_t(mean_population+0.5)) bin_probability=1;
 				else {
 					upper_integration_limit = 10 * rebinned_vector[j];
 					if (upper_integration_limit < 20) upper_integration_limit = 20;
@@ -862,8 +862,8 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 	         if (!mute) get_message (bx_message::debug) << bin * 16 << " ns; mean " << mean_population << dispatch;
 	         if (!mute) get_message (bx_message::debug) << bin * 16 << " ns; m " << m << dispatch;
  		 if (!mute) get_message (bx_message::debug) << bin * 16 << " ns; range " << range << dispatch;
-		 if (!mute) for (int j=-100;j<100;j++){ get_message (bx_message::debug) << bin * 16 << " ns; j is " << j << " ; in ns " << (bin+j) * 16 << " : " << binned_times[bin+j] << dispatch;}
- 		if (!mute) for (int j=0;j<3;j++){ get_message (bx_message::debug) << bin * 16 << " ns; vec j is " << j << " : " << rebinned_vector[j] << dispatch;}
+		 if (!mute) for (int32_t j=-100;j<100;j++){ get_message (bx_message::debug) << bin * 16 << " ns; j is " << j << " ; in ns " << (bin+j) * 16 << " : " << binned_times[bin+j] << dispatch;}
+ 		if (!mute) for (int32_t j=0;j<3;j++){ get_message (bx_message::debug) << bin * 16 << " ns; vec j is " << j << " : " << rebinned_vector[j] << dispatch;}
 
    }
    else {baseline_value = b = tailline_value; m=0; double_peak = false;} //this line comes into play for double_peak search; the tailline is from the previos cluster; for calculation of the background-hits inside the cluster the baseline is assumed to be constant
@@ -879,7 +879,7 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
     // Finally search for falling edge
     double peak_maximum = binned_times[data.i4_start_bin];
     bool falling_edge = false;
-    int stop = bin + 10;
+    int32_t stop = bin + 10;
     double falling_edge_threshold;
     if (stop > bin_end) stop = bin_end;
     for (; bin < stop; bin++) {
@@ -892,7 +892,7 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
     if (!falling_edge) { if (!mute) get_message (bx_message::debug) << bin * 16 << " ns; falling edge too late" << dispatch; bin = data.i4_start_bin; continue;};
     if (!mute) get_message (bx_message::debug) << bin * 16 << " ns; falling in bin " << bin << dispatch;
-    int falling_bin = bin;
+    int32_t falling_bin = bin;
 
 
     // Peak found: now identify the end and also check if another peak is rising
@@ -915,7 +915,7 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
         tailline_value = 0;
 
         mean_x=0;mean_y=0;weight_sum=0;
-        for (int j = -4; j < 0; j++){
+        for (int32_t j = -4; j < 0; j++){
 	  weight = 1;//all weights set to 1; gives importance to strong statistical fluctuations
           mean_x += j * weight;
           mean_y += binned_times[bin + j] * weight;
@@ -926,7 +926,7 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
 /*
         numerator=0;denominator=0;
-        for (int j = -5;j<0;j++){
+        for (int32_t j = -5;j<0;j++){
 	  weight = 1;//all weights set to 1; gives importance to strong statistical fluctuations
 	  numerator += (j - mean_x) * (binned_times[bin + j] - mean_y) * weight;
 	  denominator += (j - mean_x) * (j - mean_x) * weight;
@@ -950,8 +950,8 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
 	probability = 1;
 	rebinned_vector.clear();
-        for (int j=0; j<3; j++) {
-	  if (binned_times[bin+j] <= int(tailline_value+0.5)) bin_probability=1;
+        for (int32_t j=0; j<3; j++) {
+	  if (binned_times[bin+j] <= int32_t(tailline_value+0.5)) bin_probability=1;
 	  else {
                 upper_integration_limit = 10 * binned_times[bin+j];
 		if (upper_integration_limit < 20) upper_integration_limit = 20;
@@ -976,8 +976,8 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
 		//Calculate the probabilities anew
 		probability = 1;
-		for (int j=0;j<3;j++){
-			if (rebinned_vector[j] <= int(tailline_value+0.5)) bin_probability=1;
+		for (int32_t j=0;j<3;j++){
+			if (rebinned_vector[j] <= int32_t(tailline_value+0.5)) bin_probability=1;
 			else {
 		                upper_integration_limit = 10 * rebinned_vector[j];
 		                if (upper_integration_limit < 20) upper_integration_limit = 20;
@@ -1004,7 +1004,7 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
       //Identify endline and only accept it if it's not noisy
       integral = 0;
-      for (int j = 0; j < 10; j++) integral += binned_times[bin + j];
+      for (int32_t j = 0; j < 10; j++) integral += binned_times[bin + j];
       float end_line = integral / 10.;
 
       if (!bigger_error (end_line, baseline_value)) {
@@ -1060,13 +1060,13 @@ void bx_laben_findcluster::clusterize_neutrons (int start_bin, int bin_end, cons
 
 
 
-void bx_laben_findcluster::clusterize_neutrons_in_muongate (int start_bin, int bin_end, const bx_echidna_event *ev) {
+void bx_laben_findcluster::clusterize_neutrons_in_muongate (int32_t start_bin, int32_t bin_end, const bx_echidna_event *ev) {
      //clusterize_neutrons can't handle the ionic afterpulses in the muon gate because the rising flanks in the time profile are on too small time scales. The poisson-statistics assumption breaks down.
      //clusterize_neutrons_in_muongate fixes this problem by leaving the assumption of poisson-statistics and calculating the mean and rms of the baseline. In addition, it's less sensitive than clusterize_neutrons.
      //both conditions avoid the identification of noise clusters
 
 
-     int num_neutron_clusters = 0;
+     int32_t num_neutron_clusters = 0;
      bool double_peak = false;
      float empty_board_factor = 1. - ev->get_laben().get_empty_boards() / 280.;
      float pmt_factor = (ev->get_laben ().get_n_live_pmts() - ev->get_laben ().get_invalid_pmts() ) / 2000.;
@@ -1078,37 +1078,37 @@ void bx_laben_findcluster::clusterize_neutrons_in_muongate (int start_bin, int b
 
     // Use derivative algorithm
     if (start_bin < 11) start_bin = 11;  // Protect for baseline loop which search on bin - 11, bin
-    for (int bin = start_bin; bin < bin_end; bin++) {
+    for (int32_t bin = start_bin; bin < bin_end; bin++) {
     cluster_data data;
 
 
     // First reject low integral regions
-    int integral = 0;
-    for (int j = 0; j < 5; j++) integral += binned_times[bin  + j];
+    int32_t integral = 0;
+    for (int32_t j = 0; j < 5; j++) integral += binned_times[bin  + j];
     if (integral < 20. * empty_board_factor * pmt_factor) continue;
     if (!mute) {
       bx_message &msg = get_message (bx_message::debug);
       msg << bin * 16 << " ns integral found with " << integral << " ";
-      for (int j = 0; j < 25; j++) msg << binned_times[bin  + j] << " ";
+      for (int32_t j = 0; j < 25; j++) msg << binned_times[bin  + j] << " ";
       msg << " evnum " <<  ev->get_event_number () << dispatch;
     }
 
 
-    int baseline_range;
+    int32_t baseline_range;
     if (!double_peak) baseline_range = -11;
     else baseline_range = -6;
 
     // Then search for baseline
     bool baseline = true;
     float baseline_value = 0;
-    for (int j = baseline_range; j < -1; j++) { 
+    for (int32_t j = baseline_range; j < -1; j++) { 
       baseline_value += binned_times[bin + j];
       if (bigger_error (binned_times[bin + j], binned_times[bin + j - 1])) baseline = false;
     }
     baseline_value /=  -baseline_range - 1.;  //just mean value; (-baseline_range - 1) is 10 for baseline_range = -11 and 5 for -6
 
     float baseline_rms = 0;
-    for (int j = baseline_range; j < -1; j++) { 
+    for (int32_t j = baseline_range; j < -1; j++) { 
       baseline_rms += (binned_times[bin + j] - baseline_value) * (binned_times[bin + j] - baseline_value);
     }
     baseline_rms = sqrt(baseline_rms / ( -baseline_range - 1. ) );
@@ -1129,7 +1129,7 @@ void bx_laben_findcluster::clusterize_neutrons_in_muongate (int start_bin, int b
     // Finally search for falling edge
     double peak_maximum = binned_times[data.i4_start_bin];
     bool falling_edge = false;
-    int stop = bin + 10;
+    int32_t stop = bin + 10;
     if (stop > bin_end) stop = bin_end;
     for (; bin < stop; bin++) {
       if (binned_times[bin] > peak_maximum) peak_maximum = binned_times[bin];
@@ -1141,7 +1141,7 @@ void bx_laben_findcluster::clusterize_neutrons_in_muongate (int start_bin, int b
 
     if (!falling_edge) { if (!mute) get_message (bx_message::debug) << bin * 16 << " ns; falling edge too late" << dispatch; bin = data.i4_start_bin; continue;};
     if (!mute) get_message (bx_message::debug) << bin * 16 << " ns; falling in bin " << bin << dispatch;
-    int falling_bin = bin;
+    int32_t falling_bin = bin;
 
 
      // Peak found: now identify the end and also check if another peak is rising
@@ -1155,13 +1155,13 @@ void bx_laben_findcluster::clusterize_neutrons_in_muongate (int start_bin, int b
       if (bin - falling_bin >= 6){	//bin-distance necessary for tailline search
 
         float tailline_value = 0;
-        for (int j = -5; j < -1; j++) {
+        for (int32_t j = -5; j < -1; j++) {
           tailline_value += binned_times[bin + j];
         }
         tailline_value /= 4.;
 
         float tailline_rms = 0;
-        for (int j = -5; j < -1; j++) {
+        for (int32_t j = -5; j < -1; j++) {
           tailline_rms += (binned_times[bin + j] - tailline_value) * (binned_times[bin + j] - tailline_value);
         }
         tailline_rms = sqrt(tailline_rms / 4.);
@@ -1179,7 +1179,7 @@ void bx_laben_findcluster::clusterize_neutrons_in_muongate (int start_bin, int b
 
       //Identify endline 
       integral = 0;
-      for (int j = 0; j < 10; j++) integral += binned_times[bin + j];
+      for (int32_t j = 0; j < 10; j++) integral += binned_times[bin + j];
       float end_line = integral / 10.;
 
       if (!bigger_error (end_line, baseline_value)) {
@@ -1224,8 +1224,8 @@ void bx_laben_findcluster::clusterize_neutrons_in_muongate (int start_bin, int b
 
 }
 //! Get the index within the gate, assuming a given bin size for the time
-int bx_laben_findcluster::get_gate_index_ (int gate_length,Float_t dT) {
-  int N=(int)floor(dT/gate_length);
+int32_t bx_laben_findcluster::get_gate_index_ (int32_t gate_length,Float_t dT) {
+  int32_t N=(int32_t)floor(dT/gate_length);
   return (N); 
 }
 
@@ -1235,10 +1235,10 @@ int bx_laben_findcluster::get_gate_index_ (int gate_length,Float_t dT) {
 void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
   bx_laben_event& er = ev->get_laben ();
   bx_laben_clustered_event &ew = dynamic_cast<bx_laben_clustered_event&>(ev->get_laben ());
-  for (int cl = 0; cl < er.get_nclusters () + er.get_nclusters_muons(); cl++) {
+  for (int32_t cl = 0; cl < er.get_nclusters () + er.get_nclusters_muons(); cl++) {
       // Keep the cluster reference
     bx_laben_cluster::bx_laben_cluster_vector *cluster_vector;
-    int index = cl;
+    int32_t index = cl;
     if (cl < er.get_nclusters ()) cluster_vector = &ew.clusters;
     else {
       cluster_vector = &ew.clusters_muons;
@@ -1248,7 +1248,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
 
       // Calculate the starting time separation
     float time_separation = 3;
-    int intervals = 5;
+    int32_t intervals = 5;
       // special handling for low energy and high energy
     if (cluster_ref.get_clustered_nhits () > 500) {
       time_separation = 2;
@@ -1264,7 +1264,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
     }
 
       // Serch the first it. Pay attention find_start_hit is a recursive function which even modify the second argument
-    int start_hit = find_start_hit (cluster_ref, time_separation, intervals);
+    int32_t start_hit = find_start_hit (cluster_ref, time_separation, intervals);
     if (start_hit < 0) start_hit = find_start_hit (cluster_ref, time_separation, --intervals);
     if (start_hit < 0) {
       start_hit = 0;
@@ -1317,7 +1317,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
     for (it = cluster_ref.clustered_hits.begin(); it != cluster_ref.clustered_hits.end (); it++) {
       const bx_laben_decoded_hit& dhit = it->get_decoded_hit ();
       const db_channel_laben* db = dhit.get_db_channel ();
-      int lg = db->get_lg ();
+      int32_t lg = db->get_lg ();
       bool cone = db->pmt_has_cone();
       sum_square += it->f8_time * it->f8_time;
       cluster_ref.f4_mean_time += it->f8_time;
@@ -1385,7 +1385,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
       we count the earliest hit that takes place within each PMT, 
       after the start of the 1st cluster. 
       So we need only 1 fired_channel array for 2 fixed-time npmts variables.*/
-    for ( int hit = 0; hit < er.get_decoded_nhits (); hit++)
+    for ( int32_t hit = 0; hit < er.get_decoded_nhits (); hit++)
     { //Iterate over all decoded hits in the bx_laben_event
       const bx_laben_decoded_hit &decoded_hit = er.get_decoded_hit (hit);
       const db_channel_laben* db = decoded_hit.get_db_channel ();
@@ -1396,7 +1396,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
       const double hit_time = decoded_hit.get_raw_time ();
       const double cl_start_t = cluster_ref.get_start_time ();
       const double rel_time = hit_time - cl_start_t;
-      const int lg = db->get_lg ();
+      const int32_t lg = db->get_lg ();
       if(rel_time >= 0 && !fired_channel[lg-1]) 
       {
 	fired_channel[lg-1]=1;
@@ -1432,7 +1432,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
   //tt128 neutrons are the only events for which the clustering algorithm (neutron clustering) fills laben.clusters.nhits_bkg
   //for all other events the background is determined as follows:
 
-        int cluster_num = 0;
+        int32_t cluster_num = 0;
         double bkg_time_window;   //in ns
         if (ev->get_run_number () <= 12421) bkg_time_window = 350;
 	else bkg_time_window = 50;
@@ -1445,7 +1445,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
 
 	// Number of good decoded hits
 	double hits_before_cluster = 0;
-	for (int i = 0; i < er.get_decoded_nhits (); i++) {
+	for (int32_t i = 0; i < er.get_decoded_nhits (); i++) {
 		const bx_laben_decoded_hit &decoded_hit = er.get_decoded_hit (i);
 		
 		if ((decoded_hit.get_flag () & ~bx_laben_decoded_hit::out_of_gate) && decoded_hit.get_db_channel ()->is_ordinary ()) continue;
@@ -1476,15 +1476,15 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
 
 }
 
-int bx_laben_findcluster::find_start_hit (const bx_laben_cluster& cluster_ref, float& time_separation, int intervals) {
-  int start_hit = -1;
+int32_t bx_laben_findcluster::find_start_hit (const bx_laben_cluster& cluster_ref, float& time_separation, int32_t intervals) {
+  int32_t start_hit = -1;
   
-  for (int hit = 0; hit < cluster_ref.get_clustered_nhits () - intervals - 1; hit++) {
+  for (int32_t hit = 0; hit < cluster_ref.get_clustered_nhits () - intervals - 1; hit++) {
       // Only check for the first 64ns (rely on the strict time ordering of the hits)
     if (cluster_ref.get_clustered_hit (hit).get_time () - cluster_ref.get_clustered_hit (0).get_time () > double (64)) break;
     
     bool good = true;
-    for (int i = 0; i < intervals; i++) {
+    for (int32_t i = 0; i < intervals; i++) {
       double dt = cluster_ref.get_clustered_hit (hit + i + 1).get_time () - cluster_ref.get_clustered_hit (hit + i).get_time (); 
       if (dt > time_separation) {
 	good = false;
@@ -1503,13 +1503,13 @@ int bx_laben_findcluster::find_start_hit (const bx_laben_cluster& cluster_ref, f
   } else return start_hit;
 }
 
-int bx_laben_findcluster::evaluate_ripple_count (float dark_rate, int ripple_bins, int count_threshold, const char* message) {
+int32_t bx_laben_findcluster::evaluate_ripple_count (float dark_rate, int32_t ripple_bins, int32_t count_threshold, const char* message) {
     // Calculate the ripple threshold as number of hits in ripple_bins for which P(>=ripple_count) < 0.1% for dark rate
   double mu = dark_rate * 2000 * 16e-9 * ripple_bins;
   double p0 = ::exp (-1 * mu); 
   double pi = p0;
   double p_higher = 1 - p0;
-  int ripple_count;
+  int32_t ripple_count;
   for (ripple_count = 1; ripple_count < count_threshold; ripple_count++) { // never bigger than threshold
     pi = pi * mu / ripple_count; 
     p_higher -= pi; 
@@ -1612,7 +1612,7 @@ int bx_laben_findcluster::evaluate_ripple_count (float dark_rate, int ripple_bin
  *
  * Revision 1.109  2011-03-07 08:30:09  meindl
  * - bug fix of incorrect vector access
- * - type declaration float->unsigned int
+ * - type declaration float->uint32_t
  *
  * Revision 1.104  2011-03-02 11:20:25  meindl
  * Modification of poisson scan interval.

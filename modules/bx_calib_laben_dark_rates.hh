@@ -55,19 +55,19 @@ class bx_calib_laben_dark_rates : public bx_base_module {
 
   private:
     
-    int count_random_triggers; 
-    int count_pulser_triggers; 
-    int count_laser_triggers; 
-    int count_neutrino_triggers; 
+    int32_t count_random_triggers; 
+    int32_t count_pulser_triggers; 
+    int32_t count_laser_triggers; 
+    int32_t count_neutrino_triggers; 
     
 
       // used to define the range od dark-times histos
     double time_after_gate; 
     double time_before_gate; 
-    int time_bins;  //number of bins in dark-times histos (50 ns binning)
+    int32_t time_bins;  //number of bins in dark-times histos (50 ns binning)
           
       //to be read from echidna.cfg
-    int index_trg_type;
+    int32_t index_trg_type;
     float min_dark_time; 
     float dark_rate_thresh_high, dark_rate_thresh_low;  
       
@@ -91,12 +91,12 @@ class bx_calib_laben_dark_rates : public bx_base_module {
     TH2F* random_hits_map;   
 
 
-    std::vector<int> nhits_random;
-    std::vector<int> nhits_pulser;
-    std::vector<int> nhits_laser;
-    std::vector<int> nhits_neutrino;
+    std::vector<int32_t> nhits_random;
+    std::vector<int32_t> nhits_pulser;
+    std::vector<int32_t> nhits_laser;
+    std::vector<int32_t> nhits_neutrino;
    
-    float fit_rate(TH1D* h, int npmts);
+    float fit_rate(TH1D* h, int32_t npmts);
     float fit_error_rate(TH1D* h, float rate);
   
     enum pmt_status {

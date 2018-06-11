@@ -32,7 +32,7 @@ void bx_filter_trigger::begin () {
 
 
 bx_echidna_event* bx_filter_trigger::doit (bx_echidna_event *ev) {
-  for (unsigned int i = 0; i < skip_trigger_types.size (); i++)
+  for (uint32_t i = 0; i < skip_trigger_types.size (); i++)
     if (ev->get_trigger ().get_trigger_type () == skip_trigger_types[i]) return 0;
 
   return ev;

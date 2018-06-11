@@ -24,10 +24,10 @@ class MinuitWrapper {
   bool is_set[MAX_MINUIT_PARS];     ///< Array specifying whether the user has set any properties for each given parameter
 
   public:
-  MinuitWrapper(void (* fcn)(int &, double *, double &, double *, int));
+  MinuitWrapper(void (* fcn)(int32_t &, double *, double &, double *, int32_t));
   ///< Create a MinuitWrapper by supplying to it a function with this signature:
-  ///< (* func)(int & num_parameters, double * parameter_gradient,
-  ///<		double & return_value, double * parameter_values, int flag)
+  ///< (* func)(int32_t & num_parameters, double * parameter_gradient,
+  ///<		double & return_value, double * parameter_values, int32_t flag)
   ~MinuitWrapper();
   ///< Destroy the MinuitWrapper and the wrapped TMinuit object.
 
@@ -42,7 +42,7 @@ class MinuitWrapper {
    * @param errflag (output) Flag that tells whether there was a minimization error.
    * @param convergence (output) Flag that tells whether the minimization converged.
    */
-  void Execute(int & errflag, int & convergence);
+  void Execute(int32_t & errflag, int32_t & convergence);
   
   double GetParameter(size_t index);
   ///< Get the value of parameter @a index.

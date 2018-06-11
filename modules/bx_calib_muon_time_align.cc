@@ -54,7 +54,7 @@ void bx_calib_muon_time_align::begin () {
   get_message(bx_message::debug) << "begin" << dispatch;
 
   // creation of the 2-dim histogram 
-  int nch = constants::muon::channels;
+  int32_t nch = constants::muon::channels;
   muon_time_calib   = new TH2S ("muon_time_calib"  , "Time Calibration Histogram"  ,nch,0,nch, 1200,500,1100);
   barn_interface::get ()->store (barn_interface::file, muon_time_calib  , this);
 
@@ -68,16 +68,16 @@ void bx_calib_muon_time_align::begin () {
 bx_echidna_event* bx_calib_muon_time_align::doit (bx_echidna_event *ev) {
   const bx_muon_event& er = ev->get_muon();
 
-  int nhits = er.get_decoded_nhits();
+  int32_t nhits = er.get_decoded_nhits();
 
   // Update has data field
   if (!nhits) return ev;
   i4_nevents++;
   b_has_data |= true;
 
-  for(int i = 0; i < nhits; i++){
+  for(int32_t i = 0; i < nhits; i++){
     const bx_muon_decoded_hit& hit = er.get_decoded_hit(i);
-    unsigned short mch = hit.get_raw_hit().get_muon_channel();
+    uint16_t mch = hit.get_raw_hit().get_muon_channel();
     float time   = hit.get_time  ();
     muon_time_calib  ->Fill(mch,time);
   }
@@ -104,7 +104,7 @@ void bx_calib_muon_time_align::end () {
 
   // mean value of the laser peak
   TH1D *mean_proj_time   = muon_time_calib  ->ProjectionY("mean_proj_time"  );
-  int avg_entries = int(mean_proj_time  ->Integral()/208.);
+  int32_t avg_entries = int32_t(mean_proj_time  ->Integral()/208.);
   float avg_offset  = mean_proj_time  ->GetBinCenter(mean_proj_time  ->GetMaximumBin());
 
   mean_proj_time  ->Delete();
@@ -118,13 +118,13 @@ void bx_calib_muon_time_align::end () {
   std::fill_n (time_sigma  ,constants::muon::channels,       0.);
 
   // some ctrs
-  int not_connected = 0, no_light = 0;
-  int not_conv_time = 0, no_mean_time = 0;
-  int large_drift_time = 0;
-  int good_in_time = 0;
+  int32_t not_connected = 0, no_light = 0;
+  int32_t not_conv_time = 0, no_mean_time = 0;
+  int32_t large_drift_time = 0;
+  int32_t good_in_time = 0;
 
   // main loop
-  for (int i=0; i<constants::muon::channels; i++) {
+  for (int32_t i=0; i<constants::muon::channels; i++) {
     // discard non Pmt channels
     if (profile_info.logical_channel_description (i+constants::muon::channel_offset+1) != db_profile::ordinary){
       get_message(bx_message::log) << "Mch " << i << " is service channel." << dispatch;
@@ -132,7 +132,7 @@ void bx_calib_muon_time_align::end () {
       continue;
     }
     TH1D *proj_time = muon_time_calib->ProjectionY("proj_time", i+1, i+1);
-    int entries = int(proj_time->Integral());
+    int32_t entries = int32_t(proj_time->Integral());
     // discard channels with no direct light
     if (float(entries)/float(i4_nevents) < minimum_efficiency) {
       get_message(bx_message::log) << "Mch " << i << ": low statistics; entries = " << entries << dispatch;
@@ -195,8 +195,8 @@ void bx_calib_muon_time_align::end () {
     time_sigma [i] = (float) tpar[2];
     good_in_time++;
 
-    get_message(bx_message::log) << "Mch " << i << ": time : calibrated; entries = " << int(entries) 
-				 << " ; peak = " << /*(int) */(tpar[1] - avg_offset) << " ; sigma = " << /*(int)*/ tpar[2] << dispatch;
+    get_message(bx_message::log) << "Mch " << i << ": time : calibrated; entries = " << int32_t(entries) 
+				 << " ; peak = " << /*(int32_t) */(tpar[1] - avg_offset) << " ; sigma = " << /*(int32_t)*/ tpar[2] << dispatch;
   }
 
   get_message(bx_message::info) << not_connected      << " channels not connected to a Pmt"  << dispatch;
@@ -209,8 +209,8 @@ void bx_calib_muon_time_align::end () {
   // fill the visitors to db_run
   // forward mean time peak to calib_muon_charge_peak via mch 0
   run_info.set_muon_time_offset ( 3001, avg_offset, this );
-  for (int i=1; i<constants::muon::channels; i++) {
-    int lg = i + 1 + constants::muon::channel_offset;
+  for (int32_t i=1; i<constants::muon::channels; i++) {
+    int32_t lg = i + 1 + constants::muon::channel_offset;
     if (profile_info.logical_channel_description (lg) != db_profile::ordinary) continue;
     run_info.set_muon_time_offset  (lg , time_offset [i], this);
     run_info.set_muon_time_sigma   (lg , time_sigma  [i], this);

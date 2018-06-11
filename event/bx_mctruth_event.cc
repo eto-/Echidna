@@ -23,7 +23,7 @@ namespace {
 };
 
 
-bx_mctruth_hit::bx_mctruth_hit (unsigned short lg, float time) : u2_lg(lg), f4_time(time) {
+bx_mctruth_hit::bx_mctruth_hit (uint16_t lg, float time) : u2_lg(lg), f4_time(time) {
 }
 
 bx_mctruth_daughter::bx_mctruth_daughter (mctruth_daughter_disk_format *raw) : i4_id     (raw->id), 
@@ -97,14 +97,14 @@ bx_mctruth_frame::bx_mctruth_frame (const char *disk_event) {
   while (disk_event < end_of_frame) {
     mctruth_subframe_disk_format *subframe = (mctruth_subframe_disk_format *)disk_event;
     if (subframe->type == pe_id_list) {
-      unsigned short n = (subframe->length - 4) / 6;
+      uint16_t n = (subframe->length - 4) / 6;
       for (int i = 0 ; i < n; i++ ) 	
-        hit_id_v.push_back( bx_mctruth_hit(*(unsigned short *)(disk_event + 4 + i*2), *(float *)(disk_event + 4 + n*2 + i*4)));    
+        hit_id_v.push_back( bx_mctruth_hit(*(uint16_t *)(disk_event + 4 + i*2), *(float *)(disk_event + 4 + n*2 + i*4)));    
       std::sort (hit_id_v.begin (), hit_id_v.end (), sort_time_operation ());
     } else if (subframe->type == pe_od_list) {
-      unsigned short n = (subframe->length - 4) / 6;
+      uint16_t n = (subframe->length - 4) / 6;
       for (int i = 0 ; i < n; i++ ) 	
-        hit_od_v.push_back( bx_mctruth_hit(*(unsigned short *)(disk_event + 4 + i*2), *(float *)(disk_event + 4 + n*2 + i*4)));    
+        hit_od_v.push_back( bx_mctruth_hit(*(uint16_t *)(disk_event + 4 + i*2), *(float *)(disk_event + 4 + n*2 + i*4)));    
       std::sort (hit_od_v.begin (), hit_od_v.end (), sort_time_operation ());
     } else if (subframe->type == scattered_info) {
       ;

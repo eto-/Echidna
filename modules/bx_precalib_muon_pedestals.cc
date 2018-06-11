@@ -26,22 +26,22 @@ bx_precalib_muon_pedestals::bx_precalib_muon_pedestals (): bx_base_module("bx_pr
 
 void bx_precalib_muon_pedestals::begin () {
   // retrieve parameters
-  int run_number =bx_dbi::get ()->get_run ().get_number();
+  int32_t run_number =bx_dbi::get ()->get_run ().get_number();
   bool is_new_tdc = run_number > 17500 ? true : false;
   bool is_new_trg = run_number > 26579 ? true : false;
-  min_evnum      = (unsigned short)(get_parameter("min_evnum"     ).get_int());
-  max_evnum      = (unsigned short)(get_parameter("max_evnum"     ).get_int());
-  min_pedestal_width = (unsigned short)(get_parameter(is_new_tdc ? "min_new_pedestal_width" : "min_pedestal_width").get_int());
-  max_pedestal_width = (unsigned short)(get_parameter(is_new_tdc ? "max_new_pedestal_width" : "max_pedestal_width").get_int());
-  precalib_pulse_tolerance = (unsigned short)(get_parameter(is_new_trg ? "pulse_tolerance_new_trg" : "pulse_tolerance_old_trg").get_int());
+  min_evnum      = (uint16_t)(get_parameter("min_evnum"     ).get_int());
+  max_evnum      = (uint16_t)(get_parameter("max_evnum"     ).get_int());
+  min_pedestal_width = (uint16_t)(get_parameter(is_new_tdc ? "min_new_pedestal_width" : "min_pedestal_width").get_int());
+  max_pedestal_width = (uint16_t)(get_parameter(is_new_tdc ? "max_new_pedestal_width" : "max_pedestal_width").get_int());
+  precalib_pulse_tolerance = (uint16_t)(get_parameter(is_new_trg ? "pulse_tolerance_new_trg" : "pulse_tolerance_old_trg").get_int());
 
   if (get_parameter("use_fixed_time").get_bool())
-    pulse_time = (unsigned short)(get_parameter("fixed_pulse_time").get_int());
+    pulse_time = (uint16_t)(get_parameter("fixed_pulse_time").get_int());
   else { 
     pulse_time =  bx_dbi::get ()->get_run ().get_muon_precalib_pulse_time();
     if (!pulse_time) {
       get_message(bx_message::warn) << "No precalib pulse time from DB. Using fixed time." << dispatch;
-      pulse_time = (unsigned short)(get_parameter("fixed_pulse_time").get_int());
+      pulse_time = (uint16_t)(get_parameter("fixed_pulse_time").get_int());
     }
   }
   get_message(bx_message::info) << "Pulse time " << pulse_time << " pulse tolerance " << precalib_pulse_tolerance << dispatch;
@@ -69,7 +69,7 @@ bx_echidna_event* bx_precalib_muon_pedestals::doit (bx_echidna_event *ev) {
 
   const db_profile& profile_info = bx_dbi::get ()->get_profile();
 
-  for (int i = 0; i <er.get_raw_nhits(); i++) { 
+  for (int32_t i = 0; i <er.get_raw_nhits(); i++) { 
     const bx_muon_raw_hit& h = er.get_raw_hit(i);
 
     // skip special channels
@@ -96,8 +96,8 @@ void bx_precalib_muon_pedestals::end () {
   db_run& run_info = bx_dbi::get ()->get_run ();
   const db_profile& profile_info = bx_dbi::get ()->get_profile();
 
-  for(int i=0; i<constants::muon::channels; i++) { 
-    int lg = constants::muon::channel_offset + i + 1;
+  for(int32_t i=0; i<constants::muon::channels; i++) { 
+    int32_t lg = constants::muon::channel_offset + i + 1;
     if (profile_info.logical_channel_description(lg) == db_profile::ordinary) {
       TH1D* proj = pedestals->ProjectionY("proj_ped", i+1, i+1);
       double entries = proj->Integral();

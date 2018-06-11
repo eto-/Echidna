@@ -28,9 +28,9 @@ class bx_precalib_laben_phases: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    int *right_phase_v;
-    int *inverse_phase_v;
-    int *error_phase_v;
+    int32_t *right_phase_v;
+    int32_t *inverse_phase_v;
+    int32_t *error_phase_v;
     TH1S *phase_map;
     TH2S *phase_channel_distribution;
 };

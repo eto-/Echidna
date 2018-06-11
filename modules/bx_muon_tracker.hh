@@ -47,12 +47,12 @@ class bx_muon_tracker : public bx_base_module {
     virtual void end ();
 
   private:
-    int   i4_muon_events;		// counter for all ID muon events
-    int   i4_rec_events;		// counter for reconstructed events
+    int32_t   i4_muon_events;		// counter for all ID muon events
+    int32_t   i4_rec_events;		// counter for reconstructed events
 
     float f4_tau;			// time constant for clustering
 
-    int   i4_enable_histos;
+    int32_t   i4_enable_histos;
     float f4_hit_charge_threshold;	// minimum charge for hit to be considered as "cluster"
     float f4_entry_tau;                 // suppresion of late entry points
     float f4_entry_mean;                // best time relative to ID

@@ -43,7 +43,7 @@ void bx_muon_iv::begin () {
   barn_interface::get ()->store (barn_interface::file, notcone_cone, this);
   
   N_ordinary_lg = 0. ; 
-  for(int ch = 1; ch < (constants::laben::channels + 1); ch ++) {
+  for(int32_t ch = 1; ch < (constants::laben::channels + 1); ch ++) {
     if ( bx_dbi::get ()->get_channel (ch).is_ordinary () ) N_ordinary_lg ++;  
   }
 }
@@ -62,8 +62,8 @@ bx_echidna_event* bx_muon_iv::doit (bx_echidna_event *ev) {
   
   if (er.get_nclusters () > 0){ // we do not care 0-cluster events here
       //we loop through all clusters
-    for (int cluster = 0; cluster < er.get_nclusters (); cluster ++) {
-      int muon_suspect = 0;  
+    for (int32_t cluster = 0; cluster < er.get_nclusters (); cluster ++) {
+      int32_t muon_suspect = 0;  
       double N_satur_hits = 0.;
       double N_hits = er.get_cluster (cluster).get_clustered_nhits ();
       double mean_time = er.get_cluster (cluster).get_mean_time ();
@@ -71,7 +71,7 @@ bx_echidna_event* bx_muon_iv::doit (bx_echidna_event *ev) {
       double N_notcone_hits = 0;
 
         //we loop through all hits in the cluster
-      for (int hit = 0; hit < N_hits;hit++){
+      for (int32_t hit = 0; hit < N_hits;hit++){
 	double npe = er.get_cluster (cluster).get_clustered_hit (hit).get_decoded_hit ().get_charge_npe ();
 	double lg = er.get_cluster (cluster).get_clustered_hit (hit).get_decoded_hit ().get_raw_hit ().get_logical_channel ();
 	hit_lg_junk-> Fill(lg);
@@ -80,7 +80,7 @@ bx_echidna_event* bx_muon_iv::doit (bx_echidna_event *ev) {
 	  N_satur_hits ++;
 	}
 
-	const db_channel_laben &ch_info = dynamic_cast<const db_channel_laben& >(bx_dbi::get ()->get_channel (int(lg)));
+	const db_channel_laben &ch_info = dynamic_cast<const db_channel_laben& >(bx_dbi::get ()->get_channel (int32_t(lg)));
 	if ( ch_info.pmt_has_cone () ) N_cone_hits ++;          
 	if ( !(ch_info.pmt_has_cone ())) N_notcone_hits ++;          
 
@@ -106,7 +106,7 @@ bx_echidna_event* bx_muon_iv::doit (bx_echidna_event *ev) {
         //check if too many lg  hit or saturated
       double N_hit_lg = 0. ; 
       double N_satur_lg = 0. ; 
-      for(int ch = 1; ch < (constants::laben::channels + 1); ch ++) {
+      for(int32_t ch = 1; ch < (constants::laben::channels + 1); ch ++) {
 	if ( (hit_lg_junk->GetBinContent (ch)) > 0 )N_hit_lg ++;
 	if ( (satur_hit_lg_junk->GetBinContent (ch)) > 0 ) N_satur_lg ++;
       }

@@ -24,7 +24,7 @@ light_guide::light_guide (): bx_named("light_guide") {
 
   // Mean path lenght of the photon in the LG (distance) as a function of the incident angle (theta).
   // Data points taken from the relative table in the note "Light Collectors for Borexino", by I.Manno
-  int points = 18;
+  int32_t points = 18;
   double theta[18] = {0.,5.,10.,15.,20.,25.,30.,35.,36.,37.,38.,39.,40.,41.,42.,43.,44.,47.};
   double path[18] = {0.2648, 0.2652, 0.2685, 0.2723, 0.2796, 0.2901, 0.3069, 0.3307, 0.3375, 0.3434,
     		     0.3490, 0.3510, 0.3561, 0.3622, 0.3691, 0.3770, 0.3853, 0.4177};		

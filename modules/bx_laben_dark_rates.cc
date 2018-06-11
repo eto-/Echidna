@@ -74,11 +74,11 @@ bx_echidna_event* bx_laben_dark_rates::doit (bx_echidna_event *ev) {
     error_sum_dec_hits_per_lg += pow(error_1_event,2);
   }
 
-  const std::vector<int>& NPmts_w1 = ev->get_laben ().get_npmts_win1 ();
-  const std::vector<int>& NPmts_w2 = ev->get_laben ().get_npmts_win2 ();
+  const std::vector<int32_t>& NPmts_w1 = ev->get_laben ().get_npmts_win1 ();
+  const std::vector<int32_t>& NPmts_w2 = ev->get_laben ().get_npmts_win2 ();
 
-  for(int i = 0; i < (int) NPmts_w1.size (); i ++) npmts_win1->Fill (NPmts_w1[i]);
-  for(int i = 0; i < (int) NPmts_w2.size (); i ++) npmts_win2->Fill (NPmts_w2[i]);
+  for(int32_t i = 0; i < (int32_t) NPmts_w1.size (); i ++) npmts_win1->Fill (NPmts_w1[i]);
+  for(int32_t i = 0; i < (int32_t) NPmts_w2.size (); i ++) npmts_win2->Fill (NPmts_w2[i]);
 
 
   return ev;     

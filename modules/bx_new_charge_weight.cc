@@ -32,10 +32,10 @@ void bx_new_charge_weight::begin () {
   std::fill_n (p_disabled_pmts_lg, nlg + 1, false); // Init vector at 0
   std::fill_n (p_disabled_charge_lg, nlg + 1, false); // Init vector at 0
 
-  p_disabled_lg = new unsigned char[nlg + 1];
+  p_disabled_lg = new uint8_t[nlg + 1];
   memset (p_disabled_lg, 0, nlg + 1); // Init vector at 0
   ch_info_v = new const db_channel_laben*[nlg + 1];
-  for (int i = 1; i <= nlg; i++) 
+  for (int32_t i = 1; i <= nlg; i++) 
     ch_info_v[i] = &dynamic_cast<const db_channel_laben&>(bx_dbi::get ()->get_channel (i));
 }
 
@@ -45,20 +45,20 @@ bx_echidna_event* bx_new_charge_weight::doit (bx_echidna_event *ev) {
   std::fill_n (p_disabled_charge_lg, nlg + 1, false); // Init vector at 0
 
   //vector of disabled lg
-    const std::vector<int>& v = detector_interface::get ()->get_disabled_channels ();
-    for (int i = 0; i < (int) v.size (); i++) if (v[i] <= nlg) {
+    const std::vector<int32_t>& v = detector_interface::get ()->get_disabled_channels ();
+    for (int32_t i = 0; i < (int32_t) v.size (); i++) if (v[i] <= nlg) {
 	if ((p_disabled_lg[v[i]] == db_run::timing)) continue;
 	if (ch_info_v[v[i]]->is_ordinary ()){
-    int disabled_pmts_lg = v[i];
+    int32_t disabled_pmts_lg = v[i];
     p_disabled_pmts_lg[disabled_pmts_lg] = true;
-    int disabled_charge_lg = v[i];
+    int32_t disabled_charge_lg = v[i];
     p_disabled_charge_lg[disabled_charge_lg] = true;}
   }
-    const std::vector<int>& vc = detector_interface::get ()->get_disabled_charge ();
-    for (int i = 0; i < (int) vc.size (); i++) if (vc[i] <= nlg) {
+    const std::vector<int32_t>& vc = detector_interface::get ()->get_disabled_charge ();
+    for (int32_t i = 0; i < (int32_t) vc.size (); i++) if (vc[i] <= nlg) {
       if (p_disabled_lg[vc[i]] == db_run::timing || p_disabled_lg[vc[i]] == db_run::charge) continue;
 	if (ch_info_v[vc[i]]->is_ordinary ()){
-    int disabled_charge_lg = vc[i];
+    int32_t disabled_charge_lg = vc[i];
     p_disabled_charge_lg[disabled_charge_lg] = true;}
   }
     i4_n_disabled_charge = vc.size ();
@@ -66,9 +66,9 @@ bx_echidna_event* bx_new_charge_weight::doit (bx_echidna_event *ev) {
 
 
   bx_laben_event& er = ev->get_laben ();
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
-    int lg = hit.get_logical_channel ();
+    int32_t lg = hit.get_logical_channel ();
     const db_channel_laben *ch_info = ch_info_v[lg];
       // Ignore laben invalid hits (0xffff)
          if (hit.check_flag (bx_laben_raw_hit::invalid) && ch_info->is_ordinary ()) {
@@ -94,7 +94,7 @@ bx_echidna_event* bx_new_charge_weight::doit (bx_echidna_event *ev) {
 
   Int_t size_clusters = ev->get_laben ().get_nclusters ();
   Int_t size_mclusters = ev->get_laben ().get_nclusters_muons ();
-  for (int i = 0; i < size_clusters + size_mclusters; i++) {
+  for (int32_t i = 0; i < size_clusters + size_mclusters; i++) {
     bx_laben_cluster& cluster = (i < size_clusters ) ? ev->get_laben().get_cluster(i) : ev->get_laben().get_cluster_muon(i-size_clusters);
     bx_position_lngs& pos = cluster.get_position_lngs ();
         if (!ev->get_laben ().check_stage (bx_base_event::reconstructed_lngs)) {
@@ -114,7 +114,7 @@ bx_echidna_event* bx_new_charge_weight::doit (bx_echidna_event *ev) {
     QEt_charge = 0;
     allt_charge = 0;
 
-    for (int ilg = 1;  ilg < (1 + nlg); ilg++) {
+    for (int32_t ilg = 1;  ilg < (1 + nlg); ilg++) {
 	QE = 0.;
         const db_channel_laben& channel_info = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(ilg));
 	xp = channel_info.pmt_x();

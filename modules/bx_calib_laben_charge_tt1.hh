@@ -31,8 +31,8 @@ class bx_calib_laben_charge_tt1: public bx_base_module {
     TH1F  *hC1, *hSig1, *hR12, *hR13, *hChi2, *hP0;
     TH1F  *hMean, *hRms;
 
-    int current_run;
-    int nTriggers;
+    int32_t current_run;
+    int32_t nTriggers;
     float *f_charge_peak, *f_charge_sigma;
     float *f_charge_mean, *f_charge_rms, *f_p0;
 };

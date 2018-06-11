@@ -91,22 +91,22 @@ bool v1731_neutron_analyzer::neutron_analyzer::is_muon(const v1731event & v1731e
 
   f4_muon_time = 24000;   // fake initilization 
   float f4_base_mean = 0.;// mean of first samples (base)
-  int i2_intersection= 0; // used to disriminate pulser/muon events
+  int32_t i2_intersection= 0; // used to disriminate pulser/muon events
   
   if ((i4_total_size-SIZE_FIRST)>0){ // avoids array problem
     if(!v1731ev.get_zle_enabled()){
-      for (int i2m=0; i2m<SIZE_TO_MEAN; ++i2m){
+      for (int32_t i2m=0; i2m<SIZE_TO_MEAN; ++i2m){
 	f4_base_mean += v1731ev.get_sample_at_bin(0, 0, i2m+1);
       }
       f4_base_mean /= SIZE_TO_MEAN;
     }
     else if (v1731ev.get_zle_enabled()){
-      const int i2_ngoodzones=v1731ev.get_number_of_good_zones(0,0);
+      const int32_t i2_ngoodzones=v1731ev.get_number_of_good_zones(0,0);
       if (i2_ngoodzones>0) {
 	const long i4_start_bin=v1731ev.get_begin_of_good_zone(0,0,0)/2;  // start bin of 1st good zone
 	const long i4_length_1gz=v1731ev.get_length_of_good_zone(0,0,0)/2;// size of 1st good zone
-	const int i2_size=(i4_length_1gz < 100 ? i4_length_1gz : 100);    // size of base to compute mean
-	for (int i2m=0; i2m<i2_size; ++i2m){
+	const int32_t i2_size=(i4_length_1gz < 100 ? i4_length_1gz : 100);    // size of base to compute mean
+	for (int32_t i2m=0; i2m<i2_size; ++i2m){
 	  f4_base_mean+=v1731ev.get_sample_at_bin(0,0, i4_start_bin+i2m+1);
 	}
 	f4_base_mean/=i2_size;
@@ -117,7 +117,7 @@ bool v1731_neutron_analyzer::neutron_analyzer::is_muon(const v1731event & v1731e
     bool first_edge = true; // used to acquire muon edge time
     const float f4_over = (f4_base_mean+125. > 255. ? 225. : f4_base_mean+125.);
 
-    for (int i2_s=SIZE_TO_MEAN; i2_s<SIZE_FIRST; ++i2_s){    
+    for (int32_t i2_s=SIZE_TO_MEAN; i2_s<SIZE_FIRST; ++i2_s){    
       const float f4_tmp_sample = v1731ev.get_sample_at_bin(0, 0, i2_s+1);
       
       if ((f4_tmp_sample>f4_over) && (!is_over)){
@@ -145,8 +145,13 @@ void v1731_neutron_analyzer::neutron_analyzer::analog_sum_analyze(const v1731eve
 
   const long i4_total_size=v1731ev.get_event_length(0,0)/2;
   const long i4_other_size=i4_total_size-SIZE_FIRST; // size of "after muon" array
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  double* f_other_samples= new double [i4_other_size];
+  double* f_other_dest=new double [i4_other_size];
+#else
   float* f_other_samples= new float [i4_other_size];
   float* f_other_dest=new float [i4_other_size];
+#endif
   v1731ev.get_sample_array(0, 0, f_other_samples, SIZE_FIRST, i4_other_size);
   
   TSpectrum S;         // primary peak serching:
@@ -156,11 +161,11 @@ void v1731_neutron_analyzer::neutron_analyzer::analog_sum_analyze(const v1731eve
   if (i2_peakfounds>0){
     
     float f_tmp_pk_val, f_tmp_max_val, f_tmp_FWHM, f_tmp_area, f_tmp_mean;
-    const int i2_near_size= 1000;  // 2us (right,left)
+    const int32_t i2_near_size= 1000;  // 2us (right,left)
     
-    for (int i2_p=0; i2_p<i2_peakfounds; ++i2_p){
+    for (int32_t i2_p=0; i2_p<i2_peakfounds; ++i2_p){
       const long i4_tmp_pk_pos = static_cast <long> (f_peak_pos[i2_p]);
-      int i2_tmp_near= i2_near_size;                // half length of near zone
+      int32_t i2_tmp_near= i2_near_size;                // half length of near zone
       long i4_begin_near, i4_end_near;
       
       do {
@@ -180,11 +185,11 @@ void v1731_neutron_analyzer::neutron_analyzer::analog_sum_analyze(const v1731eve
       
       f_tmp_max_val= TMath::MaxElement(2*i2_tmp_near, f_samples_near);
       
-      const int i2_FWHM= v1731_neutron_analyzer::i4_over_thr(2*i2_tmp_near, f_samples_near, f_HM);// Full Width HM of the peak
+      const int32_t i2_FWHM= v1731_neutron_analyzer::i4_over_thr(2*i2_tmp_near, f_samples_near, f_HM);// Full Width HM of the peak
       f_tmp_FWHM = static_cast<float> (i2_FWHM);        
       
       long i4_start_nearEST;
-      int i2_size_nearEST;
+      int32_t i2_size_nearEST;
       if ((i4_tmp_pk_pos - 2*i2_FWHM)< 0) {
 	i4_start_nearEST=i4_begin_near;
 	i2_size_nearEST=2*i2_tmp_near;
@@ -215,12 +220,12 @@ void v1731_neutron_analyzer::neutron_analyzer::analog_sum_analyze(const v1731eve
 }
 
 void v1731_neutron_analyzer::neutron_analyzer::zle_analog_sum_analyze(const v1731event & v1731ev){
-  const int i2_num_good_zones = v1731ev.get_number_of_good_zones(0,0);
+  const int32_t i2_num_good_zones = v1731ev.get_number_of_good_zones(0,0);
   if (i2_num_good_zones<2) return;
 
   const long i4_start_analysis_smp = static_cast<long>((f4_muon_time + 14000)/2); // muon overshoot expires after 10-20us
 
-  for (int i2_gz=0; i2_gz<i2_num_good_zones; ++i2_gz){
+  for (int32_t i2_gz=0; i2_gz<i2_num_good_zones; ++i2_gz){
     /* analysis of single good zone */
     const long i4_smp_start = v1731ev.get_begin_of_good_zone(0,0,i2_gz)/2;
     const long i4_smp_size  = v1731ev.get_length_of_good_zone(0,0,i2_gz)/2;
@@ -251,26 +256,26 @@ v1731_neutron_analyzer::peak_zone::peak_zone(long i4_in_size, float* f_samples, 
   TSpectrum S;
   const float f_pk_sigma = 25.;
   const double f_thres= 50.;
-  const int i2_iter = 2;
-  const int i2_aver_win = 3;
+  const int32_t i2_iter = 2;
+  const int32_t i2_aver_win = 3;
     
   i2_npeak_found=S.SearchHighRes(f_samples, f_samples_clean, i4_size, f_pk_sigma, f_thres, kTRUE, i2_iter, kTRUE, i2_aver_win);
 
   if (i2_npeak_found>0){
     Float_t* f_peak_pos = S.GetPositionX();                   // peak positions
     Float_t* f_peak_pos_sort = new float [i2_npeak_found];    // will contain peak positions sorted temporaly
-    int* i2_index = new int [i2_npeak_found];
+    int32_t* i2_index = new int32_t [i2_npeak_found];
     TMath::Sort(i2_npeak_found, f_peak_pos, i2_index, false); // see TMath::Sort for reference
-    for (int i2_s=0; i2_s<i2_npeak_found; ++i2_s){            // this proedure is used to sort f_peak_pos array
+    for (int32_t i2_s=0; i2_s<i2_npeak_found; ++i2_s){            // this proedure is used to sort f_peak_pos array
       f_peak_pos_sort[i2_s]=f_peak_pos[i2_index[i2_s]];
     }
     delete [] i2_index;
 
-    const int i2_nextrema = i2_npeak_found + 1;                    // numer of analysis zone extrema
+    const int32_t i2_nextrema = i2_npeak_found + 1;                    // numer of analysis zone extrema
     long* i4_extrema= new long[i2_nextrema];                       // position of analysis zone extrema
     extrema(i2_nextrema, i4_extrema, f_peak_pos_sort, f_samples);  // calculate extrema position
     
-    for (int i2_i=0; i2_i<i2_npeak_found; ++i2_i){
+    for (int32_t i2_i=0; i2_i<i2_npeak_found; ++i2_i){
 
       const long i4_subzone_default_len = i4_extrema[i2_i+1] - i4_extrema[i2_i];
       const long i4_len_back  = 350;
@@ -335,10 +340,10 @@ v1731_neutron_analyzer::peak_zone::peak_zone(long i4_in_size, float* f_samples, 
 }
 
 
-void v1731_neutron_analyzer::peak_zone::extrema(int i2_nextrema, long* i4_extrema, Float_t* f_in_peak_pos, float* f_in_samples){
+void v1731_neutron_analyzer::peak_zone::extrema(int32_t i2_nextrema, long* i4_extrema, Float_t* f_in_peak_pos, float* f_in_samples){
   i4_extrema[0] = 0;
   i4_extrema[i2_nextrema-1] = i4_size-1;
-  for (int i2_e=0; i2_e<i2_npeak_found-1; ++i2_e){
+  for (int32_t i2_e=0; i2_e<i2_npeak_found-1; ++i2_e){
     const float f_x1 = f_in_peak_pos[i2_e];        // position of e-th peak
     const float f_x2 = f_in_peak_pos[i2_e+1];      // position of (e+1)-th peak
     const float f_w1 = f_in_samples[static_cast<long> (f_x1)];  // weight of e-th peak

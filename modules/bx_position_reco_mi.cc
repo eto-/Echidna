@@ -25,7 +25,7 @@
 namespace { 
   // MINUIT ROOT workaround
   bx_position_reco_mi *current_module;
-  void fcn (int &npar, double *gin, double &f, double *x, int iflag) { f = current_module->my_fcn (x); }
+  void fcn (int32_t &npar, double *gin, double &f, double *x, int32_t iflag) { f = current_module->my_fcn (x); }
 };
 
 // ctor
@@ -97,7 +97,7 @@ void bx_position_reco_mi::begin () {
   f4_t_0 = 35. + (f4_ref_index*radius/speed_of_light_m_ns);
 //  get_message(bx_message::log) << "T0 starting point" << f4_t_0 << dispatch;
   
-  for ( int i=0; i<constants::laben::channels; i++ ) {
+  for ( int32_t i=0; i<constants::laben::channels; i++ ) {
     const db_channel_laben& channel_info = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(i+1));
     ((*f4_pmt_positions)[i])(0) = channel_info.pmt_x();
     ((*f4_pmt_positions)[i])(1) = channel_info.pmt_y();
@@ -121,7 +121,7 @@ void bx_position_reco_mi::begin () {
   double pdf_time[pdf_time_v.size()];
   double pdf_data[pdf_time_v.size()];
   
-  for ( int i=0; i<(int)pdf_time_v.size(); i++ ) {
+  for ( int32_t i=0; i<(int32_t)pdf_time_v.size(); i++ ) {
     pdf_time[i] = pdf_time_v[i];
     pdf_data[i] = pdf_data_v[i];
   }
@@ -132,10 +132,10 @@ void bx_position_reco_mi::begin () {
 }
 
 bx_echidna_event* bx_position_reco_mi::doit (bx_echidna_event *ev) {
-  if (i4_keep_ratio > 0 && int(ev->get_event_number() % 100) > i4_keep_ratio) return ev;
+  if (i4_keep_ratio > 0 && int32_t(ev->get_event_number() % 100) > i4_keep_ratio) return ev;
 
   // Loop on every cluster
-  for (int i = 0; i < ev->get_laben ().get_nclusters (); i++) {
+  for (int32_t i = 0; i < ev->get_laben ().get_nclusters (); i++) {
     const bx_baricenter& b =ev->get_laben().get_cluster(i).get_baricenter();
     bx_position_mi& pos = ev->get_laben().get_cluster(i).get_position_mi();
 
@@ -162,15 +162,15 @@ bx_echidna_event* bx_position_reco_mi::doit (bx_echidna_event *ev) {
 //  Minimization with MINIMIZE (same as MIGRAD, but calls SIMPLEX when MIGRAD fails and then calls MIGRAD again)
 //  ierr=0 ok; ierr=1 command blank; ierr=2 command line unreadable; ierr=3 unknown command; ierr=4 abnormal termination;
 //    
-    int ierr = 999;
-    for (int k=0; k<10;k++){
+    int32_t ierr = 999;
+    for (int32_t k=0; k<10;k++){
     ierr= p_minuit->Command("MIN");
     if(ierr==0)break;
     }
     p_minuit->Command ("HESSE");
 //
 
-    int nvpar,nparx,iconv;
+    int32_t nvpar,nparx,iconv;
 //  nvpar=number of variable parameters
 //  nparx=highest parameter number defined by user
 //  iconv indicator of goodness of covariance 
@@ -189,7 +189,7 @@ bx_echidna_event* bx_position_reco_mi::doit (bx_echidna_event *ev) {
     double position[4];
     double er[4];
 
-    for ( int j=0; j<4; j++ ) {
+    for ( int32_t j=0; j<4; j++ ) {
       p_minuit->GetParameter(j, position[j], er[j]);
 //      p_minuit->mnerrs(j,eplus[j],eminus[j],eparab,globcc);
 //      error[j] = ( fabs(eplus[j]) + fabs(eminus[j]) )/2.;
@@ -311,7 +311,7 @@ void bx_position_reco_mi::end () {
 double bx_position_reco_mi::my_fcn (double *x) {
 
   const bx_laben_cluster& cluster = p_fit_ev->get_laben().get_cluster(i4_fit_cluster);
-//  int n_evento = p_fit_ev->get_event_number();
+//  int32_t n_evento = p_fit_ev->get_event_number();
   TVector3 ev_position(x);
   TVector3 distance,distance_normal_vector;
   double ev_time = -x[3];
@@ -323,7 +323,7 @@ double bx_position_reco_mi::my_fcn (double *x) {
 
       
   // Loop on every hit
-  for (int i = 0; i < cluster.get_clustered_nhits (); i++) {
+  for (int32_t i = 0; i < cluster.get_clustered_nhits (); i++) {
     // Get clustered hit reference and db_channel pointer
     const bx_laben_clustered_hit& hit = cluster.get_clustered_hit(i);
     const bx_laben_decoded_hit& dhit = hit.get_decoded_hit();
@@ -331,7 +331,7 @@ double bx_position_reco_mi::my_fcn (double *x) {
     if (!ch_info->is_ordinary ()) continue;
     if (hit.get_time() > f8_tmax) continue;
     
-    int index = ch_info->get_lg()-1;
+    int32_t index = ch_info->get_lg()-1;
     distance = (*f4_pmt_positions)[index] - ev_position;
     double path = distance.Mag(); 
       

@@ -78,9 +78,9 @@ bx_echidna_event* bx_calib_laben_decoding::doit (bx_echidna_event *ev) {
     end_1000ev (0);
 
   double mean = 0;
-  int hits_in_gate = 0;
-  int nhits = er.get_decoded_nhits ();
-  int i;
+  int32_t hits_in_gate = 0;
+  int32_t nhits = er.get_decoded_nhits ();
+  int32_t i;
 
    for(i = 0; i < nhits; i++) {
     if(!er.get_decoded_hit (i).is_out_of_gate ()){
@@ -102,11 +102,11 @@ bx_echidna_event* bx_calib_laben_decoding::doit (bx_echidna_event *ev) {
   
    for(i = 0; i < nhits; i++){
      if(!er.get_decoded_hit (i).is_out_of_gate ()){
-      int fill = 0;
+      int32_t fill = 0;
       double normalized_time = er.get_decoded_hit (i).get_raw_time () - mean - offset ;
       double charge = er.get_decoded_hit (i).get_uncorrected_charge_bin ();
       double charge1 = er.get_decoded_hit (i).get_charge_bin ();
-      int lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
+      int32_t lg = er.get_decoded_hit (i).get_raw_hit ().get_logical_channel ();
       charge_vs_channel->Fill(lg,charge1);
          //for ordinary channels filling all hits
          //for laser and trigger reference filling only hits with charge correpsonding to pulser hits
@@ -122,7 +122,7 @@ bx_echidna_event* bx_calib_laben_decoding::doit (bx_echidna_event *ev) {
      }
   }
   
-   if(!(int(trigger_sum) % 200)) barn_interface::get ()->network_send (time_vs_channel, this);
+   if(!(int32_t(trigger_sum) % 200)) barn_interface::get ()->network_send (time_vs_channel, this);
 
 
   return ev;
@@ -131,25 +131,25 @@ bx_echidna_event* bx_calib_laben_decoding::doit (bx_echidna_event *ev) {
 }
 
 //END_1000Ev
-void bx_calib_laben_decoding::end_1000ev (int indx) {
+void bx_calib_laben_decoding::end_1000ev (int32_t indx) {
   
   if(trigger_sum == 0) return;
  
   
-  int n_off_channels = 0;
-  int n_bad_channels = 0;
+  int32_t n_off_channels = 0;
+  int32_t n_bad_channels = 0;
   
-  int n_trigref = 0;
-  int n_off_trigref = 0;
-  int n_bad_trigref = 0;
+  int32_t n_trigref = 0;
+  int32_t n_off_trigref = 0;
+  int32_t n_bad_trigref = 0;
   
-  int n_lasref = 0;
-  int n_off_lasref = 0;
-  int n_bad_lasref = 0;
+  int32_t n_lasref = 0;
+  int32_t n_off_lasref = 0;
+  int32_t n_bad_lasref = 0;
 
-  int n_cngsref = 0;
-  int n_off_cngsref = 0;
-  int n_bad_cngsref = 0;
+  int32_t n_cngsref = 0;
+  int32_t n_off_cngsref = 0;
+  int32_t n_bad_cngsref = 0;
   
   //if precalib not yet present, read the list of bad and off lg from previous run 
   // if ( !bx_dbi::get ()->get_run ().is_precalib_quality_present ()){
@@ -168,21 +168,21 @@ void bx_calib_laben_decoding::end_1000ev (int indx) {
   if (indx == 1) barn_interface::get ()->store (barn_interface::file, time_vs_channel_good, this);
    
     // loop for all logical channels
-  for(int ch = 1;ch < (constants::laben::channels + 1);ch++){
+  for(int32_t ch = 1;ch < (constants::laben::channels + 1);ch++){
     double total_sum = 0; //sum in 602 time bins,including underflow and overflow   
     double peak_sum = 0; //number of events in the peak around 0 (-55,55)ns 
     peak_mean = 0;
     peak_rms = 0; 
     double outer_sum = 0;  //events in time channels dt=(-inf,-54) + (200,inf), including overflow, underflow 
-    int indx_bad = 0;  //set to 1 if channel is found as problematic
-    int indx_off = 0;  //set to 1 if channel is found as problematic
-    //int was_off = 0;
-    //int was_bad = 0;
-    int lg_to_check = 0;
-    int lg_ordinary = 0;
-    int lg_laser = 0;    
-    int lg_trigger = 0;    
-    int lg_cngs = 0;    
+    int32_t indx_bad = 0;  //set to 1 if channel is found as problematic
+    int32_t indx_off = 0;  //set to 1 if channel is found as problematic
+    //int32_t was_off = 0;
+    //int32_t was_bad = 0;
+    int32_t lg_to_check = 0;
+    int32_t lg_ordinary = 0;
+    int32_t lg_laser = 0;    
+    int32_t lg_trigger = 0;    
+    int32_t lg_cngs = 0;    
     
 
     if(bx_dbi::get ()->get_channel (ch).is_ordinary()) {
@@ -294,7 +294,7 @@ void bx_calib_laben_decoding::end_1000ev (int indx) {
     } 
 
     //we clean time_vs_channel_good histo, for bad and not checked lg the content is set to 0
-    if(indx_bad == 1 || indx_off == 1) for(int i = 0;i < 602;i++) time_vs_channel_good->SetBinContent (ch,i,0);
+    if(indx_bad == 1 || indx_off == 1) for(int32_t i = 0;i < 602;i++) time_vs_channel_good->SetBinContent (ch,i,0);
 
     
     
@@ -355,14 +355,14 @@ void bx_calib_laben_decoding::end_1000ev (int indx) {
       //warnings if too many trigref channels have no or bad precalib
     if ((n_trigref - n_bad_trigref - n_off_trigref) < 1)
       get_message(bx_message::error) << "No trigger reference channel with a good precalibration! (n_off = " << n_off_trigref << ", n_bad = " << n_bad_trigref << ")" << dispatch;
-    else if ((n_trigref - n_bad_trigref - n_off_trigref) < (int) n_trigref /2)
+    else if ((n_trigref - n_bad_trigref - n_off_trigref) < (int32_t) n_trigref /2)
       get_message(bx_message::warn) << "More than half of trigref channels have no or bad precalibration (n_off = " << n_off_trigref << ", n_bad = " << n_bad_trigref << ")" << dispatch;
     
  
       //warnings if too many lasref channels have no or bad precalib
     if ((n_lasref - n_bad_lasref - n_off_lasref) < 1)
       get_message(bx_message::error) << "No laser reference channel with a good precalibration! (n_off = " << n_off_lasref << ", n_bad = " << n_bad_lasref << ")" << dispatch;
-    else if ((n_lasref - n_bad_lasref - n_off_lasref) < (int) n_lasref /2)
+    else if ((n_lasref - n_bad_lasref - n_off_lasref) < (int32_t) n_lasref /2)
       get_message(bx_message::warn) << "More than half of lasref channels have no or bad precalibration (n_off = " << n_off_lasref << ", n_bad = " << n_bad_lasref << ")" << dispatch;
     
   }

@@ -52,7 +52,7 @@ class bx_calib_laben_retrigger: public bx_base_module {
    //to be read from echidna.cfg
   double n_sigma;
   double factor;
-  int    index;
+  int32_t    index;
 
     //for each lg time distribution of clustered hits, time 0 is the beginning of the cluster 
   TH2F*  time_vs_lg; 

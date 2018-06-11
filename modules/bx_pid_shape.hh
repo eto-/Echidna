@@ -33,18 +33,18 @@ class bx_pid_shape: public bx_base_module {
     virtual void end ();
 
   private:
-    int i4_min_nhits; // from echidna.cfg
-    int i4_nbins;  // from echidna.cfg
-    int event_debug;  // from echidna.cfg
+    int32_t i4_min_nhits; // from echidna.cfg
+    int32_t i4_nbins;  // from echidna.cfg
+    int32_t event_debug;  // from echidna.cfg
     float f4_meantime;  // from echidna.cfg
     float f4_peaktime;  // from echidna.cfg
 
 
       // number of:
-    int n_good_lg;
-    int n_on_crate;
-    int n_on_feb;
-    int n_on_laben;
+    int32_t n_good_lg;
+    int32_t n_on_crate;
+    int32_t n_on_feb;
+    int32_t n_on_laben;
 
       //number of good_lg in individual crate, feb, laben, lg...
     std::vector<double> crate_weight;
@@ -116,10 +116,10 @@ class bx_pid_shape: public bx_base_module {
   
     bool *p_disabled_lg;
 
-   int n_crate;
-  int n_feb;
-  int n_laben;
-  int nlg;
+   int32_t n_crate;
+  int32_t n_feb;
+  int32_t n_laben;
+  int32_t nlg;
   
 };
 #endif

@@ -32,7 +32,7 @@ class bx_laben_decoder: public bx_base_module {
   private:
     float m_check_gray_cross (const bx_laben_event& er);
     double m_get_moda_mean (const std::vector<double>& v);
-    double m_search_moda (const double *times, unsigned short size);
+    double m_search_moda (const double *times, uint16_t size);
 
     typedef std::list<bx_laben_decoded_hit> bx_laben_decoded_hit_list;
     void remove_retrigger_hits (bx_laben_decoded_hit_list&);
@@ -40,12 +40,12 @@ class bx_laben_decoder: public bx_base_module {
 
     bool b_discard_out_of_gate_hits, b_discard_reference_hits, b_discard_calib_data, b_warn_empy_channel, b_mc_use_charge_calib_data;
     bool b_discard_retrigger_hits, b_discard_reflection_hits, b_discard_disabled_lg;
-    int i4_nhits_threshold;
+    int32_t i4_nhits_threshold;
     float f4_trigger_start_;
     float f4_shift_min, f4_shift_max;
-    unsigned char *p_disabled_lg;
+    uint8_t *p_disabled_lg;
     bool *p_empty_lg;
-    unsigned int i4_ordinary_pmt, i4_n_disabled_channels, i4_n_disabled_charge, i4_n_disabled_pmts, i4_n_disabled_pmts_charge;
+    uint32_t i4_ordinary_pmt, i4_n_disabled_channels, i4_n_disabled_charge, i4_n_disabled_pmts, i4_n_disabled_pmts_charge;
     const db_channel_laben **ch_info_v; 
     TH1F *trigger_charge, *laser_charge;
     TH2F *gray_cross_h;

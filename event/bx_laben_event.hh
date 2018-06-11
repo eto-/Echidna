@@ -22,15 +22,15 @@
 // ------- RAW --------- //
 class bx_laben_raw_hit {
   public:
-    bx_laben_raw_hit (const char *disk_hit, unsigned char order_in_channel);
-    unsigned short get_logical_channel  ()  const { return u2_channel; }
-    unsigned char  get_time_1           ()  const { return u1_time_1; }
-    unsigned char  get_time_2           ()  const { return u1_time_2; }
-    unsigned short get_gray_counter     ()  const { return u2_gray_counter; }
-    unsigned char  get_base             ()  const { return u1_base; }
-    unsigned char  get_peak             ()  const { return u1_peak; }
-    unsigned short get_flags_board      ()  const { return (u2_flags >> 8) & 0xff; }
-    unsigned short get_flags_ch         ()  const { return u2_flags & 0xff; }
+    bx_laben_raw_hit (const char *disk_hit, uint8_t order_in_channel);
+    uint16_t get_logical_channel  ()  const { return u2_channel; }
+    uint8_t  get_time_1           ()  const { return u1_time_1; }
+    uint8_t  get_time_2           ()  const { return u1_time_2; }
+    uint16_t get_gray_counter     ()  const { return u2_gray_counter; }
+    uint8_t  get_base             ()  const { return u1_base; }
+    uint8_t  get_peak             ()  const { return u1_peak; }
+    uint16_t get_flags_board      ()  const { return (u2_flags >> 8) & 0xff; }
+    uint16_t get_flags_ch         ()  const { return u2_flags & 0xff; }
     enum flags {
       good = 0,
       fifo_full,
@@ -43,15 +43,15 @@ class bx_laben_raw_hit {
       __max__,
     };
     bool	   check_flag		(flags flag) const { bool f = u2_flags & flags_bits[flag]; return (flag != good) ? f : !f; } // there is no flag for good
-    unsigned char  get_order_in_channel ()  const { return u1_order_in_channel; }
+    uint8_t  get_order_in_channel ()  const { return u1_order_in_channel; }
   private:
-    unsigned short u2_channel;
-    unsigned char  u1_time_1, u1_time_2;
-    unsigned short u2_gray_counter;
-    unsigned char  u1_base, u1_peak;
-    unsigned short u2_flags;
-    unsigned char  u1_order_in_channel; // as in daq fifo: all hits are counted
-    static unsigned short flags_bits[__max__]; // KEEP alligned to flags enum !!!
+    uint16_t u2_channel;
+    uint8_t  u1_time_1, u1_time_2;
+    uint16_t u2_gray_counter;
+    uint8_t  u1_base, u1_peak;
+    uint16_t u2_flags;
+    uint8_t  u1_order_in_channel; // as in daq fifo: all hits are counted
+    static uint16_t flags_bits[__max__]; // KEEP alligned to flags enum !!!
   public:
     typedef std::vector<bx_laben_raw_hit> bx_laben_raw_hit_vector;
 };
@@ -66,7 +66,7 @@ class bx_laben_raw_event {
     int get_raw_nhits_flag (bx_laben_raw_hit::flags flag_id) const { return nhits_flag[flag_id]; }
     int get_empty_boards () const { return i4_empty_boards; }
   private:
-    unsigned long u4_errors;
+    uint32_t u4_errors;
     int nhits_flag[bx_laben_raw_hit::__max__]; // keep alligned to size of bx_laben_raw_hit::flags enum
     int i4_empty_boards;
     int i4_nhits_fw;
@@ -81,7 +81,7 @@ class laben_time_hit;
 class laben_charge_hit;
 class bx_laben_decoded_hit {
   public:
-    bx_laben_decoded_hit (const bx_laben_raw_hit &hit, unsigned short index): u1_flag(0), raw_hit(&hit) {}
+    bx_laben_decoded_hit (const bx_laben_raw_hit &hit, uint16_t index): u1_flag(0), raw_hit(&hit) {}
     const bx_laben_raw_hit& get_raw_hit () const { return *raw_hit; }
 
       // TDC data from the laben_hit class
@@ -96,13 +96,13 @@ class bx_laben_decoded_hit {
       retrigger   = 8,
       disabled    = 16,
     };
-    unsigned char get_flag ()		  const { return u1_flag;               }
+    uint8_t get_flag ()		  const { return u1_flag;               }
     bool           is_good ()		  const { return !u1_flag;              } 
     bool    is_out_of_gate ()		  const { return u1_flag & out_of_gate; } 
     bool     is_reflection ()		  const { return u1_flag & reflection;  } 
     bool      is_reference ()		  const { return u1_flag & reference;   } 
     bool      is_retrigger ()		  const { return u1_flag & retrigger;   } 
-    unsigned char get_order_in_channel () const { return u1_order_in_channel;   }
+    uint8_t get_order_in_channel () const { return u1_order_in_channel;   }
     bool operator< (const bx_laben_decoded_hit& hit) const { return get_raw_time () < hit.get_raw_time (); }
 	
       // ADC data
@@ -124,8 +124,8 @@ class bx_laben_decoded_hit {
     float f4_charge_bin, f4_uncorrected_charge_bin;
     float f4_charge_pe, f4_uncorrected_charge_pe, f4_charge_mean_pe;
       // From laben_decoder
-    unsigned char  u1_flag;
-    unsigned char  u1_order_in_channel; // only decoded hits are counted
+    uint8_t  u1_flag;
+    uint8_t  u1_order_in_channel; // only decoded hits are counted
     const bx_laben_raw_hit* raw_hit;
     const db_channel_laben *p_db_channel;
 
@@ -182,17 +182,17 @@ private:
 // ------- CLUSTERED --------- //
 class bx_laben_clustered_hit {
   public:
-    bx_laben_clustered_hit (const bx_laben_decoded_hit &hit, unsigned short index) : f8_time(0.), decoded_hit(&hit) {}
+    bx_laben_clustered_hit (const bx_laben_decoded_hit &hit, uint16_t index) : f8_time(0.), decoded_hit(&hit) {}
     const bx_laben_decoded_hit& get_decoded_hit () const { return *decoded_hit; }
 
     double        get_time             () const { return f8_time;             }
-    unsigned char get_order_in_channel () const { return u1_order_in_channel; }
+    uint8_t get_order_in_channel () const { return u1_order_in_channel; }
     bool          is_short_cluster     () const { return b_short_cluster     ; }
     bool operator< (const bx_laben_clustered_hit& hit) const { return get_time () < hit.get_time (); }
 
   private:
     double f8_time;
-    unsigned char  u1_order_in_channel; // only hits in cluster are counted
+    uint8_t  u1_order_in_channel; // only hits in cluster are counted
     bool b_short_cluster;
     const bx_laben_decoded_hit* decoded_hit;
     
@@ -425,7 +425,7 @@ class bx_laben_cluster {
       broad	  = 2,
       trigger     = 4,
     };
-    unsigned char get_flag ()		  const { return u1_flag;               }
+    uint8_t get_flag ()		  const { return u1_flag;               }
     bool           is_good ()		  const { return !u1_flag;              } 
     bool    is_out_of_gate ()		  const { return u1_flag & out_of_gate; } 
     bool          is_broad ()		  const { return u1_flag & broad;  	} 
@@ -481,7 +481,7 @@ class bx_laben_cluster {
     double f8_start_time;//, f8_rough_time;
     float  f4_mean_time, f4_mean_time_short, f4_rms_time, f4_rms_time_short;
     float  f4_duration_short;
-    unsigned char u1_flag;
+    uint8_t u1_flag;
     bool b_is_neutron;
     bx_laben_clustered_hit::bx_laben_clustered_hit_vector clustered_hits;
     bx_baricenter   baricenter;

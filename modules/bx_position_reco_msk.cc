@@ -27,7 +27,7 @@
 
 namespace { 
   bx_position_reco_msk *current_module;
-  void fcn_t(int &npar, double *gin, double &f, double *x, int iflag) 
+  void fcn_t(int32_t &npar, double *gin, double &f, double *x, int32_t iflag) 
             { f = current_module->msk_fcn_t(x); }
 };
 
@@ -65,14 +65,14 @@ void bx_position_reco_msk::begin() {
   f4_pmt_positions = new std::vector<TVector3>(constants::laben::channels);
   b_pmt_cone = new std::vector<bool>(constants::laben::channels);
 
-  const std::vector<int>& disabled_channels = detector_interface::get()->get_disabled_channels();
-  for (int k = 0; k < (int)disabled_channels.size(); ++k)  i4_disabled_channels.push_back(disabled_channels[k]);
+  const std::vector<int32_t>& disabled_channels = detector_interface::get()->get_disabled_channels();
+  for (int32_t k = 0; k < (int32_t)disabled_channels.size(); ++k)  i4_disabled_channels.push_back(disabled_channels[k]);
 
   f4_ref_index = bx_dbi::get()->get_calib().get_refraction_index_data();
   
 //  f4_ref_index = 1.53;
 
-  for (int i = 0; i < constants::laben::channels; ++i)  {
+  for (int32_t i = 0; i < constants::laben::channels; ++i)  {
        const db_channel_laben& channel_info = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(i+1));
        (*b_pmt_cone)[i] = channel_info.pmt_has_cone(); 
        if ((*b_pmt_cone)[i])  {
@@ -92,7 +92,7 @@ bx_echidna_event* bx_position_reco_msk::doit(bx_echidna_event *ev)  {
 
   double f8_valueX, f8_valueY, f8_valueZ, f8_valueT, f8_error;
 
-  for (int i = 0; i < ev->get_laben().get_nclusters(); ++i)  {
+  for (int32_t i = 0; i < ev->get_laben().get_nclusters(); ++i)  {
 
 //    const bx_baricenter& b = ev->get_laben().get_cluster(i).get_baricenter();
 //    float r = b.get_r();
@@ -156,12 +156,12 @@ double bx_position_reco_msk::msk_fcn_t (double *x) {
 
   const bx_laben_cluster& cluster = p_fit_ev->get_laben().get_cluster(i4_fit_cluster);
 
-  for (int i = 0; i < cluster.get_clustered_nhits(); ++i)  {
+  for (int32_t i = 0; i < cluster.get_clustered_nhits(); ++i)  {
        const bx_laben_clustered_hit& hit = cluster.get_clustered_hit(i);
        const bx_laben_decoded_hit& dhit = hit.get_decoded_hit();
        const db_channel* ch_info = dhit.get_db_channel();
 
-       int index = ch_info->get_lg()-1;
+       int32_t index = ch_info->get_lg()-1;
 
        double time = hit.get_time();
 

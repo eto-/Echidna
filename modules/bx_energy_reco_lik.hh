@@ -24,7 +24,7 @@ class vector3 {
 	vector3( double xx, double yy, double zz) { x[0] = xx; x[1] = yy; x[2] = zz;};
 	virtual ~vector3() {};
 	double Mag() { return sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]); }
-	double& operator[] (const int i) {return x[i]; }
+	double& operator[] (const int32_t i) {return x[i]; }
 	vector3 operator- (const vector3 &rhs) {
 	    vector3 temp(this->x[0] - rhs.x[0], this->x[1] - rhs.x[1], this->x[2] - rhs.x[2]);
 	    return temp;
@@ -56,20 +56,20 @@ class bx_energy_reco_lik: public bx_base_module {
     float f4_ref_index;
     float f4_lg_entry_radius;
     float f4_cathode_radius;
-    int method;
+    int32_t method;
     
     double f8_prob, expected_charge, f8_result;
     
     std::vector<vector3> *f4_pmt_positions;
     std::vector<vector3> *f4_pmt_normal_vectors;
-    std::vector<unsigned char> *u1_collected_charge;
+    std::vector<uint8_t> *u1_collected_charge;
     std::vector<double> *v_omega_attenuation;
     std::vector<bool> *b_pmt_cone;
 
     // to be used in lik_fcn (see minuit root workaround)
     TMinuit *p_minuit;
     bx_echidna_event *p_fit_ev;
-    int i4_fit_cluster;
+    int32_t i4_fit_cluster;
 };
 
 #endif

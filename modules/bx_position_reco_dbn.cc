@@ -21,10 +21,10 @@
 
 namespace { // MINUIT ROOT workaround
   bx_position_reco_dbn *current_module;
-  void fcn (int &npar, double *gin, double &f, double *x, int iflag) { f = current_module->my_fcn (npar, x, gin, iflag); }
+  void fcn (int32_t &npar, double *gin, double &f, double *x, int32_t iflag) { f = current_module->my_fcn (npar, x, gin, iflag); }
 };
 
-const unsigned short bx_position_reco_dbn::n_shell;
+const uint16_t bx_position_reco_dbn::n_shell;
 const float bx_position_reco_dbn::shell_external_radius[n_shell] = { 0.7, 1.5, 2.5, 3.5, 100 };  // last shell have a dummy external radius
 
 // ctor
@@ -43,7 +43,7 @@ void bx_position_reco_dbn::begin () {
   const vdt::vdt_vector& t0_shift_v = get_parameter ("t0_shift").get_vector ();
   if (gauss_sigma_v.size () != n_shell || t0_shift_v.size () != n_shell)
     get_message (bx_message::critic) << "gauss_sigma and t0_shift vectors must have size = " << n_shell << dispatch;
-  for (int i = 0; i < n_shell; i++) {
+  for (int32_t i = 0; i < n_shell; i++) {
     f4_gauss_sigma[i] = gauss_sigma_v[i].get_float ();
     f4_t0_shift[i] = t0_shift_v[i].get_float ();
   }
@@ -65,7 +65,7 @@ void bx_position_reco_dbn::begin () {
 
 bx_echidna_event* bx_position_reco_dbn::doit (bx_echidna_event *ev) {
     // Loop on every cluster
-  for (int i = 0; i < ev->get_laben ().get_nclusters (); i++) {
+  for (int32_t i = 0; i < ev->get_laben ().get_nclusters (); i++) {
       // Get cluster reference
     const bx_baricenter& b = ev->get_laben ().get_cluster (i).get_baricenter ();
 
@@ -76,7 +76,7 @@ bx_echidna_event* bx_position_reco_dbn::doit (bx_echidna_event *ev) {
     
       // Search for the radius shell to use and set pdf sigma
     float r = b.get_r ();
-    int shell = n_shell - 1; // skip most external shell
+    int32_t shell = n_shell - 1; // skip most external shell
     for (; shell > 0; shell--) if (shell_external_radius[shell - 1] < r) break;
     f4_current_gauss_sigma_square = f4_gauss_sigma[shell] * f4_gauss_sigma[shell];
     float t0 = (f4_sphere_radius - r) / path.get_c_medium () + f4_t0_shift[shell];
@@ -88,7 +88,7 @@ bx_echidna_event* bx_position_reco_dbn::doit (bx_echidna_event *ev) {
     p_minuit->DefineParameter (3, "Z", b.get_z (), 0.10, -6.0, 6.0);
 
       // MINIMIZE
-    int ierr = p_minuit->Command ("MIGRAD");
+    int32_t ierr = p_minuit->Command ("MIGRAD");
     ierr = p_minuit->Command ("HESSE");
     if (!ierr) {
       //get_message (bx_message::log) << "minimization failed on event " << ev->get_event_number () << dispatch;
@@ -107,7 +107,7 @@ bx_echidna_event* bx_position_reco_dbn::doit (bx_echidna_event *ev) {
     p.f4_t = par[0]; p.f4_x = par[1]; p.f4_y = par[2]; p.f4_z = par[3]; p.f4_user = likelihood; //p.i4_n_iterations = i4_n_iterations;
 
       // Get ICONV
-    int nvpar,nparx,iconv;
+    int32_t nvpar,nparx,iconv;
     double amin,edm,errdef;
     p_minuit->mnstat(amin,edm,errdef,nvpar,nparx,iconv);
 
@@ -124,7 +124,7 @@ void bx_position_reco_dbn::end () {
 }
 
 
-double bx_position_reco_dbn::my_fcn (int npar, double *x, double *grad, int iflag) {
+double bx_position_reco_dbn::my_fcn (int32_t npar, double *x, double *grad, int32_t iflag) {
   // x[0] is t
   
   const bx_laben_cluster& cluster = p_fit_ev->get_laben().get_cluster (i4_fit_cluster);
@@ -136,7 +136,7 @@ double bx_position_reco_dbn::my_fcn (int npar, double *x, double *grad, int ifla
   if (store_gradients) std::fill_n (grad, 4, 0.);
 
     // Loop on the cluster hits
-  for (int i = 0; i < cluster.get_clustered_nhits (); i++) {
+  for (int32_t i = 0; i < cluster.get_clustered_nhits (); i++) {
     const bx_laben_clustered_hit& hit = cluster.get_clustered_hit (i);
     if (hit.get_time () > f8_first_hits_gate) continue;
 
@@ -153,7 +153,7 @@ double bx_position_reco_dbn::my_fcn (int npar, double *x, double *grad, int ifla
 	  // Calculate and assign t and X derivative
 	path.get_time_derivative (X_derivative);
 	grad[0] += 1;
-	for (int j = 0; j < 3; j++) grad [j + 1] -= X_derivative[j];
+	for (int32_t j = 0; j < 3; j++) grad [j + 1] -= X_derivative[j];
       }
     } else {  
       likelihood += delta * delta / f4_current_gauss_sigma_square;
@@ -161,7 +161,7 @@ double bx_position_reco_dbn::my_fcn (int npar, double *x, double *grad, int ifla
 	  // Calculate and assign t and X derivative
 	path.get_time_derivative (X_derivative);
 	grad[0] += 2 * delta / f4_current_gauss_sigma_square;
-	for (int j = 0; j < 3; j++) grad [j + 1] -= X_derivative[j] * 2 * delta / f4_current_gauss_sigma_square;
+	for (int32_t j = 0; j < 3; j++) grad [j + 1] -= X_derivative[j] * 2 * delta / f4_current_gauss_sigma_square;
       }
     }
   } 

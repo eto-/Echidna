@@ -27,7 +27,7 @@ class bx_muon_decoder : public bx_base_module {
   private:
     bool b_discard_disabled_lg, b_apply_calibration;
     bool* p_disabled_mch;
-    unsigned int u4_n_disabled_channels;
+    uint32_t u4_n_disabled_channels;
 };
 
 #endif

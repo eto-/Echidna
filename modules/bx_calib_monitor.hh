@@ -96,9 +96,9 @@ class bx_calib_monitor: public bx_base_module {
     TList* f_run_histos_list;
 
     //time after which the 2-D histograms are redrawn (in seconds)
-    unsigned long f_buffer_time; 
+    uint32_t f_buffer_time; 
     double f_prev_bi_event_time;
-    unsigned long f_prev_bunch_time;
+    uint32_t f_prev_bunch_time;
     double f_old_x;
     double f_old_y;
     double f_old_z;
@@ -108,10 +108,10 @@ class bx_calib_monitor: public bx_base_module {
     double f_14C_E;
     double f_HE_E;
     double f_start_time;
-    int f_n_events;
-    int f_n_events_buffer_up;
-    int f_n_events_buffer_equator;
-    int f_n_events_buffer_down;
+    int32_t f_n_events;
+    int32_t f_n_events_buffer_up;
+    int32_t f_n_events_buffer_equator;
+    int32_t f_n_events_buffer_down;
     double f_total_live_time;
     double f_begin_new_bunch;
     double f_end_new_bunch;

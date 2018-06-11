@@ -113,7 +113,7 @@ bx_echidna_event* bx_energy_reco_dbn::doit (bx_echidna_event *ev) {
   double corr;  
   const double fRadialBinning = 0.1;				       
 	  
-  for (int i = 0; i < ev->get_laben ().get_nclusters (); i++) {
+  for (int32_t i = 0; i < ev->get_laben ().get_nclusters (); i++) {
         
     //bx_laben_cluster& c = ev->get_laben ().get_cluster (i);
     const bx_laben_rec_cluster& rec_c = ev->get_laben ().get_rec_cluster (i);
@@ -164,15 +164,15 @@ bx_energy_reco_dbn::~bx_energy_reco_dbn () {
 
 
 
-float bx_energy_reco_dbn::Spline(int N, float X , const double *data,const double *m,double *y) {
-  int i;
+float bx_energy_reco_dbn::Spline(int32_t N, float X , const double *data,const double *m,double *y) {
+  int32_t i;
   double dX,dY;
   double a,b,c;
 
   if ((X>(double)N)) {*y=data[N-1];return (data[N-1]);}
   if ((X<0.)) {*y=data[0];return (data[0]);}
   
-  i=(int)floor(X);
+  i=(int32_t)floor(X);
 
   dX=(double)X-(double)i;
   if (dX<=NearlyZero) {

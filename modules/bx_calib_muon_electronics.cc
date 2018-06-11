@@ -72,14 +72,14 @@ void bx_calib_muon_electronics::begin () {
   h_dt_vs_mch   [neutrino] = new TH2F ("h_dt_vs_mch_neutrino"   ,"time 2nd_hit - 1st_hit, neutrino_trg"  , constants::muon::channels, 0, constants::muon::channels, 2000, 0., 2000.);
   h_dt_vs_mch   [muon]     = new TH2F ("h_dt_vs_mch_muon"       ,"time 2nd_hit - 1st_hit, muon_trg"      , constants::muon::channels, 0, constants::muon::channels, 2000, 0., 2000.);
 
-  for(int tt = 0; tt < 4; tt++) {
+  for(int32_t tt = 0; tt < 4; tt++) {
     barn_interface::get ()->store (barn_interface::file, h_nhits_vs_mch[tt], this);
     barn_interface::get ()->store (barn_interface::file, h_dt_vs_mch   [tt], this);
 
     nevents_per_tt[tt] = 0;
 
       // Internal vectors and arrays
-    nhits_per_tt_mch[tt] = new int[constants::muon::channels];
+    nhits_per_tt_mch[tt] = new int32_t[constants::muon::channels];
     std::fill_n (nhits_per_tt_mch[tt], constants::muon::channels, 0); 
   }
 
@@ -90,7 +90,7 @@ void bx_calib_muon_electronics::begin () {
 //DOIT
 bx_echidna_event* bx_calib_muon_electronics::doit (bx_echidna_event *ev) {
 
-  int tt;
+  int32_t tt;
   if      (ev->get_trigger ().is_pulser   ()) tt = pulser;
   else if (ev->get_trigger ().is_laser394 ()) tt = laser;
   else if (ev->get_trigger ().is_muon     () || ev->get_trigger ().has_btb_flag(bx_trigger_raw_event::mtb_flag)) tt = muon;
@@ -102,13 +102,13 @@ bx_echidna_event* bx_calib_muon_electronics::doit (bx_echidna_event *ev) {
   nevents_per_tt[tt]++;
  
     //vectors for the calculation of retrigger dt
-  std::vector<int>   nhits_per_mch_singev(constants::muon::channels, 0);
+  std::vector<int32_t>   nhits_per_mch_singev(constants::muon::channels, 0);
   std::vector<float> time_per_mch_singev (constants::muon::channels, 0);
 
     //loop on decoded hits 
-  for (int i = 0; i < ev->get_muon ().get_decoded_nhits (); i++) {
+  for (int32_t i = 0; i < ev->get_muon ().get_decoded_nhits (); i++) {
     const bx_muon_decoded_hit& dhit = ev->get_muon ().get_decoded_hit (i);
-    int   mch        = dhit.get_raw_hit().get_muon_channel();
+    int32_t   mch        = dhit.get_raw_hit().get_muon_channel();
     float hit_time   = dhit.get_time   ();
 
     nhits_per_tt_mch[tt][mch]++;
@@ -139,7 +139,7 @@ void bx_calib_muon_electronics::end () {
   std::vector<std::vector<multiplicity> > prev_multiplicity_m_vec(constants::muon::channels);
 
   //inizialize vectors
-  for(int ich = 0; ich < constants::muon::channels; ich++) {
+  for(int32_t ich = 0; ich < constants::muon::channels; ich++) {
     multiplicity_pl_vec    .push_back (std::vector<multiplicity>());
     multiplicity_n_vec     .push_back (std::vector<multiplicity>());
     prev_multiplicity_n_vec.push_back (std::vector<multiplicity>());
@@ -148,35 +148,35 @@ void bx_calib_muon_electronics::end () {
   }
 
     //find nch_x from the previous run 
-  int prev_nch_dead        [4] = {};
-  int prev_nch_low_eff     [4] = {};
-  int prev_nch_hot         [4] = {};
-  int prev_nch_retriggering[4] = {};
+  int32_t prev_nch_dead        [4] = {};
+  int32_t prev_nch_low_eff     [4] = {};
+  int32_t prev_nch_hot         [4] = {};
+  int32_t prev_nch_retriggering[4] = {};
   
-  int module_says_DB_write = 1;
+  int32_t module_says_DB_write = 1;
              
     //vectors of mch, input 0 = does not have this characteristics, input 1 = has this characteristics, 
-  std::vector<int> prev_mch_dead_p        (constants::muon::channels, 0);
-  std::vector<int> prev_mch_dead_l        (constants::muon::channels, 0);
-  std::vector<int> prev_mch_dead_n        (constants::muon::channels, 0);
-  std::vector<int> prev_mch_dead_m        (constants::muon::channels, 0);
-  std::vector<int> prev_mch_low_eff_p     (constants::muon::channels, 0);
-  std::vector<int> prev_mch_low_eff_l     (constants::muon::channels, 0);
-  std::vector<int> prev_mch_low_eff_n     (constants::muon::channels, 0);
-  std::vector<int> prev_mch_low_eff_m     (constants::muon::channels, 0);
-  std::vector<int> prev_mch_hot_p         (constants::muon::channels, 0);
-  std::vector<int> prev_mch_hot_l         (constants::muon::channels, 0);
-  std::vector<int> prev_mch_hot_n         (constants::muon::channels, 0);
-  std::vector<int> prev_mch_hot_m         (constants::muon::channels, 0);
-  std::vector<int> prev_mch_retriggering_p(constants::muon::channels, 0);
-  std::vector<int> prev_mch_retriggering_l(constants::muon::channels, 0);
-  std::vector<int> prev_mch_retriggering_n(constants::muon::channels, 0);
-  std::vector<int> prev_mch_retriggering_m(constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_dead_p        (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_dead_l        (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_dead_n        (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_dead_m        (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_low_eff_p     (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_low_eff_l     (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_low_eff_n     (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_low_eff_m     (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_hot_p         (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_hot_l         (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_hot_n         (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_hot_m         (constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_retriggering_p(constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_retriggering_l(constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_retriggering_n(constants::muon::channels, 0);
+  std::vector<int32_t> prev_mch_retriggering_m(constants::muon::channels, 0);
   
   db_run& run_info_prev = bx_dbi::get ()->get_run ();
 
   // loop on channels to extract prev run info
-  for(int ich = 0; ich < constants::muon::channels; ich++) {
+  for(int32_t ich = 0; ich < constants::muon::channels; ich++) {
      
     const std::vector<std::string>& muon_multiplicity_status_v = run_info_prev.get_muon_multiplicity  (ich+constants::muon::channel_offset+1);
     for(unsigned i = 0; i < muon_multiplicity_status_v.size (); i ++ ){
@@ -203,48 +203,48 @@ void bx_calib_muon_electronics::end () {
   } // end of loop on channels
 
   // dump prev run situation
-  for (int tt = 0; tt < 4; tt++) get_message(bx_message::log) << "prev_nch_dead_in_"         << trg_names[tt] << " " << prev_nch_dead        [tt] << dispatch;
-  for (int tt = 0; tt < 4; tt++) get_message(bx_message::log) << "prev_nch_low_eff_in_"      << trg_names[tt] << " " << prev_nch_low_eff     [tt] << dispatch;
-  for (int tt = 0; tt < 4; tt++) get_message(bx_message::log) << "prev_nch_hot_in_"          << trg_names[tt] << " " << prev_nch_hot         [tt] << dispatch;
-//  for (int tt = 0; tt < 4; tt++) get_message(bx_message::log) << "prev_nch_retriggering_in_" << trg_names[tt] << " " << prev_nch_retriggering[tt] << dispatch;
+  for (int32_t tt = 0; tt < 4; tt++) get_message(bx_message::log) << "prev_nch_dead_in_"         << trg_names[tt] << " " << prev_nch_dead        [tt] << dispatch;
+  for (int32_t tt = 0; tt < 4; tt++) get_message(bx_message::log) << "prev_nch_low_eff_in_"      << trg_names[tt] << " " << prev_nch_low_eff     [tt] << dispatch;
+  for (int32_t tt = 0; tt < 4; tt++) get_message(bx_message::log) << "prev_nch_hot_in_"          << trg_names[tt] << " " << prev_nch_hot         [tt] << dispatch;
+//  for (int32_t tt = 0; tt < 4; tt++) get_message(bx_message::log) << "prev_nch_retriggering_in_" << trg_names[tt] << " " << prev_nch_retriggering[tt] << dispatch;
 								      
     // current run
-  int nch_dead        [4] = {};
-  int nch_low_eff     [4] = {};
-  int nch_hot         [4] = {};
-  //int nch_retriggering[4] = {};
+  int32_t nch_dead        [4] = {};
+  int32_t nch_low_eff     [4] = {};
+  int32_t nch_hot         [4] = {};
+  //int32_t nch_retriggering[4] = {};
   
     //last two bins of the following vectors are used to store
     //fore-last: number of mch which did loose the characteristics
     //     last: number of mch which did "gain" the characteristics
-  std::vector<int> mch_dead_p        (constants::muon::channels + 2, 0);
-  std::vector<int> mch_dead_l        (constants::muon::channels + 2, 0);
-  std::vector<int> mch_dead_n        (constants::muon::channels + 2, 0);
-  std::vector<int> mch_dead_m        (constants::muon::channels + 2, 0);
-  std::vector<int> mch_low_eff_p     (constants::muon::channels + 2, 0);
-  std::vector<int> mch_low_eff_l     (constants::muon::channels + 2, 0);
-  std::vector<int> mch_low_eff_n     (constants::muon::channels + 2, 0);
-  std::vector<int> mch_low_eff_m     (constants::muon::channels + 2, 0);
-  std::vector<int> mch_hot_p         (constants::muon::channels + 2, 0);
-  std::vector<int> mch_hot_l         (constants::muon::channels + 2, 0);
-  std::vector<int> mch_hot_n         (constants::muon::channels + 2, 0);
-  std::vector<int> mch_hot_m         (constants::muon::channels + 2, 0);
-  std::vector<int> mch_retriggering_p(constants::muon::channels + 2, 0);
-  std::vector<int> mch_retriggering_l(constants::muon::channels + 2, 0);
-  std::vector<int> mch_retriggering_n(constants::muon::channels + 2, 0);
-  std::vector<int> mch_retriggering_m(constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_dead_p        (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_dead_l        (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_dead_n        (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_dead_m        (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_low_eff_p     (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_low_eff_l     (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_low_eff_n     (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_low_eff_m     (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_hot_p         (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_hot_l         (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_hot_n         (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_hot_m         (constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_retriggering_p(constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_retriggering_l(constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_retriggering_n(constants::muon::channels + 2, 0);
+  std::vector<int32_t> mch_retriggering_m(constants::muon::channels + 2, 0);
   
   double mean_nhits[4] = {};
   double rms_nhits [4] = {};
 
     // calculate mean and rms for h_nhits_pulser, laser, neutrino, excluding dead in pulser mch 
     // (This amchorithm is due to Knuth,[1] who cites Welford.[2] from Wikipedia
-  for(int tt = 0; tt < 4; tt++) {
-    int nch_to_check = 0; 
+  for(int32_t tt = 0; tt < 4; tt++) {
+    int32_t nch_to_check = 0; 
     float mean = 0;     
     float S = 0;  
     if (!nevents_per_tt[tt]) continue;
-    for (int ich = 0; ich < constants::muon::channels; ich++) {
+    for (int32_t ich = 0; ich < constants::muon::channels; ich++) {
       if (!bx_dbi::get ()->get_channel (ich+constants::muon::channel_offset+1).is_ordinary()) continue; //ref channels NOT used to calculate mean
       float eff_pulser = nhits_per_tt_mch[0][ich]/ (float)nevents_per_tt[0] ;
       // not dead_in_pulser
@@ -277,12 +277,12 @@ void bx_calib_muon_electronics::end () {
        
     //if rms and sqrt(mean) too different, calculate truncated mean and rms
     if(rms_nhits[tt] > 5 * sqrt(mean_nhits[tt])){
-      get_message(bx_message::log) << "nhits distribution in " <<  trg_names[tt] << " fluctuates, rms/sqrt(mean) = " << int(rms_nhits[tt] / sqrt(mean_nhits[tt])) 
+      get_message(bx_message::log) << "nhits distribution in " <<  trg_names[tt] << " fluctuates, rms/sqrt(mean) = " << int32_t(rms_nhits[tt] / sqrt(mean_nhits[tt])) 
 	       << " trying truncated mean/rms..." << dispatch;
       nch_to_check = 0; 
       mean = 0;     
       S = 0; 
-      for(int ich = 0; ich < constants::muon::channels ; ich++) {
+      for(int32_t ich = 0; ich < constants::muon::channels ; ich++) {
 	if (!bx_dbi::get ()->get_channel (ich+constants::muon::channel_offset+1).is_ordinary()) continue;  //ref channels NOT used to calculate mean
 	float eff_pulser = nhits_per_tt_mch[0][ich]/ (float)nevents_per_tt[0] ;
 	//not dead_in_pulser and nhits is 1 rms around mean value, use the value to calculate truncated mean and rms
@@ -300,8 +300,8 @@ void bx_calib_muon_electronics::end () {
   } // end of loop on tt
 
   // Status of the single electronic channel (dead, hot, low_eff)
-  for(int tt = 0; tt < 4; tt++) {
-    for(int ich = 0; ich < constants::muon::channels; ich++) {
+  for(int32_t tt = 0; tt < 4; tt++) {
+    for(int32_t ich = 0; ich < constants::muon::channels; ich++) {
 
       if(!bx_dbi::get ()->get_channel (ich+constants::muon::channel_offset+1).is_ordinary()) continue;
       
@@ -368,13 +368,13 @@ void bx_calib_muon_electronics::end () {
 
   get_message(bx_message::debug) << "end" << dispatch;
   
-  for(int tt = 0; tt < 4; tt ++)  get_message(bx_message::log) << "nch_dead_in_"         <<  trg_names[tt] << " " << nch_dead        [tt] << dispatch;
-  for(int tt = 0; tt < 4; tt ++)  get_message(bx_message::log) << "nch_low_eff_in_"      <<  trg_names[tt] << " " << nch_low_eff     [tt] << dispatch;
-  for(int tt = 0; tt < 4; tt ++)  get_message(bx_message::log) << "nch_hot_in_"          <<  trg_names[tt] << " " << nch_hot         [tt] << dispatch;
-//  for(int tt = 0; tt < 4; tt ++)  get_message(bx_message::log) << "nch_retriggering_in_" <<  trg_names[tt] << " " << nch_retriggering[tt] << dispatch;
+  for(int32_t tt = 0; tt < 4; tt ++)  get_message(bx_message::log) << "nch_dead_in_"         <<  trg_names[tt] << " " << nch_dead        [tt] << dispatch;
+  for(int32_t tt = 0; tt < 4; tt ++)  get_message(bx_message::log) << "nch_low_eff_in_"      <<  trg_names[tt] << " " << nch_low_eff     [tt] << dispatch;
+  for(int32_t tt = 0; tt < 4; tt ++)  get_message(bx_message::log) << "nch_hot_in_"          <<  trg_names[tt] << " " << nch_hot         [tt] << dispatch;
+//  for(int32_t tt = 0; tt < 4; tt ++)  get_message(bx_message::log) << "nch_retriggering_in_" <<  trg_names[tt] << " " << nch_retriggering[tt] << dispatch;
 
     // to check how many channels did change status 
-  for(int ich = 0; ich < constants::muon::channels; ich ++){
+  for(int32_t ich = 0; ich < constants::muon::channels; ich ++){
     if (( mch_dead_p        [ich] - prev_mch_dead_p        [ich]) == -1)  mch_dead_p        [constants::muon::channels    ]++;
     if (( mch_dead_p        [ich] - prev_mch_dead_p        [ich]) ==  1)  mch_dead_p        [constants::muon::channels + 1]++;
     if (( mch_dead_l        [ich] - prev_mch_dead_l        [ich]) == -1)  mch_dead_l        [constants::muon::channels    ]++;
@@ -427,24 +427,24 @@ void bx_calib_muon_electronics::end () {
   get_message(bx_message::log) << "mch_retriggering_m: " <<  mch_retriggering_m[constants::muon::channels] << " mch lost and " <<  mch_retriggering_m[constants::muon::channels + 1] << " mch gained it" << dispatch;*/
 
   // Delete vectors
-  for (int i = 0; i < 4; i++) delete [] nhits_per_tt_mch[i];
+  for (int32_t i = 0; i < 4; i++) delete [] nhits_per_tt_mch[i];
    
     //check if the situation did not change with respect to the previous run
-  int i_nch_status_change   = get_parameter ("nch_status_change").get_int ();
+  int32_t i_nch_status_change   = get_parameter ("nch_status_change").get_int ();
 
-  for(int tt = 0; tt < 4; tt ++){
+  for(int32_t tt = 0; tt < 4; tt ++){
     if( abs(nch_dead[tt] - prev_nch_dead[tt]) >  i_nch_status_change)
       get_message(bx_message::log) << "nch_dead_in_" << trg_names[tt] << " changed by " << (nch_dead[tt] - prev_nch_dead[tt]) << " from the previous run "  << dispatch;
   }
-  for(int tt = 0; tt < 4; tt ++){
+  for(int32_t tt = 0; tt < 4; tt ++){
     if( abs(nch_low_eff[tt] - prev_nch_low_eff[tt]) >  i_nch_status_change)
       get_message(bx_message::log) << "nch_low_eff_in_" << trg_names[tt] << " changed by " << (nch_low_eff[tt] - prev_nch_low_eff[tt]) << " from the previous run "  << dispatch;
   } 
-  for(int tt = 0; tt < 4; tt ++){
+  for(int32_t tt = 0; tt < 4; tt ++){
     if( abs(nch_hot[tt] - prev_nch_hot[tt]) >  i_nch_status_change)
       get_message(bx_message::log) << "nch_hot_in_" << trg_names[tt] << " changed by " << (nch_hot[tt] - prev_nch_hot[tt]) << " from the previous run "  << dispatch;
   }
-/*  for(int tt = 0; tt < 4; tt ++){
+/*  for(int32_t tt = 0; tt < 4; tt ++){
     if( abs(nch_retriggering[tt] - prev_nch_retriggering[tt]) >  i_nch_status_change)
       get_message(bx_message::log) << "nch_retriggering_in_" << trg_names[tt] << " changed by " << (nch_retriggering[tt] - prev_nch_retriggering[tt]) << " from the previous run "  << dispatch;
   }*/
@@ -453,7 +453,7 @@ void bx_calib_muon_electronics::end () {
   if (get_parameter ("db_write").get_bool () &&  nch_dead[2] < 40 && mean_nhits[1] > 50 &&  mean_nhits[0] > 100 && module_says_DB_write == 1){ // AAA: ID values, to be tuned for OD
     db_run& run_info = bx_dbi::get ()->get_run ();
     std::vector<std::string> vstr;
-    for(int ich = 0; ich < constants::muon::channels; ich++) {
+    for(int32_t ich = 0; ich < constants::muon::channels; ich++) {
       
       vstr.clear ();
       for (unsigned i = 0; i < multiplicity_pl_vec[ich]      .size (); i++) vstr.push_back (multiplicity_translation_map.rfind (multiplicity_pl_vec    [ich][i])->first);

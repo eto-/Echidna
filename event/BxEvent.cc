@@ -56,7 +56,7 @@ void BxTrigger::operator=(const bx_trigger_event& e) {
   trgtype = e.get_trgtype(); 
   trgtime = e.get_trg_time();
   btb_threshold = e.get_btb_threshold();
-  btb_inputs = (UChar_t) e.get_btb_inputs ();
+  btb_inputs = (uint8_t) e.get_btb_inputs ();
   e.get_gps_time(gpstimes[0], gpstimes[1]);
   timet = e.get_time_t();
 }
@@ -74,7 +74,7 @@ BxLabenRawHit::BxLabenRawHit(const bx_laben_raw_hit& h) : lg(h.get_logical_chann
 							  flags_ch(h.get_flags_ch ()) {
 }
 
-BxLabenDecodedHit::BxLabenDecodedHit(const bx_laben_decoded_hit& h, unsigned short raw_index) : lg(h.get_raw_hit().get_logical_channel()),
+BxLabenDecodedHit::BxLabenDecodedHit(const bx_laben_decoded_hit& h, uint16_t raw_index) : lg(h.get_raw_hit().get_logical_channel()),
 												raw_time(h.get_raw_time()),
 						//						time_error(h.get_time_error()),
 												flag(h.get_flag()),
@@ -90,10 +90,10 @@ BxLabenDecodedHit::BxLabenDecodedHit(const bx_laben_decoded_hit& h, unsigned sho
 												short_cluster(false) {
 }
 
-BxLabenClusteredHit::BxLabenClusteredHit(const int cluster, const bx_laben_clustered_hit& h, unsigned short decoded_index) : charge(h.get_decoded_hit().get_charge_pe()) {
+BxLabenClusteredHit::BxLabenClusteredHit(const int cluster, const bx_laben_clustered_hit& h, uint16_t decoded_index) : charge(h.get_decoded_hit().get_charge_pe()) {
 }
 
-BxLabenCluster::BxLabenCluster(const bx_laben_cluster& c, unsigned short decoded_index) : 
+BxLabenCluster::BxLabenCluster(const bx_laben_cluster& c, uint16_t decoded_index) : 
 											  npmts                ( c.get_npmts                     ()),
 											  npmts_conc           ( c.get_npmts_conc                ()),
 											  npmts_short          ( c.get_npmts_short               ()),
@@ -251,8 +251,8 @@ void BxLaben::operator=(const bx_laben_event& e) {
   for (int i = 0 ; i < e.get_nclusters(); i++)
     n_clustered_hits += e.get_cluster(i).get_clustered_nhits();
 
-  std::map<const bx_laben_raw_hit*, unsigned short> raw_map;
-  std::map<const bx_laben_decoded_hit*, unsigned short> decoded_map;
+  std::map<const bx_laben_raw_hit*, uint16_t> raw_map;
+  std::map<const bx_laben_decoded_hit*, uint16_t> decoded_map;
 
   if(has_raw) {
     for (int i = 0 ; i < e.get_raw_nhits(); i++) {
@@ -270,7 +270,7 @@ void BxLaben::operator=(const bx_laben_event& e) {
     for (int i = 0 ; i < e.get_nclusters(); i++) {
       for (int j = 0 ; j < e.get_cluster(i).get_clustered_nhits(); j++) {
           const bx_laben_decoded_hit& dec_hit = e.get_cluster(i).get_clustered_hit(j).get_decoded_hit();
-	  unsigned short k = decoded_map[&dec_hit]; 
+	  uint16_t k = decoded_map[&dec_hit]; 
           decoded_hits[k].num_cluster = i+1;
 	  decoded_hits[k].short_cluster = e.get_cluster(i).get_clustered_hit(j).is_short_cluster();
       }
@@ -278,7 +278,7 @@ void BxLaben::operator=(const bx_laben_event& e) {
     for (int i = 0 ; i < e.get_nrec_clusters(); i++) {
       for (int j = 0 ; j < e.get_rec_cluster(i).get_rec_nhits(); j++) {
           const bx_laben_decoded_hit& dec_hit = e.get_rec_cluster(i).get_rec_hit(j).get_clustered_hit().get_decoded_hit();
-	  unsigned short k = decoded_map[&dec_hit]; 
+	  uint16_t k = decoded_map[&dec_hit]; 
 	  decoded_hits[k].rec_time = e.get_rec_cluster(i).get_rec_hit(j).get_time();
       }
     }
@@ -503,7 +503,7 @@ void BxMcTruth::operator=(const bx_mctruth_event& e) {
 //std::cout << " in mctruth operator=\n";
 
   n_hits_id = 0, n_hits_od = 0, n_daughters = 0, n_deposits = 0, n_users = 0;
-  for (unsigned long i = 0 ; i < e.get_nframes(); i++) {
+  for (uint32_t i = 0 ; i < e.get_nframes(); i++) {
     n_hits_id   += e.get_frame(i).get_id_npe();
     n_hits_od   += e.get_frame(i).get_od_npe();
     n_daughters += e.get_frame(i).get_n_daughters();
@@ -513,7 +513,7 @@ void BxMcTruth::operator=(const bx_mctruth_event& e) {
   n_frames = e.get_nframes();
 
   if (write_flag > 0) {
-    for (unsigned long i = 0 ; i < e.get_nframes(); i++) {
+    for (uint32_t i = 0 ; i < e.get_nframes(); i++) {
       frames.push_back(e.get_frame(i));
       if (write_flag > 1) {
         for (int j = 0; j < e.get_frame(i).get_id_npe(); j++)  
@@ -640,7 +640,7 @@ BxFwfdCluster::BxFwfdCluster(Int_t v1, Double_t v2, Float_t v3, Float_t v4, Floa
 
 BxFwfdCluster::BxFwfdCluster() {peak_pos = 0; time_prev = 0.; peak_ampl = 0.; asum_charge = 0.; atten_asum = 0.; dsum_charge = 0.; dsum_charge_corr = 0.; num_ech_cluster = 0; x = 0.; y = 0.; z = 0.;}
 
-BxFwfd::BxFwfd(Bool_t v1, Bool_t v2, Int_t v3, Int_t v4, ULong_t v5, ULong_t v6, Int_t v7, Int_t v8, Int_t v9, UChar_t v10, Double_t v11, Int_t v12, UInt_t v13, UChar_t* v14) : clusters() {
+BxFwfd::BxFwfd(Bool_t v1, Bool_t v2, Int_t v3, Int_t v4, uint32_t v5, uint32_t v6, Int_t v7, Int_t v8, Int_t v9, uint8_t v10, Double_t v11, Int_t v12, UInt_t v13, uint8_t* v14) : clusters() {
 
   is_present = v1; is_odsum_present = v2; n_fwfd_evs = v3; unix_time = v4; gpstimes[0] = v5; gpstimes[1] = v6; run = v7; evnum = v8; evnum_bx = v9; error = v10; raw_time = v11; trgtype = v12; n_clusters = v13;
   for (int i = 0; i < 16; i++)  dcode[i] = v14[i];
@@ -666,7 +666,7 @@ void BxFwfd::ClearWForms() {
 }
 
 
-double BxEvent::GetTimeDifference (const ULong_t* prev_gps_times, Double_t prev_laben_trigger_time) const {
+double BxEvent::GetTimeDifference (const uint32_t* prev_gps_times, Double_t prev_laben_trigger_time) const {
   static const long int gray_window = (1 << 16) * 50;
   
   long int gps_dt_s = GetTrigger ().GetGpsTimeSec () - prev_gps_times[0];
@@ -696,7 +696,7 @@ double BxEvent::GetTimeDifference (int current_cluster, const BxEvent& prev_even
   return GetTimeDifference (current_cluster, prev_event.GetTrigger ().GetGpsTimes (), prev_event.GetLaben ().GetCluster (prev_cluster).GetStartTime ());
 }
 
-double BxEvent::GetTimeDifference (int current_cluster, const ULong_t* prev_gps_times, Double_t prev_laben_cluster_time) const {
+double BxEvent::GetTimeDifference (int current_cluster, const uint32_t* prev_gps_times, Double_t prev_laben_cluster_time) const {
   static const long int gray_window = (1 << 16) * 50;
   
   long int gps_dt_s = GetTrigger ().GetGpsTimeSec () - prev_gps_times[0];
@@ -912,7 +912,7 @@ time_t BxTrigger::GetMidday (time_t t) {
  * FADC raw_time is being double, ulong is not enough at 32bits (bxmaster)
  *
  * Revision 1.143  2012-10-17 18:24:57  litvinov
- * FADC raw_time now ULong_t (was UInt_t)
+ * FADC raw_time now uint32_t (was UInt_t)
  *
  * Revision 1.142  2011-04-13 10:37:35  ddangelo
  * added variable nclusters_old
@@ -949,7 +949,7 @@ time_t BxTrigger::GetMidday (time_t t) {
  * added FADC raw_time. Waveforms are now vectors
  *
  * Revision 1.131  2010-11-29 16:03:01  litvinov
- * added run to BxFwfd; n_clusters was UChar_t, now integer
+ * added run to BxFwfd; n_clusters was uint8_t, now integer
  *
  * Revision 1.130  2010-08-04 08:46:15  wurm
  * copy phi, theta, imp for fitted track

@@ -25,16 +25,16 @@ class bx_position_reco_lngs : public bx_base_module {
     double f8_tmax;
     float f4_ref_index;
     float f4_t_0;
-    int f4_minuit_ok;
-    int f4_minuit_blank;
-    int f4_minuit_unreadable;
-    int f4_minuit_unknown;
-    int f4_minuit_abnormal;
+    int32_t f4_minuit_ok;
+    int32_t f4_minuit_blank;
+    int32_t f4_minuit_unreadable;
+    int32_t f4_minuit_unknown;
+    int32_t f4_minuit_abnormal;
 
-    int f4_iconv_0;    
-    int f4_iconv_1;    
-    int f4_iconv_2;    
-    int f4_iconv_3;    
+    int32_t f4_iconv_0;    
+    int32_t f4_iconv_1;    
+    int32_t f4_iconv_2;    
+    int32_t f4_iconv_3;    
 
     interpolator* pdf1;
     interpolator* pdf2;
@@ -55,9 +55,9 @@ class bx_position_reco_lngs : public bx_base_module {
     TMinuit *p_minuit;
  //   bx_echidna_event *p_fit_ev;
     bx_laben_cluster *p_fit_clu;
-//    int i4_fit_cluster;
-    int i4_n_iterations;
-    int i4_hesse;
+//    int32_t i4_fit_cluster;
+    int32_t i4_n_iterations;
+    int32_t i4_hesse;
     
     bool b_iconv;
 

@@ -27,9 +27,9 @@ bx_precalib_laben_adc::bx_precalib_laben_adc (): bx_base_module("bx_precalib_lab
 // module interface
 void bx_precalib_laben_adc::begin () {
     // allocate the matrix
-  adc_sample_map = new int*[constants::laben::channels]; 
-  for (int i = 0; i < constants::laben::channels; i++) {
-    adc_sample_map[i] = new int[256];
+  adc_sample_map = new int32_t*[constants::laben::channels]; 
+  for (int32_t i = 0; i < constants::laben::channels; i++) {
+    adc_sample_map[i] = new int32_t[256];
     std::fill_n (adc_sample_map[i], 256, 0);
   }
 
@@ -50,10 +50,10 @@ bx_echidna_event* bx_precalib_laben_adc::doit (bx_echidna_event *ev) {
   if (er.get_raw_nhits ()) b_has_data = true;
 
     // Use only first hit
-  int fired_channels[constants::laben::channels];
+  int32_t fired_channels[constants::laben::channels];
   std::fill_n (fired_channels, constants::laben::channels, 0);
       
-  for (int i = 0; i < er.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < er.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
     if (fired_channels[hit.get_logical_channel () - 1]++) continue;
     adc_sample_map[hit.get_logical_channel () - 1][hit.get_time_1()] ++;
@@ -69,10 +69,10 @@ void bx_precalib_laben_adc::end () {
 
     db_run& run_info = bx_dbi::get ()->get_run ();
 
-    for (int i = 0; i < constants::laben::channels; i++) {
+    for (int32_t i = 0; i < constants::laben::channels; i++) {
         // calculate local maxima in the first 20 and in the last 20 bins
-      int low_bin = std::max_element (adc_sample_map[i], adc_sample_map[i] + 20) - adc_sample_map[i];
-      int high_bin = std::max_element (adc_sample_map[i] + 236, adc_sample_map[i] + 256) - adc_sample_map[i];
+      int32_t low_bin = std::max_element (adc_sample_map[i], adc_sample_map[i] + 20) - adc_sample_map[i];
+      int32_t high_bin = std::max_element (adc_sample_map[i] + 236, adc_sample_map[i] + 256) - adc_sample_map[i];
     
         // add/remove a costant offset
       if (low_bin >= u1_maxima_bin_add) low_bin -= u1_maxima_bin_add;
@@ -93,7 +93,7 @@ void bx_precalib_laben_adc::end () {
   } 
   
     // deallocate the matrix
-  for (int i = 0; i < constants::laben::channels; i++) delete [] adc_sample_map[i];
+  for (int32_t i = 0; i < constants::laben::channels; i++) delete [] adc_sample_map[i];
   delete [] adc_sample_map;
 
   get_message(bx_message::debug) << "end" << dispatch;

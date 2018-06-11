@@ -17,10 +17,10 @@
 #define NEW_TDC_CODE 42 // the answer
 
 // old TDC hit ctr
-bx_muon_raw_hit::bx_muon_raw_hit (unsigned short muon_channel, const bx_muon_edge& first_edge, const bx_muon_edge& second_edge) : u2_muon_channel(muon_channel), u2_lead_time(first_edge.time), u2_trail_time(second_edge.time) {}
+bx_muon_raw_hit::bx_muon_raw_hit (uint16_t muon_channel, const bx_muon_edge& first_edge, const bx_muon_edge& second_edge) : u2_muon_channel(muon_channel), u2_lead_time(first_edge.time), u2_trail_time(second_edge.time) {}
 
 // new TDC hit ctr
-bx_muon_raw_hit::bx_muon_raw_hit (unsigned short muon_channel, unsigned short lead_time, unsigned short trail_time) : u2_muon_channel(muon_channel), u2_lead_time(lead_time), u2_trail_time(trail_time) {}
+bx_muon_raw_hit::bx_muon_raw_hit (uint16_t muon_channel, uint16_t lead_time, uint16_t trail_time) : u2_muon_channel(muon_channel), u2_lead_time(lead_time), u2_trail_time(trail_time) {}
 
 
 // Performs preliminary checks on the edge couple. Old TDC.
@@ -39,7 +39,7 @@ bx_muon_raw_event::bx_muon_raw_event (const char *disk_event) {
   muon_header_disk_format *head = (muon_header_disk_format *)disk_event;
   if (head->nwords == 0) return;
 
-  u4_nedges = head->nwords - sizeof (muon_header_disk_format) / sizeof (unsigned long);
+  u4_nedges = head->nwords - sizeof (muon_header_disk_format) / sizeof (uint32_t);
   u4_trgid = head->trgid;
   u4_error_flag = head->error_flag;
 
@@ -47,9 +47,9 @@ bx_muon_raw_event::bx_muon_raw_event (const char *disk_event) {
 
   if (u4_error_flag != NEW_TDC_CODE) { // we use the unused error word as a flag to understand which TDC are mounted.
   // old TDC unpacking
-	  unsigned char chip = 0;
-	  for (unsigned long i = 0; i < u4_nedges; i++) {
-		  unsigned short muon_channel = chip * constants::muon::tdc::channels_per_chip; // still without edge channel 
+	  uint8_t chip = 0;
+	  for (uint32_t i = 0; i < u4_nedges; i++) {
+		  uint16_t muon_channel = chip * constants::muon::tdc::channels_per_chip; // still without edge channel 
 		  bx_muon_edge *el = (bx_muon_edge*)(disk_event + sizeof (muon_header_disk_format) + i * sizeof (muon_edge_disk_format));
 		  if ( el->is_last ) chip++;
 		  if ( el->is_event_number || el->is_invalid ) continue;
@@ -87,12 +87,12 @@ bx_muon_raw_event::bx_muon_raw_event (const char *disk_event) {
   } // end of is old TDC
   else {
     // new TDC unpacking
-	std::vector<unsigned short> edge_times         [constants::muon::channels];
+	std::vector<uint16_t> edge_times         [constants::muon::channels];
 	std::vector<bool>           edge_trailing_flags[constants::muon::channels];
-	for (unsigned long i = 0; i < u4_nedges; i++) {
-		unsigned long *edge_ptr= (unsigned long*)(disk_event + sizeof (muon_header_disk_format) + i * sizeof (muon_edge_disk_format));
- 		unsigned short time         =  *edge_ptr      & 0xffff; //16 bits
-		unsigned char  tdc_channel  = (*edge_ptr>>19) & 0x7f  ; // 7 bits
+	for (uint32_t i = 0; i < u4_nedges; i++) {
+		uint32_t *edge_ptr= (uint32_t*)(disk_event + sizeof (muon_header_disk_format) + i * sizeof (muon_edge_disk_format));
+ 		uint16_t time         =  *edge_ptr      & 0xffff; //16 bits
+		uint8_t  tdc_channel  = (*edge_ptr>>19) & 0x7f  ; // 7 bits
 		bool           is_trailing  = (*edge_ptr>>26) & 1     ;
 		bool           is_board_1   = (*edge_ptr>>28) & 1     ;
 		bool           is_board_2   = (*edge_ptr>>29) & 1     ;
@@ -118,8 +118,8 @@ bx_muon_raw_event::bx_muon_raw_event (const char *disk_event) {
 	} // end of loop on edges
 
         for (int iCh = 0; iCh < constants::muon::channels; iCh++) {
-		unsigned short starting_ied = 0;
-		unsigned short nedges = edge_trailing_flags[iCh].size();
+		uint16_t starting_ied = 0;
+		uint16_t nedges = edge_trailing_flags[iCh].size();
 		if (!nedges) continue;
 		if (edge_trailing_flags[iCh][0]) { // first edge is trailing: caught half hit staring before the gate, skip it.
 //			bx_message msg(bx_message::debug, "bx_muon_raw_event: ");
@@ -130,9 +130,9 @@ bx_muon_raw_event::bx_muon_raw_event (const char *disk_event) {
 			bx_message msg(bx_message::debug, "bx_muon_raw_event: ");
 			msg << "event " << u4_trgid << " mch=" << iCh << " ending with leading edge. will be skipped." << dispatch;	
 		}*/
-		unsigned short prev_time = 0;
-		for (unsigned short iEd = starting_ied; iEd < edge_times[iCh].size(); iEd++) {
-			unsigned short time = edge_times[iCh][iEd];
+		uint16_t prev_time = 0;
+		for (uint16_t iEd = starting_ied; iEd < edge_times[iCh].size(); iEd++) {
+			uint16_t time = edge_times[iCh][iEd];
 			bool is_trailing = edge_trailing_flags[iCh][iEd];
 			if (time < prev_time) {
 				bx_message msg(bx_message::error, "bx_muon_raw_event: ");
@@ -141,7 +141,7 @@ bx_muon_raw_event::bx_muon_raw_event (const char *disk_event) {
 				continue;
 			}
 			if (is_trailing) {
-				unsigned short length = time - prev_time;
+				uint16_t length = time - prev_time;
 				raw_hits.push_back(bx_muon_raw_hit(iCh, prev_time, time));
 				if (length > 3000) { // QTC should not deliver signals longer then ~2us
 					bx_message msg(bx_message::warn, "bx_muon_raw_event: ");

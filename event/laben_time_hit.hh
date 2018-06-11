@@ -51,9 +51,9 @@ class laben_time_hit: public bx_named {
 
     void m_calc_ramp_times (ramp_slope slope, float& t1, float& t2);
 
-    unsigned char u1_ramp_1, u1_ramp_2;
-    unsigned char u1_time_bits;
-    unsigned long u4_gray_count;
+    uint8_t u1_ramp_1, u1_ramp_2;
+    uint8_t u1_time_bits;
+    uint32_t u4_gray_count;
     ramp_slope i_hw_slope;
 
     float f_error;
@@ -62,9 +62,9 @@ class laben_time_hit: public bx_named {
     static const float ramp_length_ns;
     static const float window_upper_bound;
     static const float window_lower_bound;
-    static const unsigned char spire_threshold;
+    static const uint8_t spire_threshold;
     static const float d80;
-    static const unsigned short gray_crossing_window_low, gray_crossing_window_high;
+    static const uint16_t gray_crossing_window_low, gray_crossing_window_high;
 };
 
 

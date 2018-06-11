@@ -31,21 +31,21 @@ class bx_position_reco_mi : public bx_base_module {
     double my_fcn (double *x);
 
   private:
-    int i4_keep_ratio;
+    int32_t i4_keep_ratio;
 
     double f8_tmax;
     float f4_ref_index;
     float f4_t_0;
-    int f4_minuit_ok;
-    int f4_minuit_blank;
-    int f4_minuit_unreadable;
-    int f4_minuit_unknown;
-    int f4_minuit_abnormal;
+    int32_t f4_minuit_ok;
+    int32_t f4_minuit_blank;
+    int32_t f4_minuit_unreadable;
+    int32_t f4_minuit_unknown;
+    int32_t f4_minuit_abnormal;
 
-    int f4_iconv_0;    
-    int f4_iconv_1;    
-    int f4_iconv_2;    
-    int f4_iconv_3;    
+    int32_t f4_iconv_0;    
+    int32_t f4_iconv_1;    
+    int32_t f4_iconv_2;    
+    int32_t f4_iconv_3;    
 
     interpolator* pdf;
     
@@ -56,9 +56,9 @@ class bx_position_reco_mi : public bx_base_module {
     // to be used in my_fcn (see minuit root workaround)
     TMinuit *p_minuit;
     bx_echidna_event *p_fit_ev;
-    int i4_fit_cluster;
-    int i4_n_iterations;
-    int i4_hesse;
+    int32_t i4_fit_cluster;
+    int32_t i4_n_iterations;
+    int32_t i4_hesse;
     
     bool b_iconv;
     

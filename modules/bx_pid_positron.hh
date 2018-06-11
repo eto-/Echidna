@@ -28,7 +28,7 @@ class bx_pid_positron: public bx_base_module {
     
   private:
 
-	bool load_shape(TFile *f, const std::string &hist_name,  double** &rec_time_shapes, int smear);
+	bool load_shape(TFile *f, const std::string &hist_name,  double** &rec_time_shapes, int32_t smear);
 	/*
 	 * Fill the rec_time_shapes (energy-time) matrix with the content of the hisogram named hist_name in TFile f.
 	 * The rec-times are normalized within the function.
@@ -52,14 +52,14 @@ class bx_pid_positron: public bx_base_module {
 
 	bool gatti_weights_loaded;
     
-	int nnhits_min;
-	int nnhits_max;
-	int ene_bins;
-	int smear_ops;
-	int smear_nops;
-	int smear_c11;
-	int smear_beta;
-	int time_max;
+	int32_t nnhits_min;
+	int32_t nnhits_max;
+	int32_t ene_bins;
+	int32_t smear_ops;
+	int32_t smear_nops;
+	int32_t smear_c11;
+	int32_t smear_beta;
+	int32_t time_max;
 	float sum_min;
 
 	double** shape_nops;

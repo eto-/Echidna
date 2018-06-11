@@ -29,7 +29,7 @@ class bx_precalib_laben_d80: public bx_base_module {
     virtual bx_echidna_event* doit (bx_echidna_event *ev);
     virtual void end ();
   private:
-    int **d80_delay_map;
+    int32_t **d80_delay_map;
     float f_d80_low_limit;
     float f_d80_high_limit;
     TH1F *d80;

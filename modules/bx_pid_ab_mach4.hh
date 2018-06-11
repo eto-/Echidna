@@ -49,7 +49,7 @@ private:
 	double GetGattiWeight(size_t i, double t, bool * = NULL);
 	///< Returns the Gatti weight associated with the given time
 	///< using the @a i th histogram of Gatti weights.
-	void DoGattiFilter(bx_echidna_event *ev, int cluster, double ref_time, std::vector<double>*);
+	void DoGattiFilter(bx_echidna_event *ev, int32_t cluster, double ref_time, std::vector<double>*);
 	///< Use the Gatti filters on the given cluster, given the peak time offset.
 	void LoadGattiShapes(TFile *f, const std::string &ahist, const std::string &bhist, const std::string &name);
 	///< Load the Gatti shapes corresponding to the given histograms from

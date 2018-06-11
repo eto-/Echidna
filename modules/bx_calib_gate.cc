@@ -68,12 +68,12 @@ void bx_calib_gate::begin() {
 bx_echidna_event* bx_calib_gate::doit (bx_echidna_event *ev) {
   const bx_laben_event& er = ev->get_laben();
   i4_times = i4_times+1;  
-  int nhits = er.get_decoded_nhits();
-  for(int i = 0; i < nhits; i++){
+  int32_t nhits = er.get_decoded_nhits();
+  for(int32_t i = 0; i < nhits; i++){
      const bx_laben_decoded_hit& hit = er.get_decoded_hit(i);
      const bx_laben_raw_hit& rhit = hit.get_raw_hit();
      double t = hit.get_raw_time() - er.get_trigger_rawt();
-     int lg = rhit.get_logical_channel (); 
+     int32_t lg = rhit.get_logical_channel (); 
      if(bx_dbi::get ()->get_channel (lg).is_ordinary ()) {
        if(ev->get_trigger().is_random())
 	 p_tempo_random->Fill(t);
@@ -120,7 +120,7 @@ void bx_calib_gate::end () {
     float pre_laser   = run_info.get_laben_laser_offset();
     float pre_pulser  = run_info.get_laben_pulser_offset();
     float pre_cluster = run_info.get_laben_cluster_offset();
-    int write_on_db = 1;
+    int32_t write_on_db = 1;
        
     //difference old and new values in ns  
     float c_width   =    fabs(pre_width - width_of_gate);

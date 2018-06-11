@@ -34,7 +34,7 @@ class bx_calib_laben_charge_peak: public bx_base_module {
     TH1F  *p0_vs_lg, *mu_vs_lg;
     TH1F  *fit1_vs_lg, *mean_vs_lg, *fit2_vs_lg, *rms_vs_lg;
     TH1F  *h_mean, *h_rms, *h_fit1, *h_fit2;
-    int nTriggers;
+    int32_t nTriggers;
     float* f_charge_peak;
     float* f_charge_sigma;
 };

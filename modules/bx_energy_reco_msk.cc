@@ -27,7 +27,7 @@
 
 namespace { 
   bx_energy_reco_msk *current_module;
-  void fcn_e(int &npar, double *gin, double &f, double *x, int iflag) 
+  void fcn_e(int32_t &npar, double *gin, double &f, double *x, int32_t iflag) 
             { f = current_module->msk_fcn_e(x); }
 };
 
@@ -58,14 +58,14 @@ void bx_energy_reco_msk::begin() {
   f4_pmt_positions = new std::vector<TVector3>(constants::laben::channels);
   b_pmt_cone = new std::vector<bool>(constants::laben::channels);
 
-  const std::vector<int>& disabled_channels = detector_interface::get()->get_disabled_channels();
-  for (int k = 0; k < (int)disabled_channels.size(); ++k)  i4_disabled_channels.push_back(disabled_channels[k]);
+  const std::vector<int32_t>& disabled_channels = detector_interface::get()->get_disabled_channels();
+  for (int32_t k = 0; k < (int32_t)disabled_channels.size(); ++k)  i4_disabled_channels.push_back(disabled_channels[k]);
 
   f4_ref_index = bx_dbi::get()->get_calib().get_refraction_index_data();
   f4_lg_entry_radius = bx_dbi::get()->get_profile().light_guide_entry_aperture();
   f4_cathode_radius = bx_dbi::get()->get_profile().pmt_chathode_radius();
 
-  for (int i = 0; i < constants::laben::channels; ++i)  {
+  for (int32_t i = 0; i < constants::laben::channels; ++i)  {
        const db_channel_laben& channel_info = dynamic_cast<const db_channel_laben&>(bx_dbi::get()->get_channel(i+1));
        (*b_pmt_cone)[i] = channel_info.pmt_has_cone(); 
        if ((*b_pmt_cone)[i])  {
@@ -85,10 +85,10 @@ bx_echidna_event* bx_energy_reco_msk::doit(bx_echidna_event *ev)  {
 
   double f8_valueX, f8_valueY, f8_valueZ, f8_valueE, f8_error;
 
-  int n_clusters = ev->get_laben().get_nclusters();
+  int32_t n_clusters = ev->get_laben().get_nclusters();
   if (n_clusters <= 0)  return ev;
 
-  for (int i = 0; i < n_clusters; ++i)  {
+  for (int32_t i = 0; i < n_clusters; ++i)  {
 
        if (ev->get_laben().get_cluster(i).get_clustered_nhits() < 75)  continue;
 //       if (ev->get_laben().get_cluster(i).get_charge() < 100)  continue;
@@ -125,11 +125,11 @@ bx_echidna_event* bx_energy_reco_msk::doit(bx_echidna_event *ev)  {
   f8_omega.assign(constants::laben::channels, 0);
   f8_attenuation_factor.assign(constants::laben::channels, 0);
 
-  for (int k = 0; k < constants::laben::channels; ++k)  {
+  for (int32_t k = 0; k < constants::laben::channels; ++k)  {
        const db_channel& ch_info = bx_dbi::get()->get_channel(k+1);
        if (!ch_info.is_ordinary())  continue;
 
-       int index = ch_info.get_lg()-1;
+       int32_t index = ch_info.get_lg()-1;
 
        if (std::find(i4_disabled_channels.begin(),i4_disabled_channels.end(),index+1) != i4_disabled_channels.end())
        continue;
@@ -164,10 +164,10 @@ bx_echidna_event* bx_energy_reco_msk::doit(bx_echidna_event *ev)  {
 
 // I'm ready to return reconstructed energy:
 //double charge = 0.;
-  for (int kk = 0; kk < constants::laben::channels; ++kk)  {
+  for (int32_t kk = 0; kk < constants::laben::channels; ++kk)  {
        const db_channel& ch_info = bx_dbi::get()->get_channel(kk+1);
        if (!ch_info.is_ordinary())  continue;
-       int index = ch_info.get_lg()-1;
+       int32_t index = ch_info.get_lg()-1;
        if (find(i4_disabled_channels.begin(),i4_disabled_channels.end(),index+1) != i4_disabled_channels.end())
        continue;
 
@@ -212,21 +212,21 @@ double bx_energy_reco_msk::msk_fcn_e (double x[0]) {
 
   const bx_laben_cluster& cluster = p_fit_ev->get_laben().get_cluster(i4_fit_cluster);
 
-  for (int i = 0; i < cluster.get_clustered_nhits(); ++i)  {
+  for (int32_t i = 0; i < cluster.get_clustered_nhits(); ++i)  {
        const bx_laben_clustered_hit& hit = cluster.get_clustered_hit(i);
        const bx_laben_decoded_hit& dhit = hit.get_decoded_hit();
        const db_channel* ch_info = dhit.get_db_channel();
 
-       int index = ch_info->get_lg()-1;
+       int32_t index = ch_info->get_lg()-1;
 
        f4_collected_charge[index] = dhit.get_charge_pe();
       }
 
-  for (int k = 0; k < constants::laben::channels; ++k)  {
+  for (int32_t k = 0; k < constants::laben::channels; ++k)  {
        const db_channel& ch_info = bx_dbi::get()->get_channel(k+1);
        if (!ch_info.is_ordinary())  continue;
 
-       int index = ch_info.get_lg()-1;
+       int32_t index = ch_info.get_lg()-1;
 
        if (find(i4_disabled_channels.begin(),i4_disabled_channels.end(),index+1) != i4_disabled_channels.end())
        continue;

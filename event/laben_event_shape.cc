@@ -33,7 +33,7 @@ laben_event_shape::laben_event_shape(const std::vector<int>& lg_list): bx_named(
 						    lg_weight(constants::laben::channels, true)
 {
 
-  for (unsigned int i=0; i < lg_list.size (); i++) lg_map[lg_list[i] - 1]++;
+  for (uint32_t i=0; i < lg_list.size (); i++) lg_map[lg_list[i] - 1]++;
   count_bad_channels = (get_parameter_other ("detector_interface", "disabled_laben_channel_properties").get_vector ().size () > 0);
   nhits = lg_list.size ();
   nlg = constants::laben::channels;
@@ -57,7 +57,7 @@ void laben_event_shape::init_lg_weight () {
   const std::vector<int> &bad_channels_list = detector_interface::get ()->get_disabled_channels ();
    
     //not consider bad channels if decoder fix_bad_channels parameter is on
-  for (unsigned int i=0; i < bad_channels_list.size () && count_bad_channels; i++) {
+  for (uint32_t i=0; i < bad_channels_list.size () && count_bad_channels; i++) {
     if (bad_channels_list[i] <= constants::laben::channels) 
       lg_weight[bad_channels_list[i] - 1] = false;
   }

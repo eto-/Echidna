@@ -30,7 +30,7 @@ void bx_laben_raw_validator::begin () {
   flag_lg[bx_laben_raw_hit::trg_jump_large] = new TH1F("trg_jump_large_flag_lg", "Map of TRG JUMP LARGE hits", constants::laben::channels, 1, constants::laben::channels + 1);
   flag_lg[bx_laben_raw_hit::trg_in_busy] = new TH1F("trg_in_busy_flag_lg", "Map of TRG IN BUSY hits", constants::laben::channels, 1, constants::laben::channels + 1);
   flag_lg[bx_laben_raw_hit::invalid] = new TH1F("invalid_lg", "Map of invalid hits", constants::laben::channels, 1, constants::laben::channels + 1);
-  for (int i = 0; i < 8; i++)
+  for (int32_t i = 0; i < 8; i++)
     barn_interface::get ()->store (barn_interface::file, flag_lg[i], this);
 
   good_flag_lg_c = (TH1F*)flag_lg[bx_laben_raw_hit::good]->Clone ("good_flag_lg_c");
@@ -42,15 +42,15 @@ void bx_laben_raw_validator::begin () {
 bx_echidna_event* bx_laben_raw_validator::doit (bx_echidna_event *ev) {
   const bx_laben_event& er = ev->get_laben ();
   bx_laben_raw_event& e = dynamic_cast<bx_laben_raw_event&>(ev->get_laben ());
-  int n_flags[8] = {};
+  int32_t n_flags[8] = {};
 
   ::memset (board_occupancy, 0, constants::laben::nboards);
   //std::fill_n (board_occupancy, constants::laben::nboards, 0); memset is much faster
 
-  int last_lg = -1;
-  int nhits_lg = 0;
+  int32_t last_lg = -1;
+  int32_t nhits_lg = 0;
   bool invalid_lg = false;
-  for (int i = 0; i < e.get_raw_nhits (); i++) {
+  for (int32_t i = 0; i < e.get_raw_nhits (); i++) {
     const bx_laben_raw_hit &hit = er.get_raw_hit (i);
     if (nhits_lg == hit.get_logical_channel ()) nhits_lg ++;
     else {
@@ -59,7 +59,7 @@ bx_echidna_event* bx_laben_raw_validator::doit (bx_echidna_event *ev) {
       invalid_lg = false; 
       nhits_lg = 0;
     }
-    for (int flag = 0; flag < 8; flag++) {
+    for (int32_t flag = 0; flag < 8; flag++) {
       if (hit.check_flag (bx_laben_raw_hit::flags(flag))) {
 	n_flags[flag] ++;
 	flag_lg[flag]->Fill (hit.get_logical_channel ());
@@ -67,14 +67,14 @@ bx_echidna_event* bx_laben_raw_validator::doit (bx_echidna_event *ev) {
     }
     if (!hit.check_flag (bx_laben_raw_hit::invalid)) { // ignore invalid hit
       if (!hit.check_flag (bx_laben_raw_hit::counter)) board_occupancy[(hit.get_logical_channel () - 1)/ 8] = 1;  
-      else e.i4_nhits_fw += int(hit.get_base ()) + (int(hit.get_peak ()) >> 8);
+      else e.i4_nhits_fw += int32_t(hit.get_base ()) + (int32_t(hit.get_peak ()) >> 8);
     } else invalid_lg = true;
   }
 
-  int zero_count = 0;
-  int max_board = constants::laben::nboards;
+  int32_t zero_count = 0;
+  int32_t max_board = constants::laben::nboards;
   if (ev->get_run_number () >= 12000) max_board = constants::laben::board_per_rack * 13;
-  for (int i = 0; i < max_board; i++) if (!board_occupancy[i]) zero_count++;
+  for (int32_t i = 0; i < max_board; i++) if (!board_occupancy[i]) zero_count++;
   e.i4_empty_boards = zero_count;
 
 
@@ -89,7 +89,7 @@ bx_echidna_event* bx_laben_raw_validator::doit (bx_echidna_event *ev) {
   }
   std::copy (n_flags, n_flags + 8, e.nhits_flag); 
 
-  if (!(++count % 600)) for (int i = 0; i < 8; i++) barn_interface::get ()->network_send (flag_lg[i], this);
+  if (!(++count % 600)) for (int32_t i = 0; i < 8; i++) barn_interface::get ()->network_send (flag_lg[i], this);
   if (!(count % 1200)) {
     good_flag_lg_c->Add (flag_lg[bx_laben_raw_hit::good]);
     flag_lg[bx_laben_raw_hit::good]->Reset ();

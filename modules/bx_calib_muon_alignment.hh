@@ -31,20 +31,20 @@ class bx_calib_muon_alignment : public bx_base_module {
 
 	private:
     	// internal ev ctr
-		int num;
+		int32_t num;
 		bool b_check_last;
 		bool b_check_mcr;
 		
-		unsigned long u4_evnum;
+		uint32_t u4_evnum;
 		time_t time;	
-		unsigned long u4_evnum_up;
+		uint32_t u4_evnum_up;
 		time_t time_up;
-		unsigned long u4_evnum_aligned;
+		uint32_t u4_evnum_aligned;
 		time_t time_aligned;
 	
 	// to read from echidna.cfg
-		int nmis_thresh;
-		int nhits_thresh;
+		int32_t nmis_thresh;
+		int32_t nhits_thresh;
 };
 
 #endif

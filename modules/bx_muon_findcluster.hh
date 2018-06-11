@@ -35,20 +35,20 @@ class bx_muon_findcluster : public bx_base_module {
     virtual void end ();
 
   private:
-    int  m_affiliate (int offset, std::vector<bx_muon_clustered_hit>&, float maxdt, float maxdr);
-    bool m_split (int id_to_be_split);
+    int32_t  m_affiliate (int32_t offset, std::vector<bx_muon_clustered_hit>&, float maxdt, float maxdr);
+    bool m_split (int32_t id_to_be_split);
 
     // binned distribution params
-    int   i4_bin_width;
-    int   i4_clustered_events;
-    int   i4_start_threshold;
-    int   i4_count_threshold;
-    int   i4_ripple_count;
-    int   i4_enable_histos;
+    int32_t   i4_bin_width;
+    int32_t   i4_clustered_events;
+    int32_t   i4_start_threshold;
+    int32_t   i4_count_threshold;
+    int32_t   i4_ripple_count;
+    int32_t   i4_enable_histos;
 
     // binned distribution derived quantities
-    int   i4_n_bins;
-    int   i4_ripple_bins;
+    int32_t   i4_n_bins;
+    int32_t   i4_ripple_bins;
 
     // affiliation params
     float f4_mincharge;
@@ -59,11 +59,11 @@ class bx_muon_findcluster : public bx_base_module {
 
     // clustering weighting params 
     float f4_tau;
-    int   i4_max_hits_sss;
-    int   i4_max_hits_floor;
+    int32_t   i4_max_hits_sss;
+    int32_t   i4_max_hits_floor;
 
     // splitting params
-    int   i4_split_minimum_hits;
+    int32_t   i4_split_minimum_hits;
     float f4_wimp_fraction;
     float f4_split_separation;
     float f4_split_window;
@@ -77,13 +77,13 @@ class bx_muon_findcluster : public bx_base_module {
     TH1F *clusters_npmts;
 
     // vector with 16 ns binned times 
-    std::vector<int> binned_times_sss;
-    std::vector<int> binned_times_floor;
+    std::vector<int32_t> binned_times_sss;
+    std::vector<int32_t> binned_times_floor;
 
     std::vector<bx_muon_clustered_hit> chits_sss;
     std::vector<bx_muon_clustered_hit> chits_floor;
 
-    int* fired_channels;
+    int32_t* fired_channels;
 };
 
 #endif

@@ -30,9 +30,9 @@ class bx_calib_muon_pulser : public bx_base_module {
 
 	private:
     // internal ev/hit ctrs
-		int i4_trg_ctr;
-		int a[256];
-		std::vector<int> v_nhits;
+		int32_t i4_trg_ctr;
+		int32_t a[256];
+		std::vector<int32_t> v_nhits;
 	
     // histograms for barn
 		TH1F *pulser_hits_vs_lg;

@@ -45,28 +45,28 @@ NRVec<T>::NRVec() : nn(0), v(0) {}
 
 /*
 template <class T>
-NRVec<T>::NRVec(int n) : nn(n), v(new T[n]) {}
+NRVec<T>::NRVec(int32_t n) : nn(n), v(new T[n]) {}
 */
 
 template <class T>
-NRVec<T>::NRVec(const T& a, int n) : nn(n), v(new T[n])
+NRVec<T>::NRVec(const T& a, int32_t n) : nn(n), v(new T[n])
 {
-	for(int i=0; i<n; i++)
+	for(int32_t i=0; i<n; i++)
 		v[i] = a;
 }
 
 
 template <class T>
-NRVec<T>::NRVec(const T *a, int n) : nn(n), v(new T[n])
+NRVec<T>::NRVec(const T *a, int32_t n) : nn(n), v(new T[n])
 {
-        for(int i=0; i<n; i++)
+        for(int32_t i=0; i<n; i++)
                 v[i] = *a++;
 }
 
 template <class T>
 NRVec<T>::NRVec(const NRVec<T> &rhs) : nn(rhs.nn), v(new T[nn])
 {
-        for(int i=0; i<nn; i++)
+        for(int32_t i=0; i<nn; i++)
                 v[i] = rhs[i];
 }
 
@@ -83,7 +83,7 @@ NRVec<T> & NRVec<T>::operator=(const NRVec<T> &rhs)
                         nn=rhs.nn;
                         v= new T[nn];
                 }
-                for (int i=0; i<nn; i++)
+                for (int32_t i=0; i<nn; i++)
                         v[i]=rhs[i];
         }
         return *this;
@@ -92,27 +92,27 @@ NRVec<T> & NRVec<T>::operator=(const NRVec<T> &rhs)
 template <class T>
 NRVec<T> & NRVec<T>::operator=(const T &a)      //assign a to every element
 {
-        for (int i=0; i<nn; i++)
+        for (int32_t i=0; i<nn; i++)
                 v[i]=a;
         return *this;
 }
 
 /*
 template <class T>
-inline T & NRVec<T>::operator[](const int i)    //subscripting
+inline T & NRVec<T>::operator[](const int32_t i)    //subscripting
 {
         return v[i];
 }
 */
 
 template <class T>
-inline const T & NRVec<T>::operator[](const int i) const        //subscripting
+inline const T & NRVec<T>::operator[](const int32_t i) const        //subscripting
 {
         return v[i];
 }
 
 template <class T>
-inline int NRVec<T>::size() const
+inline int32_t NRVec<T>::size() const
 {
         return nn;
 }
@@ -132,19 +132,19 @@ NRMat<T>::NRMat() : nn(0), mm(0), v(0) {}
 
 /*
 template <class T>
-NRMat<T>::NRMat(int n, int m) : nn(n), mm(m), v(new T*[n])
+NRMat<T>::NRMat(int32_t n, int32_t m) : nn(n), mm(m), v(new T*[n])
 {
 	v[0] = new T[m*n];
-	for (int i=1; i< n; i++)
+	for (int32_t i=1; i< n; i++)
 		v[i] = v[i-1] + m;
 }
 */
 
 
 template <class T>
-NRMat<T>::NRMat(const T &a, int n, int m) : nn(n), mm(m), v(new T*[n])
+NRMat<T>::NRMat(const T &a, int32_t n, int32_t m) : nn(n), mm(m), v(new T*[n])
 {
-        int i,j;
+        int32_t i,j;
         v[0] = new T[m*n];
         for (i=1; i< n; i++)
                 v[i] = v[i-1] + m;
@@ -154,9 +154,9 @@ NRMat<T>::NRMat(const T &a, int n, int m) : nn(n), mm(m), v(new T*[n])
 }
 
 template <class T>
-NRMat<T>::NRMat(const T *a, int n, int m) : nn(n), mm(m), v(new T*[n])
+NRMat<T>::NRMat(const T *a, int32_t n, int32_t m) : nn(n), mm(m), v(new T*[n])
 {
-        int i,j;
+        int32_t i,j;
         v[0] = new T[m*n];
         for (i=1; i< n; i++)
                 v[i] = v[i-1] + m;
@@ -168,7 +168,7 @@ NRMat<T>::NRMat(const T *a, int n, int m) : nn(n), mm(m), v(new T*[n])
 template <class T>
 NRMat<T>::NRMat(const NRMat &rhs) : nn(rhs.nn), mm(rhs.mm), v(new T*[nn])
 {
-        int i,j;
+        int32_t i,j;
         v[0] = new T[mm*nn];
         for (i=1; i< nn; i++)
                 v[i] = v[i-1] + mm;
@@ -184,7 +184,7 @@ NRMat<T> & NRMat<T>::operator=(const NRMat<T> &rhs)
 //              has been resized to match the size of rhs
 {
         if (this != &rhs) {
-                int i,j;
+                int32_t i,j;
                 if (nn != rhs.nn || mm != rhs.mm) {
                         if (v != 0) {
                                 delete[] (v[0]);
@@ -207,34 +207,34 @@ NRMat<T> & NRMat<T>::operator=(const NRMat<T> &rhs)
 template <class T>
 NRMat<T> & NRMat<T>::operator=(const T &a)      //assign a to every element
 {
-        for (int i=0; i< nn; i++)
-                for (int j=0; j<mm; j++)
+        for (int32_t i=0; i< nn; i++)
+                for (int32_t j=0; j<mm; j++)
                         v[i][j] = a;
         return *this;
 }
 
 /*
 template <class T>
-inline T* NRMat<T>::operator[](const int i)     //subscripting: pointer to row i
+inline T* NRMat<T>::operator[](const int32_t i)     //subscripting: pointer to row i
 {
         return v[i];
 }
 */
 
 template <class T>
-inline const T* NRMat<T>::operator[](const int i) const
+inline const T* NRMat<T>::operator[](const int32_t i) const
 {
         return v[i];
 }
 
 template <class T>
-inline int NRMat<T>::nrows() const
+inline int32_t NRMat<T>::nrows() const
 {
         return nn;
 }
 
 template <class T>
-inline int NRMat<T>::ncols() const
+inline int32_t NRMat<T>::ncols() const
 {
         return mm;
 }
@@ -252,7 +252,7 @@ NRMat<T>::~NRMat()
 
 void interpolator2d::splie2(Vec_I_DP &x1a, Vec_I_DP &x2a, Mat_I_DP &ya, Mat_O_DP &y2a)
 {
-	int m,n,j,k;
+	int32_t m,n,j,k;
 
 	m=x1a.size();
 	n=x2a.size();
@@ -267,10 +267,10 @@ void interpolator2d::splie2(Vec_I_DP &x1a, Vec_I_DP &x2a, Mat_I_DP &ya, Mat_O_DP
 void interpolator2d::spline(Vec_I_DP &x, Vec_I_DP &y, const DP yp1, const DP ypn,
 	Vec_O_DP &y2)
 {
-	int i,k;
+	int32_t i,k;
 	DP p,qn,sig,un;
 
-	int n=y2.size();
+	int32_t n=y2.size();
 	Vec_DP u(n-1);
 	if (yp1 > 0.99e30)
 		y2[0]=u[0]=0.0;
@@ -300,10 +300,10 @@ void interpolator2d::spline(Vec_I_DP &x, Vec_I_DP &y, const DP yp1, const DP ypn
 void interpolator2d::splin2(Vec_I_DP &x1a, Vec_I_DP &x2a, Mat_I_DP &ya, Mat_I_DP &y2a,
 	const DP x1, const DP x2, DP &y)
 {
-	int j,k;
+	int32_t j,k;
 
-	int m=x1a.size();
-	int n=x2a.size();
+	int32_t m=x1a.size();
+	int32_t n=x2a.size();
 	Vec_DP ya_t(n),y2a_t(n),yytmp(m),ytmp(m);
 	for (j=0;j<m;j++) {
 		for (k=0;k<n;k++) {
@@ -319,12 +319,12 @@ void interpolator2d::splin2(Vec_I_DP &x1a, Vec_I_DP &x2a, Mat_I_DP &ya, Mat_I_DP
 
 void interpolator2d::splint(Vec_I_DP &xa, Vec_I_DP &ya, Vec_I_DP &y2a, const DP x, DP &y)
 {
-	int k;
+	int32_t k;
 	DP h,b,a;
 
-	int n=xa.size();
-	int klo=0;
-	int khi=n-1;
+	int32_t n=xa.size();
+	int32_t klo=0;
+	int32_t khi=n-1;
 	while (khi-klo > 1) {
 		k=(khi+klo) >> 1;
 		if (xa[k] > x) khi=k;
