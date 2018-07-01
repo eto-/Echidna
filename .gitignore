@@ -1,0 +1,9 @@
+*.o
+*.lo
+*.pcm
+event/Mach4Event.*
+libechidna.so*
+rootechidna.so*
+tools/fix_db
+echidna
+.deps
