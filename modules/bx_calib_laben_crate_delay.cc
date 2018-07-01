@@ -33,7 +33,7 @@ bx_echidna_event* bx_calib_laben_crate_delay::doit (bx_echidna_event *ev) {
   const bx_laben_event& er = ev->get_laben ();
 
   double ev_crate_time_sums[constants::laben::ncrates];
-  long ev_crate_hit_count[constants::laben::ncrates];
+  int32_t ev_crate_hit_count[constants::laben::ncrates];
   int32_t fired_channels[constants::laben::channels];
   std::fill_n (ev_crate_time_sums, constants::laben::ncrates, 0.);
   std::fill_n (ev_crate_hit_count, constants::laben::ncrates, 0);

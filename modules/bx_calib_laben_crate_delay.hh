@@ -26,7 +26,7 @@ class bx_calib_laben_crate_delay: public bx_base_module {
     virtual void end ();
   private:
     double *p_crate_time_sums;
-    long i4_event_count;
+    int32_t i4_event_count;
 };
 
 #endif
