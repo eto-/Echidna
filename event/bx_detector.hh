@@ -10,6 +10,10 @@
  */
 #ifndef _BX_DETECTOR_HIT
 #define _BX_DETECTOR_HIT
+#if defined(__ROOTCLING__) || defined(__CINT__)
+#define _ROOT_CINT_
+#endif
+
 #define CYCLE_NUMBER 18
 
 #include <map>
@@ -21,7 +25,7 @@
 class bx_detector;
 class bx_base_module;
 
-#ifndef __CINT__
+#ifndef _ROOT_CINT_
 #include "bx_named.hh"
 class bx_echidna_event;
 class bx_reader;
@@ -39,11 +43,11 @@ class detector_interface: public bx_named {
 #endif
 
 class bx_detector: public TObject {
-#ifndef __CINT__
+#if defined (_ROOT_CINT_) || defined (G__DICTIONARY)
+  public:
+#else
   private:	// This way db_detector can not be istantiated in Echidna
   friend class detector_interface;
-#else
-  public:
 #endif
     bx_detector (): TObject() {}
   public:
@@ -66,7 +70,7 @@ class bx_detector: public TObject {
 
     const std::map<std::string, int>& get_skipped_events (int trg_type) { return skipped_events[trg_type]; }
     int get_total_skipped_events () const { return total_skipped_events; }
-#if !defined (__CINT__) && !defined (_ECHIDNA_ROOTLIB_)
+#if !defined (_ROOT_CINT_) && !defined (_ECHIDNA_ROOTLIB_)
     void skip_event (bx_base_module *module, int trg_type);
     void add_disabled_channel (int lg, int evnum, int type, const bx_named*);
     void read_disabled_channels (int evnum);
@@ -80,7 +84,7 @@ class bx_detector: public TObject {
     std::vector<std::string> disabled_laben_channel_properties_v;
     std::vector<std::string> disabled_muon_channel_properties_v;
 
-#if !defined (__CINT__) && !defined (_ECHIDNA_ROOTLIB_)
+#if !defined (_ROOT_CINT_) && !defined (_ECHIDNA_ROOTLIB_)
     bool check_laben_property  (const std::string& p);
     bool check_muon_property   (const std::string& p);
     bool check_vector_property (const std::string& p, const std::vector<std::string> &v);

@@ -13,6 +13,10 @@
 
 #ifndef _BXEVENT_HH
 #define _BXEVENT_HH
+#if defined(__ROOTCLING__) || defined(__CINT__)
+#define _ROOT_CINT_
+#endif
+
 #ifndef CYCLE_NUMBER
 #define CYCLE_NUMBER 18
 #endif
@@ -44,7 +48,7 @@ struct bx_write_opts {
   int mctruth;
 };
 
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
 class bx_echidna_event;
 class bx_trigger_event;
 class bx_track;
@@ -84,7 +88,7 @@ class BxLaben;
 class BxTrigger  {
   public:
     BxTrigger() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     virtual void operator=(const bx_trigger_event&);
 #endif
     virtual ~BxTrigger () {};
@@ -181,7 +185,7 @@ class BxTrack {
 class BxTrackByPoints: public BxTrack {
   public:
     BxTrackByPoints() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxTrackByPoints(const bx_write_opts&);
     virtual void operator=(const bx_track&);
 #endif
@@ -282,7 +286,7 @@ class BxDistance {
 class BxTrackFitted: public BxTrack {
   public:
     BxTrackFitted() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxTrackFitted(const bx_write_opts&);
     virtual void operator=(const bx_track&);
 #endif
@@ -374,7 +378,7 @@ class BxTrackFitted: public BxTrack {
 class BxLabenRawHit {
   public:
     BxLabenRawHit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxLabenRawHit (const bx_laben_raw_hit&);
 #endif
     virtual ~BxLabenRawHit () {};
@@ -417,7 +421,7 @@ class BxLabenRawHit {
 class BxLabenDecodedHit {
   public:
     BxLabenDecodedHit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxLabenDecodedHit (const bx_laben_decoded_hit&, uint16_t raw_index);
 #endif
     virtual ~BxLabenDecodedHit () {};
@@ -478,7 +482,7 @@ class BxLabenDecodedHit {
 class BxLabenClusteredHit {
   public:
     BxLabenClusteredHit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxLabenClusteredHit (const int cluster, const bx_laben_clustered_hit&, uint16_t decoded_index);
 #endif
     virtual ~BxLabenClusteredHit () {};
@@ -504,7 +508,7 @@ class BxPosition {
   public:
     BxPosition () {}
     BxPosition (Float_t xx, Float_t yy, Float_t zz): x(xx), y(yy), z(zz) {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxPosition (const bx_base_position&);
 #endif
     virtual ~BxPosition () {};
@@ -559,7 +563,7 @@ class BxPosition {
 class BxEnergy {
   public:
     BxEnergy () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxEnergy (const bx_base_energy&);
 #endif
     virtual ~BxEnergy () {}
@@ -582,7 +586,7 @@ class BxEnergy {
 class BxLabenCluster {
   public:
     BxLabenCluster () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxLabenCluster (const bx_laben_cluster&, uint16_t decoded_index);
 #endif
     virtual ~BxLabenCluster () {};
@@ -707,7 +711,7 @@ class BxLabenCluster {
 class BxLabenRecHit {
   public:
     BxLabenRecHit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxLabenRecHit (const int cluster, const bx_laben_rec_hit&);
 #endif
     virtual ~BxLabenRecHit () {};
@@ -729,7 +733,7 @@ class BxLabenRecHit {
 class BxLabenRecCluster: public BxPosition/*, public BxEnergy*/ {
   public:
     BxLabenRecCluster () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxLabenRecCluster (const bx_laben_positron_cluster&);
 #endif
     virtual ~BxLabenRecCluster () {};
@@ -829,7 +833,7 @@ class BxLabenRecCluster: public BxPosition/*, public BxEnergy*/ {
 class BxLaben {
   public:
     BxLaben() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxLaben(const bx_write_opts&);
     virtual void  operator=(const bx_laben_event&);
 #endif
@@ -958,7 +962,7 @@ class BxLaben {
 class BxMuonRawHit {
   public:
     BxMuonRawHit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMuonRawHit (const bx_muon_raw_hit&);
 #endif
     virtual ~BxMuonRawHit () {};
@@ -981,7 +985,7 @@ class BxMuonRawHit {
 class BxMuonDecodedHit {
   public:
     BxMuonDecodedHit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMuonDecodedHit (const bx_muon_decoded_hit&);
 #endif
     virtual ~BxMuonDecodedHit () {};
@@ -1006,7 +1010,7 @@ class BxMuonDecodedHit {
 class BxMuonClusteredHit {
   public:
     BxMuonClusteredHit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMuonClusteredHit (const bx_muon_clustered_hit&);
 #endif
     virtual ~BxMuonClusteredHit () {};
@@ -1031,7 +1035,7 @@ class BxMuonClusteredHit {
 class BxMuonCluster {
   public:
     BxMuonCluster () {} 
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMuonCluster (const bx_muon_cluster&);
 #endif
     virtual ~BxMuonCluster () {};
@@ -1067,7 +1071,7 @@ class BxMuonCluster {
 class BxMuon {
   public:
     BxMuon() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMuon(const bx_write_opts&);
     virtual void operator=(const bx_muon_event&);
 #endif
@@ -1140,7 +1144,7 @@ class BxMuon {
 class BxMcTruthHit {
   public:
     BxMcTruthHit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMcTruthHit (const Int_t frame, const bx_mctruth_hit&);
 #endif
     virtual ~BxMcTruthHit () {};
@@ -1163,7 +1167,7 @@ class BxMcTruthHit {
 class BxMcTruthDaughter {
   public:
     BxMcTruthDaughter () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMcTruthDaughter ( Int_t frame, const bx_mctruth_daughter&);
 #endif
     virtual ~BxMcTruthDaughter () {};
@@ -1195,7 +1199,7 @@ class BxMcTruthDaughter {
 class BxMcTruthDeposit {
   public:
     BxMcTruthDeposit () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMcTruthDeposit ( Int_t frame, const bx_mctruth_deposit&);
 #endif
     virtual ~BxMcTruthDeposit () {}
@@ -1220,7 +1224,7 @@ class BxMcTruthDeposit {
 class BxMcTruthUser {
   public:
     BxMcTruthUser () {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMcTruthUser ( Int_t frame, const bx_mctruth_user&);
 #endif
     virtual ~BxMcTruthUser () {}
@@ -1250,7 +1254,7 @@ class BxMcTruthUser {
 class BxMcTruthFrame {
   public:
     BxMcTruthFrame () { }
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMcTruthFrame (const bx_mctruth_frame&);
 #endif
     virtual ~BxMcTruthFrame () {};
@@ -1305,7 +1309,7 @@ class BxMcTruthFrame {
 class BxMcTruth {
   public:
     BxMcTruth() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxMcTruth (const bx_write_opts&);
     virtual void operator=(const bx_mctruth_event& e);
 #endif
@@ -1357,7 +1361,7 @@ class BxMcTruth {
 class BxNeutronPulse  {
   public:
     BxNeutronPulse() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxNeutronPulse (const bx_neutron_pulse&);
 #endif
     virtual ~BxNeutronPulse() {}
@@ -1394,7 +1398,7 @@ class BxNeutronPulse  {
 class BxNeutron {
   public:
     BxNeutron() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     virtual void operator=(const bx_neutron_event&);
 #endif
     virtual ~BxNeutron () {};
@@ -1721,7 +1725,7 @@ class BxFwfd {
 class BxEvent : public TObject  {
   public:
     BxEvent() {}
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     BxEvent(const bx_write_opts&);
     virtual void operator=(const bx_echidna_event& ev);
 #endif

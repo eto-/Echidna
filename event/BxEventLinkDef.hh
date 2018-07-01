@@ -11,8 +11,11 @@
 
 #ifndef _BXEVENTLINKDEF_HH
 #define _BXEVENTLINKDEF_HH
+#if defined(__ROOTCLING__) || defined(__CINT__)
+#define _ROOT_CINT_
+#endif
 
-#ifdef __CINT__
+#ifdef _ROOT_CINT_
 
 #pragma link off all globals;
 #pragma link off all classes;

@@ -10,6 +10,9 @@
  */
 #ifndef _BD_RUN_H
 #define _BD_RUN_H
+#if defined(__ROOTCLING__) || defined(__CINT__)
+#define _ROOT_CINT_
+#endif
 #ifndef CYCLE_NUMBER
 #define CYCLE_NUMBER 18
 #endif
@@ -97,7 +100,7 @@ class db_run: public db_acl, public TObject {
 
 
 
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     void set_laben_precalib_low_bin	(int lg, int count, const bx_named* obj) { if (check_acl ("set_laben_precalib_low_bin", obj)) laben_precalib_low_bin_v[lg] = count; }
     void set_laben_precalib_high_bin	(int lg, int count, const bx_named* obj) { if (check_acl ("set_laben_precalib_high_bin", obj)) laben_precalib_high_bin_v[lg] = count; }
     void set_laben_precalib_gray_shift	(int lg, int shift, const bx_named* obj) { if (check_acl ("set_laben_precalib_gray_shift", obj)) laben_precalib_gray_shift_v[lg] = shift; }
@@ -217,7 +220,7 @@ class db_run: public db_acl, public TObject {
     
     bool is_pmt_disconnected	       (int lg) const  { return disconnected_pmts_v.find (lg) != disconnected_pmts_v.end (); }
 
-#if !defined(_ECHIDNA_ROOTLIB_) && !defined(__CINT__)
+#if !defined(_ECHIDNA_ROOTLIB_) && !defined(_ROOT_CINT_)
     void set_laben_time_offset		(int lg, float laben_time_offset, const bx_named* obj) { if (check_acl ("set_laben_time_offset", obj)) laben_time_offset_v[lg] = laben_time_offset; }
     void set_laben_time_sigma	        (int lg, float laben_time_sigma, const bx_named* obj) { if (check_acl ("set_laben_time_sigma", obj)) laben_time_sigma_v[lg] = laben_time_sigma; }
     void set_laben_charge_peak		(int lg, float laben_charge_peak, const bx_named* obj) { if (check_acl ("set_laben_charge_peak", obj)) laben_charge_peak_v[lg] = laben_charge_peak; }
