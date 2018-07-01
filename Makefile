@@ -4,7 +4,7 @@ DIRS := event modules framework interface particleid mach4
 # Include path defined here
 INCLUDEFLAGS := $(patsubst %, -I%, $(DIRS)) -I. $(LOCAL_BOREX_INCLUDE)
 #CXXFLAGS := $(INCLUDEFLAGS) -Wall -Wno-non-virtual-dtor -m32
-CXXFLAGS := $(INCLUDEFLAGS) -Wall -Wno-non-virtual-dtor -Wno-deprecated -Wno-reorder
+CXXFLAGS := $(INCLUDEFLAGS) -Wall -Wno-deprecated
 
 # Add first libz
 #LDFLAGS := -lz -lfftw3 -lm $(LOCAL_BOREX_LIBS) -m32
@@ -12,7 +12,7 @@ LDFLAGS := -lz -lfftw3 -lm $(LOCAL_BOREX_LIBS)
 
 OPTIMIZE_ECHIDNA := 1
 #GCC_MARCH := "i686"
-GCC_MARCH := "haswell"
+GCC_MARCH := "native"
 NOXML := 1	
 
 # Postgres libs
