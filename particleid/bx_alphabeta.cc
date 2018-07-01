@@ -139,10 +139,6 @@ void bx_alphabeta::set_time_histogram(int nbins, float* binning) {
 // get time hits from bx_echidna_event and build bx_sample
 bx_sample* bx_alphabeta::get_sample(const bx_echidna_event& ev, int ncluster, bx_sample* sampl ) {
 	
-	// ignore null events
-	if (&ev == NULL)
-		return 0;
-	
 	// check cluster number range (0..size-1)
 	if (ncluster < 0 || ncluster >= ev.get_laben().get_nclusters()) {
 		get_message(bx_message::error) << GetName() << " Wrong cluster number in bx_alphabeta::get_sample(bx_echidna_event). Ignoring." << dispatch;
@@ -200,9 +196,6 @@ bx_sample* bx_alphabeta::get_sample(const bx_echidna_event& ev, int ncluster, bx
 // get time hits from BxEvent and build bx_sample
 bx_sample* bx_alphabeta::get_sample(const BxEvent& ev, int ncluster, bx_sample* sampl) {
 
-	if (&ev == NULL)
-		return 0;
-	
 	if (ncluster <= 0 || ncluster > ev.GetLaben().GetNClusters()) {
 		get_message(bx_message::error) << GetName() << " Wrong cluster number in bx_alphabeta::get_sample(BxEvent). Ignoring." << dispatch;
 		return 0;
