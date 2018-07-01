@@ -1566,7 +1566,7 @@ class BxPhysTags {
      float var_user_6, var_user_7, var_user_8, var_user_9, var_user_10, var_user_11, var_user_12;
      float var_user_13, var_user_14, var_user_15, var_user_16, var_user_17, var_user_18, var_user_19;
      float mlp_ab, mlp_ab_m4, bdt_c11b, bdt_c11b_m4;
-     uint32_t long tags;
+     uint32_t tags;
      uint32_t tags_user;
      uint32_t tags_solar;
      uint32_t tags_cno;
