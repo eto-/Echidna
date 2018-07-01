@@ -150,7 +150,7 @@ configuration_stanza::configuration_stanza (const configuration_line& first_line
 
   configuration_manager::configuration_namespace item (type, first_line.get_token2 ());
 
-  bool stanza_ended = false;
+  //bool stanza_ended = false;
     // Loop till end of stanza
   while (in) {
       // Get line
@@ -172,7 +172,7 @@ configuration_stanza::configuration_stanza (const configuration_line& first_line
       }
       // Finish at the end of stanza
     } else if (line.is_stanza_end ()) {
-      stanza_ended = true;
+      //stanza_ended = true;
       break;
     } else {
         // Handle the statements
