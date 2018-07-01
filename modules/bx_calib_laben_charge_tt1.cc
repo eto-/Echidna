@@ -420,7 +420,7 @@ void bx_calib_laben_charge_tt1::end () {
 
     //fill the visitors to db_run
   int32_t final_db_write = 0;
-  if (get_parameter ("db_write").get_bool () == 2) final_db_write = 1;
+  if (get_parameter ("db_write").get_bool () == true) final_db_write = 1;
   if (nTriggers > get_parameter ("min_trig").get_int () && get_parameter ("db_write").get_bool () && (float)good_ch/(constants::laben::channels - not_connected) > 0.8) final_db_write = 1;
 
   if (final_db_write) {

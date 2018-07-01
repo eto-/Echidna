@@ -308,7 +308,7 @@ bx_echidna_event* bx_pid_shape::doit (bx_echidna_event *ev) {
         // spherical harmonics coefficients
     
     const std::complex <float> im_i(0., 1.); // imaginary unit
-    const std::complex <float> re_1 = 1.; // real unit
+    //const std::complex <float> re_1 = 1.; // real unit
    
     std::complex <float> aY00 = 0.;
     std::complex <float> aY10 = 0;

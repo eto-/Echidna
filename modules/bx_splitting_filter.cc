@@ -229,8 +229,8 @@ template<typename FLOAT> int32_t bx_splitting_filter::search_peak_base (FLOAT *v
 }
 
 void bx_splitting_filter::ignore_peak (const std::string& msg, int32_t current_peak, float t, float charge, float duration) {
-  bx_message::message_level level = bx_message::debug;
-  if (current_peak == 0) level = bx_message::log;
+  //bx_message::message_level level = bx_message::debug;
+  //if (current_peak == 0) level = bx_message::log;
   //get_message (level) << "ignoring " << msg << " peak " << current_peak << " at time " << t << "ns with charge " << charge << "hits and duration " << duration << "ns"<< dispatch;
 }
 

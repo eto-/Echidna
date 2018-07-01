@@ -1099,11 +1099,11 @@ void bx_laben_findcluster::clusterize_neutrons_in_muongate (int32_t start_bin, i
     else baseline_range = -6;
 
     // Then search for baseline
-    bool baseline = true;
+    //bool baseline = true;
     float baseline_value = 0;
     for (int32_t j = baseline_range; j < -1; j++) { 
       baseline_value += binned_times[bin + j];
-      if (bigger_error (binned_times[bin + j], binned_times[bin + j - 1])) baseline = false;
+      //if (bigger_error (binned_times[bin + j], binned_times[bin + j - 1])) baseline = false;
     }
     baseline_value /=  -baseline_range - 1.;  //just mean value; (-baseline_range - 1) is 10 for baseline_range = -11 and 5 for -6
 
@@ -1326,7 +1326,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
       cluster_ref.i4_npe += dhit.get_charge_npe ();
 //*****************************************************navg code***********************************************************
       double npe = dhit.get_charge_pe ();
-      if(npe<0.1) npe=1; if(npe>3) npe=0;//noavg correction
+      if(npe<0.1) npe=1; else if(npe>3) npe=0;//noavg correction
        cluster_ref.f4_charge_noavg+=npe;
        dark_rate += run_info->get_laben_dark_noise(lg);//cumulative for DH probability in 1/10^3s
 //****************************************************************************************************************************/
@@ -1365,7 +1365,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
 	cluster_ref.f4_charge_short += dhit.get_charge_pe ();
 //*****************************************************noavg code***********************************************************
             double npe = dhit.get_charge_pe ();
-           if(npe<0.1) npe=1; if(npe>3) npe=0;//noavg correction
+           if(npe<0.1) npe=1; else if(npe>3) npe=0;//noavg correction
            cluster_ref.f4_charge_noavg_short+=npe;
 //****************************************************************************************************************************/
       }
@@ -1405,7 +1405,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
 	  cluster_ref.f4_charge_dt1 += decoded_hit.get_charge_pe ();
 //*****************************************************noavg code***********************************************************
            double npe = decoded_hit.get_charge_pe ();
-           if(npe<0.1) npe=1; if(npe>3) npe=0;//noavg correction
+           if(npe<0.1) npe=1; else if(npe>3) npe=0;//noavg correction
            cluster_ref.f4_charge_noavg_dt1+=npe;
 //***********************************************************************************************************************
 	  }
@@ -1414,7 +1414,7 @@ void bx_laben_findcluster::findcluster_time (bx_echidna_event *ev) {
 	  cluster_ref.f4_charge_dt2 += decoded_hit.get_charge_pe ();
 //*****************************************************noavg code***********************************************************
            double npe = decoded_hit.get_charge_pe ();
-           if(npe<0.1) npe=1; if(npe>3) npe=0;//noavg correction
+           if(npe<0.1) npe=1; else if(npe>3) npe=0;//noavg correction
            cluster_ref.f4_charge_noavg_dt2+=npe;
 //***********************************************************************************************************************
           }

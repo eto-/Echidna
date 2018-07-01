@@ -76,8 +76,8 @@ void bx_calib_fiber_bundle::end () {
   TH1D* channels_laser = p_laser->ProjectionY("channels_laser");
   TH1D* bundles_dark = p_dark_noise->ProjectionX("bundles_dark");
   TH1D* channels_dark = p_dark_noise->ProjectionY("channels_dark");
-  TH1D* bundle_v[n_bundles+1];
-  TH1D* bundle_dark_v[n_bundles+1];
+  //TH1D* bundle_v[n_bundles+1];
+  //TH1D* bundle_dark_v[n_bundles+1];
   for(int32_t i = 1; i < n_bundles+1; i++){
     const int32_t n_fibers = constants::fiber::number_of_fibers_in_bundle[i];
     std::ostringstream name;
@@ -86,8 +86,8 @@ void bx_calib_fiber_bundle::end () {
     name_dark <<"bundle_dark"<<i;
     TH1D* bundle_i = p_laser->ProjectionY(name.str().c_str(), i, i);
     TH1D* bundle_dark_i = p_dark_noise->ProjectionY(name_dark.str().c_str(), i, i);
-    bundle_v[i] = bundle_i;
-    bundle_dark_v[i] = bundle_dark_i;
+    //bundle_v[i] = bundle_i;
+    //bundle_dark_v[i] = bundle_dark_i;
     barn_interface::get()->store(barn_interface::file,bundle_i,this);
     barn_interface::get()->store(barn_interface::file,bundle_dark_i,this);
     float Integral = bundle_i->Integral();

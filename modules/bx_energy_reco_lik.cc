@@ -188,7 +188,8 @@ if( method == 1 )
     p_minuit->Command ("MIGRAD");
     
     p_minuit->GetParameter (0, f8_value, f8_error);
-    
+ 
+#if 0   
     double cf=0.; //callibration factor
     
       switch (method) {
@@ -197,6 +198,7 @@ if( method == 1 )
 	}
       
 //    e_lik.f4_e = f8_value * cf;
+#endif
 
     
     //    std::cout << p.f4_e << std::endl;

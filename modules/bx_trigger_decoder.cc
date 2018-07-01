@@ -159,7 +159,7 @@ void bx_trigger_decoder::gpsclock_decode (
 	
   uint16_t wrd;
   int32_t first,second,third,fourth,five;
-  int32_t leg;
+  //int32_t leg;
   uint32_t nsec;
     
   // compute micro-seconds and nano-seconds
@@ -211,7 +211,7 @@ void bx_trigger_decoder::gpsclock_decode (
   hour = first*1+second*10;
   if (hour<0 || hour>23) 
     get_message(bx_message::warn) << "Gps Clock: Error in decoding hours!  " << hour << dispatch;
-  leg = third;
+  //leg = third;
 
   // month day 
   wrd = (g2&0xFFFF);

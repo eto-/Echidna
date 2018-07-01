@@ -220,7 +220,7 @@ bx_echidna_event* bx_muon_findcluster::doit (bx_echidna_event *ev) {
   if (  end_bin_sss >   end_bin_floor)   end_bin_floor =   end_bin_sss;
 
 
-int32_t nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
+  int32_t nhits_sss = 0, nhits_floor = 0, npmts = 0; //, nhits = 0 
   float start_time_sss   = time_buffer_ns;
   float start_time_floor = time_buffer_ns;
   float charge_sss = 0., charge_floor = 0.;
@@ -434,7 +434,7 @@ int32_t nhits = 0, nhits_sss = 0, nhits_floor = 0, npmts = 0;
   ew.clustered_hits.insert(ew.clustered_hits.end(), chits_floor.begin(), chits_floor.end());
 
   // Fill event level variables
-  nhits = nhits_sss + nhits_floor;
+  //nhits = nhits_sss + nhits_floor;
   for (int32_t i = 0; i < constants::muon::channels; i++) { if (ew.nhits_per_channel[i]>0) npmts++; }
   ew.i4_npmts            = npmts;
   ew.f4_start_time_sss   = start_time_sss   - time_buffer_ns;

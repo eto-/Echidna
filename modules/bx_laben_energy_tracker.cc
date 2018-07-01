@@ -311,7 +311,7 @@ bx_echidna_event* bx_laben_energy_tracker::doit (bx_echidna_event *ev) {
   ftp.FixParameter(2, Float_t(entry_theta));
   gtp.Fit(&ftp, "RQ0");
   double m = ftp.GetParameter(0);
-  double dm = ftp.GetParError(0);
+  //double dm = ftp.GetParError(0);
   //get_message(bx_message::error) << ftp.GetParameter(0) << " " << ftp.GetParError(0) << dispatch;
   double m_theta = 0.05/sqrt(1.+m*m);
   double m_phi   = 0.05*m/sqrt(1.+m*m);
@@ -390,24 +390,24 @@ bx_echidna_event* bx_laben_energy_tracker::doit (bx_echidna_event *ev) {
   double impact_z = entry_z*impact_r*impact_r/entry_r/entry_r;
   double impact_r1 = sqrt(impact_x*impact_x+impact_y*impact_y+impact_z*impact_z);
 
-  double displ_x, displ_y, displ_z, displ_dx, displ_dy, displ_dz;
+  double displ_x, displ_y, displ_z; //, displ_dx, displ_dy, displ_dz;
   // get small displacement vector from orientation
   if (!turn_Z) {
     if (!turn_X) {
       displ_x = sin(dir_theta)*cos(dir_phi);
       displ_y = sin(dir_theta)*sin(dir_phi);
       displ_z = cos(dir_theta);
-      displ_dx = fabs((cos(dir_theta)*dir_dtm*cos(dir_phi)-sin(dir_theta)*sin(dir_phi)*dir_dpm)*dm);
-      displ_dy = fabs((cos(dir_theta)*dir_dtm*sin(dir_phi)+sin(dir_theta)*cos(dir_phi)*dir_dpm)*dm);
-      displ_dz = fabs(sin(dir_theta)*dir_dtm*dm);
+//      displ_dx = fabs((cos(dir_theta)*dir_dtm*cos(dir_phi)-sin(dir_theta)*sin(dir_phi)*dir_dpm)*dm);
+//      displ_dy = fabs((cos(dir_theta)*dir_dtm*sin(dir_phi)+sin(dir_theta)*cos(dir_phi)*dir_dpm)*dm);
+//      displ_dz = fabs(sin(dir_theta)*dir_dtm*dm);
     }
     else {
       displ_x = -sin(dir_theta)*cos(dir_phi);
       displ_y = -sin(dir_theta)*sin(dir_phi);
       displ_z = cos(dir_theta);
-      displ_dx = fabs((cos(dir_theta)*dir_dtm*cos(dir_phi)-sin(dir_theta)*sin(dir_phi)*dir_dpm)*dm);
-      displ_dy = fabs((cos(dir_theta)*dir_dtm*sin(dir_phi)+sin(dir_theta)*cos(dir_phi)*dir_dpm)*dm);
-      displ_dz = fabs(sin(dir_theta)*dir_dtm*dm);
+//      displ_dx = fabs((cos(dir_theta)*dir_dtm*cos(dir_phi)-sin(dir_theta)*sin(dir_phi)*dir_dpm)*dm);
+//      displ_dy = fabs((cos(dir_theta)*dir_dtm*sin(dir_phi)+sin(dir_theta)*cos(dir_phi)*dir_dpm)*dm);
+//      displ_dz = fabs(sin(dir_theta)*dir_dtm*dm);
     }
   }
   else {
@@ -415,17 +415,17 @@ bx_echidna_event* bx_laben_energy_tracker::doit (bx_echidna_event *ev) {
       displ_x = sin(dir_theta)*cos(dir_phi);
       displ_z = -sin(dir_theta)*sin(dir_phi);
       displ_y = cos(dir_theta);
-      displ_dx = fabs((cos(dir_theta)*dir_dtm*cos(dir_phi)-sin(dir_theta)*sin(dir_phi)*dir_dpm)*dm);
-      displ_dz = fabs((cos(dir_theta)*dir_dtm*sin(dir_phi)+sin(dir_theta)*cos(dir_phi)*dir_dpm)*dm);
-      displ_dy = fabs(sin(dir_theta)*dir_dtm*dm);
+//      displ_dx = fabs((cos(dir_theta)*dir_dtm*cos(dir_phi)-sin(dir_theta)*sin(dir_phi)*dir_dpm)*dm);
+//      displ_dz = fabs((cos(dir_theta)*dir_dtm*sin(dir_phi)+sin(dir_theta)*cos(dir_phi)*dir_dpm)*dm);
+//      displ_dy = fabs(sin(dir_theta)*dir_dtm*dm);
     }
     else {
       displ_x = -sin(dir_theta)*cos(dir_phi);
       displ_z = sin(dir_theta)*sin(dir_phi);
       displ_y = cos(dir_theta);
-      displ_dx = fabs((cos(dir_theta)*dir_dtm*cos(dir_phi)-sin(dir_theta)*sin(dir_phi)*dir_dpm)*dm);
-      displ_dz = fabs((cos(dir_theta)*dir_dtm*sin(dir_phi)+sin(dir_theta)*cos(dir_phi)*dir_dpm)*dm);
-      displ_dy = fabs(sin(dir_theta)*dir_dtm*dm);
+//      displ_dx = fabs((cos(dir_theta)*dir_dtm*cos(dir_phi)-sin(dir_theta)*sin(dir_phi)*dir_dpm)*dm);
+//      displ_dz = fabs((cos(dir_theta)*dir_dtm*sin(dir_phi)+sin(dir_theta)*cos(dir_phi)*dir_dpm)*dm);
+//      displ_dy = fabs(sin(dir_theta)*dir_dtm*dm);
     }
   }
 
