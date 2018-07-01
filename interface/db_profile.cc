@@ -103,7 +103,7 @@ void db_profile::m_load_laben_channel_mapping (int profile_id) {
   channel_description_type_map["Ordinary"] = db_profile::empty; // this is an hack since the db has ordinary even for
  								// channels without pmt. The channel will be set to ordinary
 								// later while loading bx_geometry.
-  for (unsigned long i = 0; i < ch_id.size (); i++) {
+  for (size_t i = 0; i < ch_id.size (); i++) {
     if (!map_check(ch_descr[i].get_string (), channel_description_type_map)) msg << "unknown channel description " << ch_descr[i] << dispatch;
     else logical_channel_description_v[ch_id[i].get_int ()] = channel_description_type_map[ch_descr[i].get_string ()];
   }  
@@ -124,7 +124,7 @@ void db_profile::m_load_laben_channel_mapping (int profile_id) {
   const bx_dbi::column& fiber_bundle = table2["FiberBundle"];
 
   i_number_of_internal_pmt = 0;
-  for (unsigned long i = 0; i < ch_id2.size (); i++) {
+  for (size_t i = 0; i < ch_id2.size (); i++) {
     int lg = ch_id2[i].get_int ();
     pmt_has_cone_v[lg] = conc[i].get_int ();
     pmt_hole_id_v[lg] = hole[i].get_int ();
@@ -182,7 +182,7 @@ void db_profile::m_load_muon_channel_mapping (int profile_id) {
   const bx_dbi::column& ch_id = table["ChannelID"];
   const bx_dbi::column& ch_descr = table["ChannelDescription"];
   
-  for (unsigned long i = 0; i < ch_id.size (); i++) {
+  for (size_t i = 0; i < ch_id.size (); i++) {
     if (!map_check(ch_descr[i].get_string (), channel_description_type_map)) msg << "unknown channel description " << ch_descr[i] << dispatch;
     else logical_channel_description_v[ch_id[i].get_int ()] = channel_description_type_map[ch_descr[i].get_string ()];
   }  
@@ -195,7 +195,7 @@ void db_profile::m_load_muon_channel_mapping (int profile_id) {
   const bx_dbi::column& x = table2["X"];
   const bx_dbi::column& y = table2["Y"];
   const bx_dbi::column& z = table2["Z"];
-  for (unsigned long i = 0; i < ch_id2.size (); i++) {
+  for (size_t i = 0; i < ch_id2.size (); i++) {
     int lg = ch_id2[i].get_int ();
     pmt_hole_id_v[lg] = hole[i].get_int ();
     pmt_coordinates c;

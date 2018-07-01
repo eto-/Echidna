@@ -242,7 +242,7 @@ void db_run::m_read_laben_qe (int run_number, bx_dbi *dbi)
   const bx_dbi::column& effqe_noise = table5_qe_lg["Noise"];
   const bx_dbi::column& ch_id5     = table5_qe_lg["ChannelID"]; 
  
-  for (unsigned long i = 0; i < ch_id5.size (); i++) {
+  for (size_t i = 0; i < ch_id5.size (); i++) {
     int lg = ch_id5[i].get_int ();
     laben_qe_v[lg] = effqe[i].get_float ();
     laben_qe_nocorr_v[lg] = effqe_nc[i].get_float ();
@@ -263,7 +263,7 @@ void db_run::m_read_laben_precalib  (int run_number, bx_dbi *dbi) {
     const bx_dbi::column& gshift = table3["GrayShift"];
     const bx_dbi::column& roe = table3["RisingOnEven"];
     const bx_dbi::column& d80 = table3["Delta80"];
-    for (unsigned long i = 0; i < ch_id.size (); i++) {
+    for (size_t i = 0; i < ch_id.size (); i++) {
       int lg = ch_id[i].get_int ();
       laben_precalib_low_bin_v[lg] = low[i].get_int ();
       laben_precalib_high_bin_v[lg] = high[i].get_int ();
@@ -306,7 +306,7 @@ void db_run::m_read_muon_precalib (int run_number, bx_dbi *dbi) {
     const bx_dbi::column& ch_id = table_4["ChannelID"];
     const bx_dbi::column& ped = table_4["Pedestal"];
     const bx_dbi::column& sig = table_4["PedSigma"];
-    for (unsigned long i = 0; i < ch_id.size (); i++) {
+    for (size_t i = 0; i < ch_id.size (); i++) {
       int lg = ch_id[i].get_int ();
       muon_precalib_pedestal_v[lg] = ped[i].get_float ();
       muon_precalib_pedsigma_v[lg] = sig[i].get_float ();
@@ -327,7 +327,7 @@ void db_run::m_read_laben_laser_calib (int run_number, bx_dbi *dbi) {
   const bx_dbi::column& time_sigma = table2["TimeSigma"];
   const bx_dbi::column& charge_peak = table2["ChargePeak"];
   const bx_dbi::column& charge_sigma = table2["ChargeSigma"];
-  for (unsigned long i = 0; i < ch_id2.size (); i++) {
+  for (size_t i = 0; i < ch_id2.size (); i++) {
     int lg = ch_id2[i].get_int ();
     laben_time_offset_v[lg] = time_offset[i].get_float ();
     laben_time_sigma_v[lg] = time_sigma[i].get_float ();
@@ -350,7 +350,7 @@ void db_run::m_read_laben_tt1_calib (int run_number, bx_dbi *dbi) {
   const bx_dbi::column& charge_mean = table2["ChargeMean"];
   const bx_dbi::column& charge_rms = table2["ChargeRms"];
   const bx_dbi::column& charge_p0 = table2["P0"];
-  for (unsigned long i = 0; i < ch_id2.size (); i++) {
+  for (size_t i = 0; i < ch_id2.size (); i++) {
     int lg = ch_id2[i].get_int ();
     laben_charge_tt1_peak_v[lg] = charge_peak[i].get_float ();
     laben_charge_tt1_sigma_v[lg] = charge_sigma[i].get_float ();
@@ -374,7 +374,7 @@ void db_run::m_read_muon_laser_calib (int run_number, bx_dbi *dbi) {
   const bx_dbi::column& time_sigma   = table["TimeSigma"];
   const bx_dbi::column& charge_peak  = table["ChargePeak"];
   const bx_dbi::column& charge_sigma = table["ChargeSigma"];
-  for (unsigned long i = 0; i < ch_id.size (); i++) {
+  for (size_t i = 0; i < ch_id.size (); i++) {
     int lg = ch_id[i].get_int ();
     muon_time_offset_v [lg] = time_offset [i].get_float ();
     muon_time_sigma_v  [lg] = time_sigma  [i].get_float ();
@@ -409,7 +409,7 @@ void db_run::m_read_laben_dark_rates (int run_number, bx_dbi *dbi) {
   const bx_dbi::column& pmt_status = table5dark_lg["PmtStatus"];
   const bx_dbi::column& ch_id5     = table5dark_lg["ChannelID"];
   
-  for (unsigned long i = 0; i < ch_id5.size (); i++) {
+  for (size_t i = 0; i < ch_id5.size (); i++) {
     int lg = ch_id5[i].get_int ();
     laben_dark_noise_v[lg] = dark_noise[i].get_float ();
     laben_dark_sigma_v[lg] = dark_sigma[i].get_float ();
@@ -441,7 +441,7 @@ void db_run::m_read_muon_dark_rates (int run_number, bx_dbi *dbi) {
   const bx_dbi::column& pmt_status = table_dark_lg["PmtStatus"];
   const bx_dbi::column& ch_id      = table_dark_lg["ChannelID"];
   
-  for (unsigned long i = 0; i < ch_id.size (); i++) {
+  for (size_t i = 0; i < ch_id.size (); i++) {
     int lg = ch_id[i].get_int ();
     muon_dark_noise_v[lg] = dark_noise[i].get_float ();
     muon_dark_sigma_v[lg] = dark_sigma[i].get_float ();
@@ -478,7 +478,7 @@ void db_run::m_read_laben_electronic_channel (int run_number, bx_dbi *dbi) {
   const bx_dbi::column& charge_status      = table["ChargeStatus"    ];
   const bx_dbi::column& timing_status      = table["TimingStatus"    ];
   const bx_dbi::column& multiplicity       = table["Multiplicity"    ];
-  for (unsigned long i = 0; i < ch_id.size (); i++) {
+  for (size_t i = 0; i < ch_id.size (); i++) {
     int lg = ch_id[i].get_int ();
     copy_vdt_vector (laben_charge_base_status_v[lg], charge_base_status[i].get_vector ());
     copy_vdt_vector (laben_charge_peak_status_v[lg], charge_peak_status[i].get_vector ());
@@ -498,7 +498,7 @@ void db_run::m_read_muon_electronic_channel (int run_number, bx_dbi *dbi) {
   const bx_dbi::table &table = dbi->query (bx_dbi::bx_calib, "\"MuonChannelsProperties\"", where_str.str ());
   const bx_dbi::column& ch_id       = table["ChannelID"   ];
   const bx_dbi::column& multiplicity= table["Multiplicity"];
-  for (unsigned long i = 0; i < ch_id.size (); i++) {
+  for (size_t i = 0; i < ch_id.size (); i++) {
     int mch = ch_id[i].get_int () - 3001;
     copy_vdt_vector (muon_multiplicity_v[mch], multiplicity[i].get_vector ());
   }
@@ -534,7 +534,7 @@ void db_run::m_read_disconnected_pmts (int run_number, bx_dbi *dbi) {
   const bx_dbi::table &table = dbi->query (bx_dbi::bx_calib, query.str (), 0);
 
   const bx_dbi::column& ch_id = table["ChannelID"];
-  for (unsigned long i = 0; i < ch_id.size (); i++) disconnected_pmts_v[ch_id[i].get_int ()] = true;
+  for (size_t i = 0; i < ch_id.size (); i++) disconnected_pmts_v[ch_id[i].get_int ()] = true;
 }
 
 void db_run::m_read_disabled_channels (int run_number, bx_dbi *dbi) {
@@ -559,7 +559,7 @@ void db_run::m_read_disabled_channels (int run_number, bx_dbi *dbi) {
     const bx_dbi::column& t_on = table["Timing"];
     const bx_dbi::column& c_on = table["Charge"];
 
-    for (unsigned long i = 0; i < ch_id.size (); i++) {
+    for (size_t i = 0; i < ch_id.size (); i++) {
       int lg = ch_id[i].get_int ();
       int e = evnum[i].get_int ();
       bool t = t_on[i].get_bool ();
@@ -666,8 +666,8 @@ void db_run::m_write_muon_precalib () {
     for (int i = 0; i < constants::muon::channels; i++) {
       int lg = i + 1 + constants::muon::channel_offset;
       if (!check_muon_precalib_pedestal (lg)) continue;
-      run_number.push_back ((long int)i_run_number);
-      ch_id.push_back ((long int)lg);
+      run_number.push_back ((int32_t)i_run_number);
+      ch_id.push_back ((int32_t)lg);
       ped.push_back ((double)muon_precalib_pedestal_v[lg]);
       sig.push_back ((double)muon_precalib_pedsigma_v[lg]);
     }
@@ -694,8 +694,8 @@ void db_run::m_write_laben_laser_calib () {
     bx_dbi::column& chsig = laben_laser_write_table["ChargeSigma"];
     for (int i = 0; i < constants::laben::channels; i++) {
       int lg = i + 1;
-      run_number.push_back ((long int)i_run_number);
-      ch_id.push_back ((long int)lg);
+      run_number.push_back ((int32_t)i_run_number);
+      ch_id.push_back ((int32_t)lg);
       tioff.push_back ((double)laben_time_offset_v[lg]);
       tisig.push_back ((double)laben_time_sigma_v[lg]);
       chpea.push_back ((double)laben_charge_peak_v[lg]);
@@ -726,8 +726,8 @@ void db_run::m_write_laben_tt1_calib () {
     bx_dbi::column& chp0 = laben_tt1_write_table["P0"];
     for (int i = 0; i < constants::laben::channels; i++) {
       int lg = i + 1;
-      run_number.push_back ((long int)i_run_number);
-      ch_id.push_back ((long int)lg);
+      run_number.push_back ((int32_t)i_run_number);
+      ch_id.push_back ((int32_t)lg);
       chpea.push_back ((double)laben_charge_tt1_peak_v[lg]);
       chsig.push_back ((double)laben_charge_tt1_sigma_v[lg]);
       chmean.push_back ((double)laben_charge_tt1_mean_v[lg]);
@@ -758,8 +758,8 @@ void db_run::m_write_muon_laser_calib () {
     bx_dbi::column& chsig = muon_laser_write_table["ChargeSigma"];
     for (int i = 0; i < constants::muon::channels; i++) {
       int lg = i + 1 + constants::muon::channel_offset;
-      run_number.push_back ((long int)i_run_number);
-      ch_id.push_back ((long int)lg);
+      run_number.push_back ((int32_t)i_run_number);
+      ch_id.push_back ((int32_t)lg);
       tioff.push_back ((double)muon_time_offset_v[lg]);
       tisig.push_back ((double)muon_time_sigma_v[lg]);
       chpea.push_back ((double)muon_charge_peak_v[lg]);

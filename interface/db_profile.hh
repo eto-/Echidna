@@ -50,32 +50,32 @@ class db_profile: public db_acl, public TObject {
 	ClassDef(db_profile::pmt_coordinates,CYCLE_NUMBER);
     };
     
-    channel_description_type logical_channel_description (int lg) const { return map_get(lg,logical_channel_description_v,"logical_channel_description_v"); }
+    channel_description_type logical_channel_description (int32_t lg) const { return map_get(lg,logical_channel_description_v,"logical_channel_description_v"); }
 
-    float laben_crate_delay		(int crate) const { return map_get(crate,laben_crate_delay_v,"laben_crate_delay_v"); }
+    float laben_crate_delay		(int32_t crate) const { return map_get(crate,laben_crate_delay_v,"laben_crate_delay_v"); }
     
-    long int neutrino_trigger_tag 	() const { return i4_neutrino_trigger_tag; }
-    long int muon_trigger_tag 		() const { return i4_muon_trigger_tag; }
-    long int neutron_trigger_tag	() const { return i4_neutron_trigger_tag; }
-    long int laser266_trigger_tag 	() const { return i4_laser266_trigger_tag; }
-    long int laser355_trigger_tag 	() const { return i4_laser355_trigger_tag; }
-    long int laser394_trigger_tag 	() const { return i4_laser394_trigger_tag; }
-    long int pulser_trigger_tag 	() const { return i4_pulser_trigger_tag; }
-    long int random_trigger_tag 	() const { return i4_random_trigger_tag; }
-    long int muon_tdc_range     	() const { return i4_muon_tdc_range; }
+    int32_t neutrino_trigger_tag 	() const { return i4_neutrino_trigger_tag; }
+    int32_t muon_trigger_tag 		() const { return i4_muon_trigger_tag; }
+    int32_t neutron_trigger_tag	() const { return i4_neutron_trigger_tag; }
+    int32_t laser266_trigger_tag 	() const { return i4_laser266_trigger_tag; }
+    int32_t laser355_trigger_tag 	() const { return i4_laser355_trigger_tag; }
+    int32_t laser394_trigger_tag 	() const { return i4_laser394_trigger_tag; }
+    int32_t pulser_trigger_tag 	() const { return i4_pulser_trigger_tag; }
+    int32_t random_trigger_tag 	() const { return i4_random_trigger_tag; }
+    int32_t muon_tdc_range     	() const { return i4_muon_tdc_range; }
 //    float  muon_tdc_range_ns     	() const { return i4_muon_tdc_range*constants::muon::tdc::ns_per_clock; }
     float trigger_start_gate		() const { return f_trigger_start_gate; }
     float trigger_end_gate		() const { return f_trigger_end_gate; }
     float laser394_trigger_start_gate	() const { return f_laser394_trigger_start_gate; }
     float laser394_trigger_end_gate	() const { return f_laser394_trigger_end_gate; }
     
-    int number_of_internal_pmt 		() const { return i_number_of_internal_pmt; }
-    int number_of_external_pmt 		() const { return i_number_of_external_pmt; }
+    int32_t number_of_internal_pmt 		() const { return i_number_of_internal_pmt; }
+    int32_t number_of_external_pmt 		() const { return i_number_of_external_pmt; }
 
-    bool pmt_has_cone 			(int lg) const { return map_get(lg,pmt_has_cone_v,"pmt_has_cone_v"); }
-    int pmt_hole_id 			(int lg) const { return map_get(lg,pmt_hole_id_v,"pmt_hole_id_v"); }
-    const pmt_coordinates& get_pmt_coordinates (int lg) const { return map_get(lg,pmt_coordinates_v,"pmt_coordinates_v"); }
-    int pmt_fiber_bundle		(int lg) const { return map_get(lg,pmt_fiber_bundle_v,"pmt_fiber_bundle_v"); }
+    bool pmt_has_cone 			(int32_t lg) const { return map_get(lg,pmt_has_cone_v,"pmt_has_cone_v"); }
+    int32_t pmt_hole_id 			(int32_t lg) const { return map_get(lg,pmt_hole_id_v,"pmt_hole_id_v"); }
+    const pmt_coordinates& get_pmt_coordinates (int32_t lg) const { return map_get(lg,pmt_coordinates_v,"pmt_coordinates_v"); }
+    int32_t pmt_fiber_bundle		(int32_t lg) const { return map_get(lg,pmt_fiber_bundle_v,"pmt_fiber_bundle_v"); }
     
     float stainless_steel_sphere_radius	() const { return f_stainless_steel_sphere_radius; }
     float inner_vessel_radius 		() const { return f_inner_vessel_radius; }
@@ -95,27 +95,27 @@ class db_profile: public db_acl, public TObject {
 
   private:
     std::map<std::string, db_profile::channel_description_type> channel_description_type_map;
-    std::map<int, channel_description_type> logical_channel_description_v;
+    std::map<int32_t, channel_description_type> logical_channel_description_v;
 
     
-    std::map<int, float> laben_crate_delay_v;
+    std::map<int32_t, float> laben_crate_delay_v;
     
-    long int i4_neutrino_trigger_tag;
-    long int i4_muon_trigger_tag;
-    long int i4_neutron_trigger_tag;
-    long int i4_laser266_trigger_tag;
-    long int i4_laser355_trigger_tag;
-    long int i4_laser394_trigger_tag;
-    long int i4_pulser_trigger_tag;
-    long int i4_random_trigger_tag;
-    long int i4_muon_tdc_range;
+    int32_t i4_neutrino_trigger_tag;
+    int32_t i4_muon_trigger_tag;
+    int32_t i4_neutron_trigger_tag;
+    int32_t i4_laser266_trigger_tag;
+    int32_t i4_laser355_trigger_tag;
+    int32_t i4_laser394_trigger_tag;
+    int32_t i4_pulser_trigger_tag;
+    int32_t i4_random_trigger_tag;
+    int32_t i4_muon_tdc_range;
     float f_trigger_start_gate;
     float f_trigger_end_gate;
     float f_laser394_trigger_start_gate;
     float f_laser394_trigger_end_gate;
 
-    int i_number_of_internal_pmt;
-    int i_number_of_external_pmt;
+    int32_t i_number_of_internal_pmt;
+    int32_t i_number_of_external_pmt;
     
     float f_stainless_steel_sphere_radius;
     float f_inner_vessel_radius;
@@ -134,20 +134,20 @@ class db_profile: public db_acl, public TObject {
     float f_sss_uni_reflectivity;
     
     
-    std::map<int, bool> pmt_has_cone_v;
-    std::map<int, int> pmt_hole_id_v;
-    std::map<int, pmt_coordinates> pmt_coordinates_v;
-    std::map<int, int> pmt_fiber_bundle_v;
+    std::map<int32_t, bool> pmt_has_cone_v;
+    std::map<int32_t, int32_t> pmt_hole_id_v;
+    std::map<int32_t, pmt_coordinates> pmt_coordinates_v;
+    std::map<int32_t, int32_t> pmt_fiber_bundle_v;
     
     
-    void m_load_laben_channel_mapping (int profile_id);
-    void m_load_muon_channel_mapping (int profile_id);
-    void m_load_muon_general_setting (int profile_id);
-    void m_load_detector_geometry (int profile_id);
-    void m_load_profile_table (int profile_id);
-    void m_load_physics_constants (int profile_id);
+    void m_load_laben_channel_mapping (int32_t profile_id);
+    void m_load_muon_channel_mapping (int32_t profile_id);
+    void m_load_muon_general_setting (int32_t profile_id);
+    void m_load_detector_geometry (int32_t profile_id);
+    void m_load_profile_table (int32_t profile_id);
+    void m_load_physics_constants (int32_t profile_id);
 
-    db_profile (int profile_id);
+    db_profile (int32_t profile_id);
     friend class bx_dbi;
     ClassDef(db_profile,CYCLE_NUMBER)
 };

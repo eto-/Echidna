@@ -77,7 +77,7 @@ class db_run: public db_acl, public TObject {
     bool   get_laben_precalib_rising_on_even (int lg) const { return map_get(lg, laben_precalib_rising_on_even_v,"laben_precalib_rising_on_even_v"); }
     int    get_laben_precalib_gray_shift (int lg) const { return map_get(lg, laben_precalib_gray_shift_v,"laben_precalib_gray_shift_v"); }
     float  get_laben_precalib_delta80 	 (int lg) const { return map_get(lg, laben_precalib_delta80_v,"laben_precalib_delta80_v"); }
-    unsigned long get_muon_precalib_pulse_time () const { return u4_muon_precalib_pulse_time; }
+    uint32_t get_muon_precalib_pulse_time () const { return u4_muon_precalib_pulse_time; }
     double get_muon_precalib_pedestal	 (int lg) const { return map_get(lg, muon_precalib_pedestal_v,"muon_precalib_pedestal_v"); } 
     double get_muon_precalib_pedsigma	 (int lg) const { return map_get(lg, muon_precalib_pedsigma_v,"muon_precalib_pedsigma_v"); }
     float  get_laben_precalib_mean_time  ()       const { return  f_laben_precalib_mean_time; }
@@ -106,7 +106,7 @@ class db_run: public db_acl, public TObject {
     void set_laben_precalib_gray_shift	(int lg, int shift, const bx_named* obj) { if (check_acl ("set_laben_precalib_gray_shift", obj)) laben_precalib_gray_shift_v[lg] = shift; }
     void set_laben_precalib_rising_on_even	(int lg, bool t, const bx_named* obj)  { if (check_acl ("set_laben_precalib_rising_on_even", obj)) laben_precalib_rising_on_even_v[lg] = t; }
     void set_laben_precalib_delta80	(int lg, float dt, const bx_named* obj)  { if (check_acl ("set_laben_precalib_delta80", obj)) laben_precalib_delta80_v[lg] = dt; }
-    void set_muon_precalib_pulse_time	(unsigned long time, const bx_named* obj) { if (check_acl ("set_muon_precalib_pulse_time", obj)) u4_muon_precalib_pulse_time = time; }
+    void set_muon_precalib_pulse_time	(uint32_t time, const bx_named* obj) { if (check_acl ("set_muon_precalib_pulse_time", obj)) u4_muon_precalib_pulse_time = time; }
     void set_muon_precalib_pedestal	(int lg, double pedestal, const bx_named* obj) { if (check_acl ("set_muon_precalib_pedestal", obj)) muon_precalib_pedestal_v[lg] = pedestal; }
     void set_muon_precalib_pedsigma	(int lg, double pedsigma, const bx_named* obj) { if (check_acl ("set_muon_precalib_pedsigma", obj)) muon_precalib_pedsigma_v[lg] = pedsigma; }
     void set_laben_precalib_mean_time   (float laben_precalib_mean_time, const bx_named* obj)	   { if (check_acl ("set_laben_precalib_mean_time", obj)) f_laben_precalib_mean_time = laben_precalib_mean_time; }  		
@@ -327,7 +327,7 @@ class db_run: public db_acl, public TObject {
     std::map<int, float>  laben_precalib_delta80_v;
     std::map<int, int>    laben_precalib_low_bin_v, laben_precalib_high_bin_v, laben_precalib_gray_shift_v;
     std::map<int, bool>   laben_precalib_rising_on_even_v;
-    unsigned long         u4_muon_precalib_pulse_time;
+    uint32_t	          u4_muon_precalib_pulse_time;
     std::map<int, double> muon_precalib_pedestal_v, muon_precalib_pedsigma_v;
     float                 f_laben_precalib_mean_time, f_laben_precalib_sigma_time;
     std::vector<int>      laben_precalib_bad_channels_v, laben_precalib_off_channels_v;

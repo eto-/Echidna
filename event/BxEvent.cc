@@ -90,7 +90,7 @@ BxLabenDecodedHit::BxLabenDecodedHit(const bx_laben_decoded_hit& h, uint16_t raw
 												short_cluster(false) {
 }
 
-BxLabenClusteredHit::BxLabenClusteredHit(const int cluster, const bx_laben_clustered_hit& h, uint16_t decoded_index) : charge(h.get_decoded_hit().get_charge_pe()) {
+BxLabenClusteredHit::BxLabenClusteredHit(const int32_t cluster, const bx_laben_clustered_hit& h, uint16_t decoded_index) : charge(h.get_decoded_hit().get_charge_pe()) {
 }
 
 BxLabenCluster::BxLabenCluster(const bx_laben_cluster& c, uint16_t decoded_index) : 
@@ -138,14 +138,14 @@ BxLabenCluster::BxLabenCluster(const bx_laben_cluster& c, uint16_t decoded_index
 											  charge_QE_weight     ( c.get_charge_QE_weight          ()),						
                                                                                           charge_geo_QE_weight ( c.get_charge_geo_QE_weight      ()){
   peak_times.clear();
-  for (int i = 0 ; i < c.get_split_npeaks(); i++) {
+  for (int32_t i = 0 ; i < c.get_split_npeaks(); i++) {
     peak_times.push_back(c.get_split_peak(i).get_start_time());
     peak_charges.push_back(c.get_split_peak(i).get_nhits());
   } 
   npeaks = c.get_split_npeaks();
 }
 
-BxLabenRecHit::BxLabenRecHit(const int cluster, const bx_laben_rec_hit& h) {
+BxLabenRecHit::BxLabenRecHit(const int32_t cluster, const bx_laben_rec_hit& h) {
 }
 
 //BxLabenRecCluster::BxLabenRecCluster(const bx_laben_ab_mach4_cluster& c) : BxPosition(c.get_position()), 
@@ -238,7 +238,7 @@ void BxLaben::operator=(const bx_laben_event& e) {
 
   n_raw_hits = e.get_raw_nhits();
   n_raw_hits_fw = e.get_raw_nhits_fw();
-  for (int i = 0; i < 8; i++) n_raw_hits_flags[i] = e.get_raw_nhits_flag (bx_laben_raw_hit::flags(i));
+  for (int32_t i = 0; i < 8; i++) n_raw_hits_flags[i] = e.get_raw_nhits_flag (bx_laben_raw_hit::flags(i));
   n_invalid_pmts = e.get_invalid_pmts();
   n_invalid_charge = e.get_invalid_charge();
   n_decoded_hits = e.get_decoded_nhits();
@@ -248,35 +248,35 @@ void BxLaben::operator=(const bx_laben_event& e) {
   n_clusters_old     = e.get_nclusters_old();
   n_clusters_neutron = e.get_nclusters_neutron();
   n_clustered_hits = 0;
-  for (int i = 0 ; i < e.get_nclusters(); i++)
+  for (int32_t i = 0 ; i < e.get_nclusters(); i++)
     n_clustered_hits += e.get_cluster(i).get_clustered_nhits();
 
   std::map<const bx_laben_raw_hit*, uint16_t> raw_map;
   std::map<const bx_laben_decoded_hit*, uint16_t> decoded_map;
 
   if(has_raw) {
-    for (int i = 0 ; i < e.get_raw_nhits(); i++) {
+    for (int32_t i = 0 ; i < e.get_raw_nhits(); i++) {
       raw_hits.push_back(e.get_raw_hit(i));
       raw_map[&(e.get_raw_hit(i))] = i;
     }
   }
   
   if(has_decoded) {
-    for (int i = 0 ; i < e.get_decoded_nhits(); i++) {
+    for (int32_t i = 0 ; i < e.get_decoded_nhits(); i++) {
       decoded_hits.push_back(BxLabenDecodedHit(e.get_decoded_hit(i), 
 					       raw_map[&(e.get_decoded_hit(i).get_raw_hit())] ));
       decoded_map[&(e.get_decoded_hit(i))] = i;
     }
-    for (int i = 0 ; i < e.get_nclusters(); i++) {
-      for (int j = 0 ; j < e.get_cluster(i).get_clustered_nhits(); j++) {
+    for (int32_t i = 0 ; i < e.get_nclusters(); i++) {
+      for (int32_t j = 0 ; j < e.get_cluster(i).get_clustered_nhits(); j++) {
           const bx_laben_decoded_hit& dec_hit = e.get_cluster(i).get_clustered_hit(j).get_decoded_hit();
 	  uint16_t k = decoded_map[&dec_hit]; 
           decoded_hits[k].num_cluster = i+1;
 	  decoded_hits[k].short_cluster = e.get_cluster(i).get_clustered_hit(j).is_short_cluster();
       }
     }
-    for (int i = 0 ; i < e.get_nrec_clusters(); i++) {
-      for (int j = 0 ; j < e.get_rec_cluster(i).get_rec_nhits(); j++) {
+    for (int32_t i = 0 ; i < e.get_nrec_clusters(); i++) {
+      for (int32_t j = 0 ; j < e.get_rec_cluster(i).get_rec_nhits(); j++) {
           const bx_laben_decoded_hit& dec_hit = e.get_rec_cluster(i).get_rec_hit(j).get_clustered_hit().get_decoded_hit();
 	  uint16_t k = decoded_map[&dec_hit]; 
 	  decoded_hits[k].rec_time = e.get_rec_cluster(i).get_rec_hit(j).get_time();
@@ -285,24 +285,24 @@ void BxLaben::operator=(const bx_laben_event& e) {
   }
 
   if(has_clustered > 0) {
-    for (int i = 0 ; i < e.get_nclusters(); i++) {
+    for (int32_t i = 0 ; i < e.get_nclusters(); i++) {
       clusters.push_back(BxLabenCluster(e.get_cluster(i), 
 					decoded_map[&(e.get_cluster(i).get_clustered_hit(0).get_decoded_hit())] ));
       if (has_clustered > 1) {
-	for (int j = 0 ; j < e.get_cluster(i).get_clustered_nhits(); j++)
+	for (int32_t j = 0 ; j < e.get_cluster(i).get_clustered_nhits(); j++)
 	  clustered_hits.push_back(BxLabenClusteredHit(i+1, e.get_cluster(i).get_clustered_hit(j), decoded_map[&(e.get_cluster(i).get_clustered_hit(j).get_decoded_hit())] ));
       }
     } 
-    for (int i = 0 ; i < e.get_nclusters_muons(); i++)
+    for (int32_t i = 0 ; i < e.get_nclusters_muons(); i++)
       clusters_muons.push_back(BxLabenCluster(e.get_cluster_muon(i), 
 					decoded_map[&(e.get_cluster_muon(i).get_clustered_hit(0).get_decoded_hit())] ));
   }
 
   if(has_rec > 0) {
-    for (int i = 0 ; i < e.get_nrec_clusters(); i++) {
+    for (int32_t i = 0 ; i < e.get_nrec_clusters(); i++) {
       rec_clusters.push_back(BxLabenRecCluster(e.get_positron_cluster(i)));
       if (has_rec > 1) {
-	for (int j = 0 ; j < e.get_rec_cluster(i).get_rec_nhits(); j++)	{
+	for (int32_t j = 0 ; j < e.get_rec_cluster(i).get_rec_nhits(); j++)	{
 	  rec_hits.push_back(BxLabenRecHit(i+1, e.get_rec_cluster(i).get_rec_hit(j)));
 	}
       }
@@ -365,20 +365,20 @@ void BxMuon::operator=(const bx_muon_event& e) {
   track                  = e.get_track ();
 
   if(has_raw) {
-    for (int i = 0 ; i < e.get_raw_nhits(); i++)
+    for (int32_t i = 0 ; i < e.get_raw_nhits(); i++)
       raw_hits.push_back(e.get_raw_hit(i));
   }
 
   if(has_decoded) {
-    for (int i = 0 ; i < e.get_decoded_nhits(); i++)
+    for (int32_t i = 0 ; i < e.get_decoded_nhits(); i++)
       decoded_hits.push_back(e.get_decoded_hit(i));
   }
  
   if(has_clustered > 0) {
-    for (int i = 0 ; i < e.get_nclusters(); i++)
+    for (int32_t i = 0 ; i < e.get_nclusters(); i++)
       clusters.push_back(e.get_cluster(i));
     /*if (has_clustered > 1) {
-      for (int i = 0 ; i < e.get_clustered_nhits(); i++)
+      for (int32_t i = 0 ; i < e.get_clustered_nhits(); i++)
         clustered_hits.push_back(e.get_clustered_hit(i));
     } */
  }
@@ -445,7 +445,7 @@ BxMcTruthDaughter::BxMcTruthDaughter(const Int_t frame, const bx_mctruth_daughte
 											 pdg(d.get_pdg()),
 											 time(d.get_time()),
 											 energy(d.get_energy()) {
-  for (int i = 0; i < 3; i++ ) {
+  for (int32_t i = 0; i < 3; i++ ) {
     position[i]  = d.get_position(i);
     direction[i] = d.get_direction(i);
   }
@@ -454,7 +454,7 @@ BxMcTruthDaughter::BxMcTruthDaughter(const Int_t frame, const bx_mctruth_daughte
 BxMcTruthDeposit::BxMcTruthDeposit(const Int_t frame, const bx_mctruth_deposit& d) : num_frame(frame), 
 										 pdg_parent(d.get_pdg_parent()), 
 	 									 energy(d.get_energy()) {
-  for (int i = 0; i < 3; i++ ) 
+  for (int32_t i = 0; i < 3; i++ ) 
     position[i]  = d.get_position(i);
 }
 
@@ -482,7 +482,7 @@ BxMcTruthFrame::BxMcTruthFrame(const bx_mctruth_frame& f) : file_id        (f.ge
 							    n_users        (f.get_n_users        ()),
   							    n_id_photons   (f.get_n_id_photons   ()),
 							    n_od_photons   (f.get_n_od_photons   ()) {
-  for (int i = 0; i < 3; i++ ) { 
+  for (int32_t i = 0; i < 3; i++ ) { 
     position  [i] = f.get_position  (i);
     baricenter[i] = f.get_baricenter(i);
     direction [i] = f.get_direction (i);
@@ -516,15 +516,15 @@ void BxMcTruth::operator=(const bx_mctruth_event& e) {
     for (uint32_t i = 0 ; i < e.get_nframes(); i++) {
       frames.push_back(e.get_frame(i));
       if (write_flag > 1) {
-        for (int j = 0; j < e.get_frame(i).get_id_npe(); j++)  
+        for (int32_t j = 0; j < e.get_frame(i).get_id_npe(); j++)  
 	  hits_id.push_back(BxMcTruthHit(i+1, e.get_frame(i).get_hit_id(j)));
-        for (int j = 0; j < e.get_frame(i).get_od_npe(); j++)  
+        for (int32_t j = 0; j < e.get_frame(i).get_od_npe(); j++)  
 	  hits_od.push_back(BxMcTruthHit(i+1, e.get_frame(i).get_hit_od(j)));
-        for (int j = 0; j < e.get_frame(i).get_n_daughters(); j++)  
+        for (int32_t j = 0; j < e.get_frame(i).get_n_daughters(); j++)  
 	  daughters.push_back(BxMcTruthDaughter(i+1, e.get_frame(i).get_daughter(j)));
-        for (int j = 0; j < e.get_frame(i).get_n_deposits(); j++)  
+        for (int32_t j = 0; j < e.get_frame(i).get_n_deposits(); j++)  
 	  deposits.push_back(BxMcTruthDeposit(i+1, e.get_frame(i).get_deposit(j)));
-        for (int j = 0; j < e.get_frame(i).get_n_users(); j++)  
+        for (int32_t j = 0; j < e.get_frame(i).get_n_users(); j++)  
 	  users.push_back(BxMcTruthUser(i+1, e.get_frame(i).get_user(j)));
       }
     }
@@ -643,12 +643,12 @@ BxFwfdCluster::BxFwfdCluster() {peak_pos = 0; time_prev = 0.; peak_ampl = 0.; as
 BxFwfd::BxFwfd(Bool_t v1, Bool_t v2, Int_t v3, Int_t v4, uint32_t v5, uint32_t v6, Int_t v7, Int_t v8, Int_t v9, uint8_t v10, Double_t v11, Int_t v12, UInt_t v13, uint8_t* v14) : clusters() {
 
   is_present = v1; is_odsum_present = v2; n_fwfd_evs = v3; unix_time = v4; gpstimes[0] = v5; gpstimes[1] = v6; run = v7; evnum = v8; evnum_bx = v9; error = v10; raw_time = v11; trgtype = v12; n_clusters = v13;
-  for (int i = 0; i < 16; i++)  dcode[i] = v14[i];
+  for (int32_t i = 0; i < 16; i++)  dcode[i] = v14[i];
 
 }
 
 BxFwfd::BxFwfd() : clusters() {  is_present = false; is_odsum_present = false; n_fwfd_evs = 0; unix_time = 0; gpstimes[0] = 0; gpstimes[1] = 0; run = 0; evnum = 0; evnum_bx = 0; error = 0; raw_time = 0; trgtype = 0; n_clusters = 0;
-  for (int i = 0; i < 16; i++)  dcode[i] = 0;}
+  for (int32_t i = 0; i < 16; i++)  dcode[i] = 0;}
 
 void BxFwfd::SetCluster(UInt_t n_clusters, UInt_t num_cluster, Int_t v1, Double_t v2, Float_t v3, Float_t v4, Float_t v5, Float_t v6, Float_t v7, Int_t v8, Float_t v9, Float_t v10, Float_t v11) {
       if (clusters.size() != n_clusters)  clusters.resize(n_clusters);
@@ -667,10 +667,10 @@ void BxFwfd::ClearWForms() {
 
 
 double BxEvent::GetTimeDifference (const uint32_t* prev_gps_times, Double_t prev_laben_trigger_time) const {
-  static const long int gray_window = (1 << 16) * 50;
+  static const int32_t gray_window = (1 << 16) * 50;
   
-  long int gps_dt_s = GetTrigger ().GetGpsTimeSec () - prev_gps_times[0];
-  long int gps_dt_ns = GetTrigger ().GetGpsTimeNs () - prev_gps_times[1];
+  int32_t gps_dt_s = GetTrigger ().GetGpsTimeSec () - prev_gps_times[0];
+  int32_t gps_dt_ns = GetTrigger ().GetGpsTimeNs () - prev_gps_times[1];
   double dt_gps_us = double(gps_dt_s) * 1e6 + double(gps_dt_ns) * 1e-3;
 
   if (::fabs (dt_gps_us) > (gray_window * 1e-3 - 20)) { // 20 is to have some margin when dt is to close to gray_window
@@ -691,16 +691,16 @@ double BxEvent::GetTimeDifference (const uint32_t* prev_gps_times, Double_t prev
   }
 }
 
-double BxEvent::GetTimeDifference (int current_cluster, const BxEvent& prev_event, int prev_cluster) const {
+double BxEvent::GetTimeDifference (int32_t current_cluster, const BxEvent& prev_event, int32_t prev_cluster) const {
   if (prev_cluster < 0 || current_cluster < 0) return GetTimeDifference (prev_event);
   return GetTimeDifference (current_cluster, prev_event.GetTrigger ().GetGpsTimes (), prev_event.GetLaben ().GetCluster (prev_cluster).GetStartTime ());
 }
 
-double BxEvent::GetTimeDifference (int current_cluster, const uint32_t* prev_gps_times, Double_t prev_laben_cluster_time) const {
-  static const long int gray_window = (1 << 16) * 50;
+double BxEvent::GetTimeDifference (int32_t current_cluster, const uint32_t* prev_gps_times, Double_t prev_laben_cluster_time) const {
+  static const int32_t gray_window = (1 << 16) * 50;
   
-  long int gps_dt_s = GetTrigger ().GetGpsTimeSec () - prev_gps_times[0];
-  long int gps_dt_ns = GetTrigger ().GetGpsTimeNs () - prev_gps_times[1];
+  int32_t gps_dt_s = GetTrigger ().GetGpsTimeSec () - prev_gps_times[0];
+  int32_t gps_dt_ns = GetTrigger ().GetGpsTimeNs () - prev_gps_times[1];
   double dt_gps_us = double(gps_dt_s) * 1e6 + double(gps_dt_ns) * 1e-3;
 
   if (::fabs (dt_gps_us) > (gray_window * 1e-3 - 20)) { // 20 is to have some margin when dt is to close to gray_window
@@ -725,7 +725,7 @@ double BxEvent::GetTimeDifference (int current_cluster, const uint32_t* prev_gps
 Float_t BxLabenRecCluster::GetTailTot(Int_t tail) const {
   if ( tail < 40 || tail > 130 )
     return -1.;
-  int index = (tail - 40)/10;
+  int32_t index = (tail - 40)/10;
   return tailtot[index];
 }
 
@@ -744,7 +744,7 @@ Float_t BxLabenRecCluster::GetTailTotC11Mva(Int_t tail_index) const {
 /*Float_t BxLabenRecCluster::GetTailTotMach4(Int_t tail) const {
   if ( tail < 30 || tail > 110 )
     return -1.;
-  int index = (tail - 30)/5;
+  int32_t index = (tail - 30)/5;
   return tailtot_mach4[index];
 }*/
 
@@ -789,9 +789,9 @@ time_t BxTrigger::GetSunRise (time_t t) {
   time_t day = t - t % 86400;
   time_t sunrise = day;
 
-  int sign = 1;
+  int32_t sign = 1;
   float unused;
-  for (int step = 86400 / 2; step > 30; step /= 2) {
+  for (int32_t step = 86400 / 2; step > 30; step /= 2) {
     sunrise += sign * step;
     float altitude = GetSunAltitude (sunrise, unused);
     if (::fabs(altitude) < 0.1) break;
@@ -804,9 +804,9 @@ time_t BxTrigger::GetSunSet (time_t t) {
   time_t day = t - t % 86400;
   time_t sunfall = day;
 
-  int sign = 1;
+  int32_t sign = 1;
   float unused;
-  for (int step = 86400 / 2; step > 30; step /= 2) {
+  for (int32_t step = 86400 / 2; step > 30; step /= 2) {
     sunfall += sign * step;
     float altitude = GetSunAltitude (sunfall, unused);
     if (::fabs(altitude) < 0.1) break;
@@ -819,9 +819,9 @@ time_t BxTrigger::GetMidday (time_t t) {
   time_t day = t - t % 86400;
   time_t midday = day;
 
-  int sign = 1;
+  int32_t sign = 1;
   float azimuth;
-  for (int step = 86400 / 2; step > 30; step /= 2) {
+  for (int32_t step = 86400 / 2; step > 30; step /= 2) {
     midday += sign * step;
     GetSunAltitude (midday, azimuth);
     if (::fabs (azimuth - 180) < 0.1) break;
@@ -943,7 +943,7 @@ time_t BxTrigger::GetMidday (time_t t) {
  * added npmts_400 nhits_400 charge_400 on Oleg's request; added charge_npmts based on Alessandro, Stefano and Livia idea;
  *
  * Revision 1.133  2011-02-11 16:28:46  litvinov
- * FWFW raw_time unsigned instead of signed int
+ * FWFW raw_time unsigned instead of signed int32_t
  *
  * Revision 1.132  2010-12-10 10:32:43  litvinov
  * added FADC raw_time. Waveforms are now vectors

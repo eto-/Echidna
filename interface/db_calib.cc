@@ -35,7 +35,7 @@ db_calib::db_calib (int calib_profile): db_acl(), TObject() {
   const bx_dbi::column& pdf_time_c = table2["Time"];
   const bx_dbi::column& pdf_mc_c = table2["MonteCarloPDF"];
   const bx_dbi::column& pdf_data_c = table2["SourceDataPDF"];
-  for (unsigned long i = 0; i < pdf_time_c.size (); i++) {
+  for (size_t i = 0; i < pdf_time_c.size (); i++) {
     pdf_time_v.push_back (pdf_time_c[i].get_float ());
     pdf_mc_v.push_back (pdf_mc_c[i].get_float ());
     pdf_data_v.push_back (pdf_data_c[i].get_float ());

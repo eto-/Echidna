@@ -16,35 +16,35 @@ const float constants::number::f4_rad_to_deg_factor = 180. / constants::number::
 const float constants::physic::c = 3E8;
 const float constants::physic::c_m_ns = 0.3;
 
-const unsigned char  constants::fiber::number_of_bundles = 29;
-const unsigned char constants::fiber::number_of_fibers_in_bundle[] = { 0, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 70, 70, 20 };
+const uint8_t  constants::fiber::number_of_bundles = 29;
+const uint8_t constants::fiber::number_of_fibers_in_bundle[] = { 0, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 70, 70, 20 };
 
-const unsigned char  constants::trigger::crate_number = 0;
+const uint8_t  constants::trigger::crate_number = 0;
 
-const unsigned short constants::laben::pmts = 2212;
-const unsigned short constants::laben::channels = 2240;
-const unsigned char  constants::laben::ncrates = 14;
-const unsigned short  constants::laben::nboards = 280;
-const unsigned char  constants::laben::board_per_rack = 20;
-const unsigned char  constants::laben::channels_per_rack = 160;
-const unsigned char  constants::laben::channels_per_board = 8;
-const unsigned char  constants::laben::frontend::board_per_rack = 14;
+const uint16_t constants::laben::pmts = 2212;
+const uint16_t constants::laben::channels = 2240;
+const uint8_t  constants::laben::ncrates = 14;
+const uint16_t  constants::laben::nboards = 280;
+const uint8_t  constants::laben::board_per_rack = 20;
+const uint8_t  constants::laben::channels_per_rack = 160;
+const uint8_t  constants::laben::channels_per_board = 8;
+const uint8_t  constants::laben::frontend::board_per_rack = 14;
 
-const unsigned char  constants::muon::tdc::max_boards = 2;
-const unsigned char  constants::muon::tdc::chips_per_board = 4;
-const unsigned char  constants::muon::tdc::channels_per_chip = 32;
-const unsigned char  constants::muon::tdc::channels_per_board = 128;
+const uint8_t  constants::muon::tdc::max_boards = 2;
+const uint8_t  constants::muon::tdc::chips_per_board = 4;
+const uint8_t  constants::muon::tdc::channels_per_chip = 32;
+const uint8_t  constants::muon::tdc::channels_per_board = 128;
 const float          constants::muon::tdc::ns_per_clock = 1.0416;
 const float          constants::muon::tdc::new_ns_per_clock = 0.8;
 
-const unsigned short constants::muon::channels = 256;
-const unsigned short constants::muon::channel_offset = 3000;
-const unsigned long  constants::muon::max_hits = 600;
+const uint16_t constants::muon::channels = 256;
+const uint16_t constants::muon::channel_offset = 3000;
+const uint32_t  constants::muon::max_hits = 600;
 /* exact value for QTC gain of 1 channel QTC 6 ch 1 (no PMT taken into account: assumed 1.6 pC/pe gain) */
 const float          constants::muon::pe_per_clock = 0.07295;
-const unsigned char  constants::muon::crate_number = 15;
+const uint8_t  constants::muon::crate_number = 15;
 
-const unsigned short constants::precalibration_nevents = 1000;
+const uint16_t constants::precalibration_nevents = 1000;
 
 /*
  * $Log: constants.cc,v $

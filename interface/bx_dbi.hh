@@ -52,8 +52,8 @@ class bx_dbi: public bx_named {
     // For best use a const reference has to be assigned to the return value of query, as follow:
     // const bx_dbi::table &table = dbi->query (...);
     const table query (database_id db_id, const std::string& from_table, const std::string& where,
-		  const std::string &table_fields = "*", const std::string& order = "", int max_lines = 0);
-    const table query (database_id db_id, const std::string& sql_query, int max_lines);
+		  const std::string &table_fields = "*", const std::string& order = "", int32_t max_lines = 0);
+    const table query (database_id db_id, const std::string& sql_query, int32_t max_lines);
     
     // Insert a table in the database
     void insert (database_id db_id, const std::string& to_table, const table& t, const column_names& index_columns, bool overwrite = 0);
@@ -63,14 +63,14 @@ class bx_dbi: public bx_named {
     void flush_visitors (bx_reco_framework *);
     void close_db_connections (); // close all db connections
     
-    int get_current_run_number () const { return i4_current_run_number; }
-    void set_current_run_number (int run_number) { i4_current_run_number = run_number; }
+    int32_t get_current_run_number () const { return i4_current_run_number; }
+    void set_current_run_number (int32_t run_number) { i4_current_run_number = run_number; }
 
     // Get db_run/db_profile table for the requested run/profile.
     db_run& get_run () { if (!run_p) run_p = new db_run(i4_current_run_number); return *run_p; }
     db_profile& get_profile () { if (!profile_p) profile_p = new db_profile(get_run ().get_profile_id ()); return *profile_p; }
     db_calib& get_calib () { if (!calib_p) calib_p = new db_calib(get_run ().get_calib_profile ()); return *calib_p; }                   
-    const db_channel& get_channel (int lg) { if (!channel_p[lg]) channel_p[lg] = db_channel_builder::build (lg, get_run (), get_profile ()); return *channel_p[lg]; }                   
+    const db_channel& get_channel (int32_t lg) { if (!channel_p[lg]) channel_p[lg] = db_channel_builder::build (lg, get_run (), get_profile ()); return *channel_p[lg]; }                   
 
     bool is_production () const { return b_production; }
   private:
@@ -79,7 +79,7 @@ class bx_dbi: public bx_named {
     static bx_dbi *me;
 
     bool b_production;
-    long int i4_current_run_number;
+    int32_t i4_current_run_number;
 
     void m_open_connection (database_id id);
     void m_close_connection (database_id id);

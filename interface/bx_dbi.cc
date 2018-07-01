@@ -75,9 +75,9 @@ void bx_dbi::m_open_connection (database_id id) {
   if (check_parameter ("PGPASSWD")) passwd = get_parameter("PGPASSWD").get_string ().c_str ();
 
   const char *ip = get_parameter ("SERVER1").get_string ().c_str ();
-  long int port_i = get_parameter ("PORT1").get_int ();
+  int port_i = get_parameter ("PORT1").get_int ();
   const char *ip2 = get_parameter ("SERVER2").get_string ().c_str ();
-  long int port_i2 = get_parameter ("PORT2").get_int ();
+  int port_i2 = get_parameter ("PORT2").get_int ();
 
   std::ostringstream s_port;
   s_port << port_i;

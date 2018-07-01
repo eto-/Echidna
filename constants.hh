@@ -11,6 +11,7 @@
 
 #ifndef _CONSTANTS_HH
 #define _CONSTANTS_HH
+#include <stdint.h>
 
 class constants {
   public:
@@ -29,30 +30,30 @@ class constants {
     };
     class fiber {
       public:
-	static const unsigned char number_of_bundles;
-	static const unsigned char number_of_fibers_in_bundle[];
+	static const uint8_t number_of_bundles;
+	static const uint8_t number_of_fibers_in_bundle[];
     };
     class trigger {
       public:
-        static const unsigned char crate_number;
+        static const uint8_t crate_number;
     };
     class laben {
       public:
-	static const unsigned short nboards;
-        static const unsigned char ncrates;
-        static const unsigned short pmts;
-        static const unsigned short channels;
-	static const unsigned char board_per_rack;
-	static const unsigned char channels_per_rack;
-	static const unsigned char channels_per_board;
-	static int board_in_rack (int lg) { return ((lg - 1) % channels_per_rack) / channels_per_board + 1; }
-	static int channel_in_board (int lg) { return ((lg - 1) % channels_per_rack) % channels_per_board + 1; }
-        static bool is_laben (int lg) { return lg > 0 && lg <= channels; }
+	static const uint16_t nboards;
+        static const uint8_t ncrates;
+        static const uint16_t pmts;
+        static const uint16_t channels;
+	static const uint8_t board_per_rack;
+	static const uint8_t channels_per_rack;
+	static const uint8_t channels_per_board;
+	static int32_t board_in_rack (int32_t lg) { return ((lg - 1) % channels_per_rack) / channels_per_board + 1; }
+	static int32_t channel_in_board (int32_t lg) { return ((lg - 1) % channels_per_rack) % channels_per_board + 1; }
+        static bool is_laben (int32_t lg) { return lg > 0 && lg <= channels; }
 	class frontend {
 	  public:
-	    static const unsigned char board_per_rack;
-	    static int board_in_rack (int lg) {
-	      int fe_couple = (laben::board_in_rack (lg) - 1) / 3 + 1;
+	    static const uint8_t board_per_rack;
+	    static int32_t board_in_rack (int32_t lg) {
+	      int32_t fe_couple = (laben::board_in_rack (lg) - 1) / 3 + 1;
 	      if (laben::channel_in_board (lg) & 0x1) return fe_couple * 2 - 1;
 	      else return fe_couple * 2;
 	    }
@@ -62,22 +63,22 @@ class constants {
       public:
         class tdc {
           public:
-            static const unsigned char max_boards;
-            static const unsigned char chips_per_board;
-            static const unsigned char channels_per_chip;
-            static const unsigned char channels_per_board;
+            static const uint8_t max_boards;
+            static const uint8_t chips_per_board;
+            static const uint8_t channels_per_chip;
+            static const uint8_t channels_per_board;
             static const float ns_per_clock;
             static const float new_ns_per_clock;
         };
-        static const unsigned char crate_number;
-        static const unsigned short channels;
-        static const unsigned short channel_offset;
-        static const unsigned long max_hits;
+        static const uint8_t crate_number;
+        static const uint16_t channels;
+        static const uint16_t channel_offset;
+        static const uint32_t max_hits;
         static const float pe_per_clock; //tmp, to be removed
-        static bool is_muon (int lg) { return lg > channel_offset && lg <= (channels + channel_offset); }
+        static bool is_muon (int32_t lg) { return lg > channel_offset && lg <= (channels + channel_offset); }
     };
-    static const unsigned short precalibration_nevents;
-    static int crate (int lg) { return (lg - 1) / 160 + 1; }
+    static const uint16_t precalibration_nevents;
+    static int32_t crate (int32_t lg) { return (lg - 1) / 160 + 1; }
 };
 
 

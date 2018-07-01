@@ -314,7 +314,7 @@ const configuration_manager::configuration_namespace& configuration_manager::get
 std::vector<std::string> configuration_manager::get_module_name_list () const {
   std::vector<std::string> module_name_list;
 
-  for (unsigned long i = 0; i < module_list.size (); i++) module_name_list.push_back (module_list[i].get_namespace_name ());
+  for (size_t i = 0; i < module_list.size (); i++) module_name_list.push_back (module_list[i].get_namespace_name ());
 
   return module_name_list;
 }
@@ -323,12 +323,12 @@ std::vector<std::string> configuration_manager::get_module_name_list () const {
 void configuration_manager::upload_configuration (const std::string& configuration_name) {
   const configuration_namespace& config = get_configuration (configuration_name);
 
-  for (unsigned long i = 0; i < module_list.size (); i++) module_list[i].upload_parameter_broker (this);
-  for (unsigned long i = 0; i < named_list.size (); i++) named_list[i].upload_parameter_broker (this);
+  for (size_t i = 0; i < module_list.size (); i++) module_list[i].upload_parameter_broker (this);
+  for (size_t i = 0; i < named_list.size (); i++) named_list[i].upload_parameter_broker (this);
   config.upload_parameter_broker (this);
   set_configuration_name (configuration_name);
-  for (unsigned long i = 0; i < user_file_params.size (); i++) user_file_params[i].upload_parameter_broker (this);
-  for (unsigned long i = 0; i < command_line_params.size (); i++) command_line_params[i].upload_parameter_broker (this);
+  for (size_t i = 0; i < user_file_params.size (); i++) user_file_params[i].upload_parameter_broker (this);
+  for (size_t i = 0; i < command_line_params.size (); i++) command_line_params[i].upload_parameter_broker (this);
  
 }
     
@@ -338,7 +338,7 @@ void configuration_manager::configuration_namespace::upload_parameter_broker (pa
   bx_message msg(bx_message::debug, "configuration_namespace: ");
   if (i_type == module || i_type == named) msg << "initing " << s_ns_name << " with ";
   else msg << "uploading ";
-  for (unsigned long i = 0; i < param_v.size (); i++) {
+  for (size_t i = 0; i < param_v.size (); i++) {
     if (i_type == module || i_type == named) {
       broker->init_parameter (s_ns_name, param_v[i].get_name (), param_v[i].get_value ());
     } else {
