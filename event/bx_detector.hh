@@ -43,7 +43,7 @@ class detector_interface: public bx_named {
 #endif
 
 class bx_detector: public TObject {
-#if defined (_ROOT_CINT_) || defined (G__DICTIONARY)
+#if defined (_ROOT_CINT_) || defined (G__DICTIONARY) || defined (R__DICTIONARY)
   public:
 #else
   private:	// This way db_detector can not be istantiated in Echidna
