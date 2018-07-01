@@ -223,13 +223,13 @@ void bx_dbi::insert (database_id db_id, const std::string& to_table, const table
     // Check write privileges
   //if (!m_check_priv (db_id, to_table, "INSERT")) return;
   
-  bool do_overrite = false;
+  ///bool do_overrite = false;
   if (m_check_data_presence (db_id, to_table, t, index_columns)) {
-    if (overwrite) do_overrite = true;
-    else {
+//    if (overwrite) do_overrite = true;
+//    else {
       get_message (bx_message::error) << "data already present in table \"" << to_table << "\"" << dispatch;
-      return;
-    }
+//      return;
+//    }
   }
 
     // Open the transaction
