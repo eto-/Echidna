@@ -34,7 +34,7 @@ void remove_file (int32_t unused) {
 }
 
 // ctor
-bx_writer::bx_writer (): bx_base_module("bx_writer", bx_base_module::writer), u4_written_events(0) {
+bx_writer::bx_writer (): bx_base_module("bx_writer", bx_base_module::writer), u4_written_events(0), b_mc_disabled(false) {
 }
 
 // module interface
@@ -121,10 +121,9 @@ bx_echidna_event* bx_writer::doit (bx_echidna_event *ev) {
   // We cannot use new/delete for BxEvent obj (see comment in BxEvent.hh)
   *p_root_event = *ev;
 
-  bool mc_disabled = false;
-  if (!mc_disabled && ev->get_mctruth().is_data()) { 
+  if (!b_mc_disabled && ev->get_mctruth().is_data()) { 
     p_root_tree->SetBranchStatus("mctruth*", 0);
-    mc_disabled = true;
+    b_mc_disabled = true;
   }
 
   if (p_root_tree->Fill () <= 0) get_message (bx_message::critic) << "unable to fill event " << ev->get_event_number() << dispatch;

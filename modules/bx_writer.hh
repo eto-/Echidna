@@ -38,6 +38,7 @@ class bx_writer: public bx_base_module {
     TTree *p_root_tree;       // ptr to TTree 
     BxEvent *p_root_event;    // ptr to BxEvent, used for TTree::Branch() 
     uint32_t u4_written_events;
+    bool b_mc_disabled;
 };
 
 #endif
