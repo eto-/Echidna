@@ -121,7 +121,7 @@ bx_echidna_event* bx_muon_findcluster::doit (bx_echidna_event *ev) {
     if (!dbch->is_ordinary ()) continue;
     float hit_time = er.get_decoded_hit (i).get_time () + time_buffer_ns;
     int32_t bin = int32_t(hit_time / i4_bin_width);
-    if (bin < 0 && bin > i4_n_bins) { 
+    if (bin < 0 || bin >= i4_n_bins) { 
       get_message (bx_message::warn) << "hit outside boundaries of binned distribution " << hit_time << std::endl; 
       continue;
     }
