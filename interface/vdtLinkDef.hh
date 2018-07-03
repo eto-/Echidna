@@ -14,8 +14,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class vdt;
-#pragma link C++ class std::vector<vdt>;
-#pragma link C++ function operator<< (std::ostream&, const vdt&);
+#pragma link C++ class bx_vdt;
+#pragma link C++ class std::vector<bx_vdt>;
+#pragma link C++ function operator<< (std::ostream&, const bx_vdt&);
 #endif
 #endif

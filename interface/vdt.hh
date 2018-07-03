@@ -20,7 +20,7 @@
 #include <iostream>
 #include <vector>
 
-class vdt {
+class bx_vdt {
   public:
     enum vdt_type {
       int_vdt = 'I',
@@ -29,49 +29,49 @@ class vdt {
       vector_vdt = 'V',
       unassigned_vdt = 'U'
     };
-    typedef std::vector<vdt> vdt_vector;
+    typedef std::vector<bx_vdt> vdt_vector;
     
-    vdt (): type_internal(unassigned_vdt), name_s("") {}
-    vdt (const std::string& value, const std::string& name = "", vdt_type type = unassigned_vdt);
-    vdt (long int value): name_s("") { value_i = value; type_internal = int_vdt; }
-    vdt (double value): name_s("") { value_f = value; type_internal = float_vdt; }
-    template<typename V> vdt (const std::vector<V, std::allocator<V> >& value): name_s("") { // This should stay in .cc file, but
+    bx_vdt (): type_internal(unassigned_vdt), name_s("") {}
+    bx_vdt (const std::string& value, const std::string& name = "", vdt_type type = unassigned_vdt);
+    bx_vdt (long int value): name_s("") { value_i = value; type_internal = int_vdt; }
+    bx_vdt (double value): name_s("") { value_f = value; type_internal = float_vdt; }
+    template<typename V> bx_vdt (const std::vector<V, std::allocator<V> >& value): name_s("") { // This should stay in .cc file, but
       										 	     // gcc does not have export for templates
       type_internal = vector_vdt;
-      std::back_insert_iterator<std::vector<vdt> > inserter(value_v);
+      std::back_insert_iterator<std::vector<bx_vdt> > inserter(value_v);
       std::copy (value.begin (), value.end (), inserter);
     }
       // Since cast is not called in some onstructor operator these methods are necessary
-    vdt (int value): name_s("") { value_i = value; type_internal = int_vdt; }
-    vdt (short value): name_s("") { value_i = value; type_internal = int_vdt; }
-    vdt (char value): name_s("") { value_i = value; type_internal = int_vdt; }
-    vdt (unsigned long value): name_s("") { value_i = value; type_internal = int_vdt; }
-    vdt (unsigned short value): name_s("") { value_i = value; type_internal = int_vdt; }
-    vdt (unsigned char value): name_s("") { value_i = value; type_internal = int_vdt; }
-    vdt (float value): name_s("") { value_f = value; type_internal = float_vdt; }
+    bx_vdt (int value): name_s("") { value_i = value; type_internal = int_vdt; }
+    bx_vdt (short value): name_s("") { value_i = value; type_internal = int_vdt; }
+    bx_vdt (char value): name_s("") { value_i = value; type_internal = int_vdt; }
+    bx_vdt (unsigned long value): name_s("") { value_i = value; type_internal = int_vdt; }
+    bx_vdt (unsigned short value): name_s("") { value_i = value; type_internal = int_vdt; }
+    bx_vdt (unsigned char value): name_s("") { value_i = value; type_internal = int_vdt; }
+    bx_vdt (float value): name_s("") { value_f = value; type_internal = float_vdt; }
 
     void set_name (const std::string& name) { name_s = name; }
 
-    const vdt& operator= (const std::string& value); 
-    const vdt& operator= (long int value);
-    const vdt& operator= (double value);
-    template<typename V> const vdt& operator= (const std::vector<V, std::allocator<V> >& value) { // This should stay in .cc file, but
+    const bx_vdt& operator= (const std::string& value); 
+    const bx_vdt& operator= (long int value);
+    const bx_vdt& operator= (double value);
+    template<typename V> const bx_vdt& operator= (const std::vector<V, std::allocator<V> >& value) { // This should stay in .cc file, but
       												  // gcc does not have export for templates
-      if (type_internal != unassigned_vdt) m_check_type (vdt::vector_vdt);
+      if (type_internal != unassigned_vdt) m_check_type (bx_vdt::vector_vdt);
       type_internal = vector_vdt;
-      std::back_insert_iterator<std::vector<vdt> > inserter(value_v);
+      std::back_insert_iterator<std::vector<bx_vdt> > inserter(value_v);
       std::copy (value.begin (), value.end (), inserter);
       return *this;
     }
 
       // Since cast is not called in assignement operator these methods are necessary
-    const vdt& operator= (int value)      { return (*this) = (long int)(value); }
-    const vdt& operator= (short value)	  { return (*this) = (long int)(value); }
-    const vdt& operator= (char value)     { return (*this) = (long int)(value); }
-    const vdt& operator= (unsigned long value) { return (*this) = (long int)(value); }
-    const vdt& operator= (unsigned short value) { return (*this) = (long int)(value); }
-    const vdt& operator= (unsigned char value) { return (*this) = (long int)(value); }
-    const vdt& operator= (float value)    { return (*this) = double(value); }
+    const bx_vdt& operator= (int value)      { return (*this) = (long int)(value); }
+    const bx_vdt& operator= (short value)	  { return (*this) = (long int)(value); }
+    const bx_vdt& operator= (char value)     { return (*this) = (long int)(value); }
+    const bx_vdt& operator= (unsigned long value) { return (*this) = (long int)(value); }
+    const bx_vdt& operator= (unsigned short value) { return (*this) = (long int)(value); }
+    const bx_vdt& operator= (unsigned char value) { return (*this) = (long int)(value); }
+    const bx_vdt& operator= (float value)    { return (*this) = double(value); }
 
     bool is_valid ()	 const  { return (type_internal == unassigned_vdt) ? 0 : 1; }
     
@@ -97,7 +97,8 @@ class vdt {
     void m_assign_value (const std::string& str);
 };
 
-std::ostream& operator<< (std::ostream&, const vdt&);
+typedef bx_vdt vdt;
+std::ostream& operator<< (std::ostream&, const bx_vdt&);
 #endif
 /*
  * $Log: vdt.hh,v $

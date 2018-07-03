@@ -16,7 +16,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-vdt::vdt_type vdt::m_search_type (const std::string& str) {
+bx_vdt::vdt_type bx_vdt::m_search_type (const std::string& str) {
     // empty string
   if (!str.size ()) return string_vdt;
 
@@ -40,7 +40,7 @@ vdt::vdt_type vdt::m_search_type (const std::string& str) {
   return int_vdt;
 }
 
-void vdt::m_assign_value (const std::string& str) {
+void bx_vdt::m_assign_value (const std::string& str) {
   bx_message msg(bx_message::critic, "vdt: ");
   if (name_s.size ()) msg << "\"" << name_s << "\" ";
 
@@ -92,7 +92,7 @@ void vdt::m_assign_value (const std::string& str) {
 } 
 
 
-vdt::vdt (const std::string& value, const std::string& name, vdt_type type): name_s(name) {
+bx_vdt::bx_vdt (const std::string& value, const std::string& name, vdt_type type): name_s(name) {
   vdt_type tmp_type = m_search_type (value);
 
   type_internal = tmp_type;
@@ -104,7 +104,7 @@ vdt::vdt (const std::string& value, const std::string& name, vdt_type type): nam
   m_assign_value (value);
 }
 
-const vdt& vdt::operator= (const std::string& value) {
+const bx_vdt& bx_vdt::operator= (const std::string& value) {
   vdt_type tmp_type = m_search_type (value);
 
   if (type_internal != unassigned_vdt) m_check_type (tmp_type);
@@ -115,7 +115,7 @@ const vdt& vdt::operator= (const std::string& value) {
   return *this;
 }
 
-const vdt& vdt::operator= (long int value) {
+const bx_vdt& bx_vdt::operator= (long int value) {
   
   if (type_internal != unassigned_vdt) m_check_type (vdt::int_vdt);
 
@@ -125,7 +125,7 @@ const vdt& vdt::operator= (long int value) {
   return *this; 
 }
   
-const vdt& vdt::operator= (double value) {
+const bx_vdt& bx_vdt::operator= (double value) {
   
   if (type_internal != unassigned_vdt) m_check_type (vdt::float_vdt);
 
@@ -135,13 +135,13 @@ const vdt& vdt::operator= (double value) {
   return *this; 
 }
 
-long int vdt::get_int () const {
+long int bx_vdt::get_int () const {
   m_check_type (vdt::int_vdt);
 
   return value_i;
 }
 
-double vdt::get_float () const {
+double bx_vdt::get_float () const {
   m_check_type (vdt::float_vdt);
 
   return (type_internal == float_vdt) ? value_f : value_i;	// int->float cast always allowed
@@ -153,13 +153,13 @@ const std::string& vdt::get_string () const {
   return value_s;
 }
 
-const vdt::vdt_vector& vdt::get_vector () const {
+const bx_vdt::vdt_vector& bx_vdt::get_vector () const {
   m_check_type (vdt::vector_vdt);
 
   return value_v;
 }
 
-void vdt::m_check_type (vdt_type new_type) const {
+void bx_vdt::m_check_type (vdt_type new_type) const {
 
   if (type_internal == new_type) return;
   
@@ -171,18 +171,18 @@ void vdt::m_check_type (vdt_type new_type) const {
 }
 
 
-std::ostream& operator<< (std::ostream& out, const vdt& v) {
+std::ostream& operator<< (std::ostream& out, const bx_vdt& v) {
   switch (v.get_type ()) {
-    case vdt::int_vdt:
+    case bx_vdt::int_vdt:
       out << v.get_int ();
       break;
-    case vdt::float_vdt:
+    case bx_vdt::float_vdt:
       out << v.get_float ();
       break;
-    case vdt::string_vdt:
+    case bx_vdt::string_vdt:
       out << v.get_string ();
       break;
-    case vdt::vector_vdt:
+    case bx_vdt::vector_vdt:
       out << "{ ";
       if (v.get_vector ().size ()) {
         std::copy (v.get_vector ().begin (), v.get_vector ().end () - 1, std::ostream_iterator<vdt>(out, ", "));
