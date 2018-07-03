@@ -78,7 +78,6 @@
 #include "bx_omon.hh"
 #include "bx_filter_trigger.hh"
 #include "bx_laben_raw_validator.hh"
-#include "bx_v1731sys.hh"
 #include "bx_pid_ab_mach4.hh"
 #include "messenger.hh"
 #include "bx_snews.hh"
@@ -154,7 +153,7 @@ void bx_module_factory::create_modules (const std::vector<std::string>& module_n
 
   if (modules.size ()) msg << "already inited" << dispatch;
 
-  for (unsigned long i = 0; i < module_name_list.size (); i++) {
+  for (size_t i = 0; i < module_name_list.size (); i++) {
     std::string m_name = module_name_list[i];
     if (m_name == "bx_reader") {
       modules.push_back (new bx_reader);
@@ -276,8 +275,6 @@ void bx_module_factory::create_modules (const std::vector<std::string>& module_n
       modules.push_back (new bx_laben_raw_validator);
     } else if (m_name == "bx_calib_monitor") {
       modules.push_back (new bx_calib_monitor);
-    } else if (m_name == "bx_v1731sys") {
-      modules.push_back (new bx_v1731sys);
     } else if (m_name == "bx_pid_ab_mach4") {
       modules.push_back (new bx_pid_ab_mach4);
     } else if (m_name == "bx_cmt_tracker") {
@@ -293,7 +290,7 @@ void bx_module_factory::create_modules (const std::vector<std::string>& module_n
   std::sort (modules.begin (), modules.end (), bx_base_module::sort_operation ());
 
   bx_message info(bx_message::info, "bx_module_factory: module list:");
-  for (unsigned long i = 0; i < modules.size (); i++) {
+  for (size_t i = 0; i < modules.size (); i++) {
     if (modules[i]->is_enabled ()) {
       info << std::endl << "\t" <<  modules[i]->get_name () << " role " << modules[i]->get_role ();
       info << " priority " << modules[i]->get_priority () << " enabled";
