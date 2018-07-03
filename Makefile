@@ -99,6 +99,8 @@ rootechidna.rootmap: rootechidna.so.$(LIBVERSION)
 	@echo "  [RLIBMAP] $@"
 	@rm -f $@; for i in $(LINKDEF); do rlibmap -f -l rootechidna.so -c $$i >> $@ ; done
 	@sed -i -e /vector.float/d -e /vector.int/d $@
+	@echo "  [LINKS] pcm"
+	@ln -sf */*.pcm .
 
 online: echidna tools/omon_read
 	@tools/install.sh
